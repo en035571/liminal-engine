@@ -1,0 +1,12 @@
+# Liminal Engine: everything except PyTorch (Set Up asks about that separately; it's ~400 MB).
+# Changing this file makes the next update install the new packages before it swaps any files.
+numpy<2.3
+pillow
+librosa
+soundfile
+scipy
+pywebview
+click
+requests
+certifi
+gdown

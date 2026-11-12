@@ -1,0 +1,425 @@
+{
+ "version": "2026.11.12",
+ "files": {
+  "Liminal Engine.app/Contents/Info.plist": {
+   "sha": "7e2146274f36d576382a23296d6b2e86383faa5ba6b97c0b489b80df78d30812",
+   "mode": 420
+  },
+  "Liminal Engine.app/Contents/MacOS/launch": {
+   "sha": "32156180d9bb05e60b9d4221fba718a0e14c261a96e747b380a6b23d36b7f5a3",
+   "mode": 493
+  },
+  "Liminal Engine.app/Contents/Resources/icon.icns": {
+   "sha": "27dc19fef12d69e7e2f5d6b258e936ecace0498735cc425eb9f3f9854a2f84bc",
+   "mode": 420
+  },
+  "READ ME FIRST.html": {
+   "sha": "c2d78c1a6d771706b27a181a7b738f816bc86d0695b427545e85fc25aeb08c5c",
+   "mode": 420
+  },
+  "Set Up.command": {
+   "sha": "aad63073251ee2054ec3a202038bfde0f254f989de3dcac4007ad7426e588dd6",
+   "mode": 493
+  },
+  "app/bank.py": {
+   "sha": "f7dc420a795af535fd2cc2071d2c4939f4d63007dee2a18b80b13686c2abbce9",
+   "mode": 420
+  },
+  "app/channel.json": {
+   "sha": "40a1e47a53519a70f5de8b4052f700cab383f17d09072d61b216ecd00d91a61d",
+   "mode": 420
+  },
+  "app/collage.py": {
+   "sha": "db9e7b63ceff9db74d3a4af9a3eed0bbbfad59a9f054bbf5aab3b5f5376088d1",
+   "mode": 420
+  },
+  "app/crt.html": {
+   "sha": "0a2f7d200c2bfd76fa1d68121ef49f7c1cbb56f41369bfa5e62f5a7bcfcc33a2",
+   "mode": 420
+  },
+  "app/crt_logos/amfm-clean.png": {
+   "sha": "959e93ff99e43fd734535176b6bff9c94e97b2d1c78e47f214aa09e43eeffa6e",
+   "mode": 420
+  },
+  "app/crt_logos/amfm-logo-dev-1-01.png": {
+   "sha": "15d633e5f031875458269b54f348505bb3982198d3f053c233566dca36671d56",
+   "mode": 420
+  },
+  "app/crt_logos/amfm-logo-dev-1-02.png": {
+   "sha": "5944d26a4beff9e4ea5400fdbfacead566498993eadbbaba6520f784cb049b37",
+   "mode": 420
+  },
+  "app/crt_logos/amfm-logo-dev-1-03.png": {
+   "sha": "47ac66d9200b43da7f8cf464bb6a85d41b8acf751754db0af7416de61526291e",
+   "mode": 420
+  },
+  "app/crt_logos/amfm-logo-dev-1-04.png": {
+   "sha": "8fc85bda86dd49b6de93e248fe59da2a822a6cca309084e8157d206fe61bac95",
+   "mode": 420
+  },
+  "app/crt_sound.js": {
+   "sha": "aa22a8fa2b509c8a1a63d9c1a23df0d21635aa90da8ba7c41c775688d2d1be13",
+   "mode": 420
+  },
+  "app/index.html": {
+   "sha": "77a563c459b24b77f9fbb615ed4d72a14a8fd97b953a3eafe776daef0189a99d",
+   "mode": 420
+  },
+  "app/models.html": {
+   "sha": "552949b6f018da8def4db6d9b74ee5c0f1e399eb94cf017b51cdd9b06b3367a3",
+   "mode": 420
+  },
+  "app/models_lib.py": {
+   "sha": "871181f2bc67528ce70e2c250171b09249342886f6999ad4beabb8993eb7e76e",
+   "mode": 420
+  },
+  "app/native.py": {
+   "sha": "7800d15b9d16b404c4fdb877c52d9a389d9d5758c515cda3a13f3bffe081139f",
+   "mode": 420
+  },
+  "app/server.py": {
+   "sha": "28b6a61c1759f86e7d125ad09f991e451b8d7b6867adc1ad174496cc8f4f0300",
+   "mode": 420
+  },
+  "app/update.js": {
+   "sha": "c281498167ca2887c5ca2ab0292e0b780e177fd36968e6f9e83a432972a681e7",
+   "mode": 420
+  },
+  "app/updater.py": {
+   "sha": "79794ef7d99f11b0232eb8f809692cb4a98f6a6e4836fd94e1285bdc994f1ecf",
+   "mode": 420
+  },
+  "latent_dream.py": {
+   "sha": "f596721a5f185db22b236652d657281064b986cecc2971e792d634060ad38af0",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/HEAD": {
+   "sha": "28d25bf82af4c0e2b72f50959b2beb859e3e60b9630a5e8c603dad4ddb2b6e80",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/config": {
+   "sha": "2a78b412f294e03a1bac94600681de5ba4f3810e5337727ab7da746a911b5868",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/description": {
+   "sha": "85ab6c163d43a17ea9cf7788308bca1466f1b0a8d1cc92e26e9bf63da4062aee",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/hooks/applypatch-msg.sample": {
+   "sha": "0223497a0b8b033aa58a3a521b8629869386cf7ab0e2f101963d328aa62193f7",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/hooks/commit-msg.sample": {
+   "sha": "1f74d5e9292979b573ebd59741d46cb93ff391acdd083d340b94370753d92437",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/hooks/fsmonitor-watchman.sample": {
+   "sha": "e0549964e93897b519bd8e333c037e51fff0f88ba13e086a331592bf801fa1d0",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/hooks/post-update.sample": {
+   "sha": "81765af2daef323061dcbc5e61fc16481cb74b3bac9ad8a174b186523586f6c5",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/hooks/pre-applypatch.sample": {
+   "sha": "e15c5b469ea3e0a695bea6f2c82bcf8e62821074939ddd85b77e0007ff165475",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/hooks/pre-commit.sample": {
+   "sha": "57185b7b9f05239d7ab52db045f5b89eb31348d7b2177eab214f5eb872e1971b",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/hooks/pre-merge-commit.sample": {
+   "sha": "d3825a70337940ebbd0a5c072984e13245920cdf8898bd225c8d27a6dfc9cb53",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/hooks/pre-push.sample": {
+   "sha": "ecce9c7e04d3f5dd9d8ada81753dd1d549a9634b26770042b58dda00217d086a",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/hooks/pre-rebase.sample": {
+   "sha": "4febce867790052338076f4e66cc47efb14879d18097d1d61c8261859eaaa7b3",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/hooks/pre-receive.sample": {
+   "sha": "a4c3d2b9c7bb3fd8d1441c31bd4ee71a595d66b44fcf49ddb310252320169989",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/hooks/prepare-commit-msg.sample": {
+   "sha": "e9ddcaa4189fddd25ed97fc8c789eca7b6ca16390b2392ae3276f0c8e1aa4619",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/hooks/push-to-checkout.sample": {
+   "sha": "a53d0741798b287c6dd7afa64aee473f305e65d3f49463bb9d7408ec3b12bf5f",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/hooks/sendemail-validate.sample": {
+   "sha": "44ebfc923dc5466bc009602f0ecf067b9c65459abfe8868ddc49b78e6ced7a92",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/hooks/update.sample": {
+   "sha": "8d5f2fa83e103cf08b57eaa67521df9194f45cbdbcb37da52ad586097a14d106",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/index": {
+   "sha": "de0d4c0260f7c7373c58b0d654fcad7ac61b653250053dfc0b161ddddeb2db21",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/info/exclude": {
+   "sha": "6671fe83b7a07c8932ee89164d1f2793b2318058eb8b98dc5c06ee0a5a3b0ec1",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/logs/HEAD": {
+   "sha": "a2dadd9d5dfdef15428027b9dcfbb1c36b9c8eb6898fe7a17b5efdb19dd6d7a6",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/logs/refs/heads/main": {
+   "sha": "a2dadd9d5dfdef15428027b9dcfbb1c36b9c8eb6898fe7a17b5efdb19dd6d7a6",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/logs/refs/remotes/origin/HEAD": {
+   "sha": "a2dadd9d5dfdef15428027b9dcfbb1c36b9c8eb6898fe7a17b5efdb19dd6d7a6",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/objects/pack/pack-65e0a0594282bb69813b4be43d88a316e1007d94.idx": {
+   "sha": "b7264cf3383e82f10eb584ea9dc2a775fd36f8621c361b1c48a315675c3e2e67",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/objects/pack/pack-65e0a0594282bb69813b4be43d88a316e1007d94.pack": {
+   "sha": "5dbae42f3380c69beda48020bee8a19927f9e8f215ade4dbd54389a851130b2d",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/objects/pack/pack-65e0a0594282bb69813b4be43d88a316e1007d94.rev": {
+   "sha": "1980f5e62a015667b9f9ccc33b9316bd19a6ae7f6879cf28e983783d57e29331",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/packed-refs": {
+   "sha": "d7a3b26bc643742bf882eec439a05ab97ef4d429755d7fa0fd94dae0a6aff006",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/refs/heads/main": {
+   "sha": "7db1462cf75cd2b8a75bd2fd58ba370fc8cfe4b678b30856ce849d96431dbe3d",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/refs/remotes/origin/HEAD": {
+   "sha": "2bb6a24aa0fc6c484100f5d51a29bbad841cd2c755f5d93faa204e5dbb4eb2b4",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.git/shallow": {
+   "sha": "7db1462cf75cd2b8a75bd2fd58ba370fc8cfe4b678b30856ce849d96431dbe3d",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.github/ISSUE_TEMPLATE/bug_report.md": {
+   "sha": "2a270d78ae518879326ad0a510098f8e3e663048bc84db91841ca45cac806b1f",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/.gitignore": {
+   "sha": "214b89b2f6385972f0acb0d4b5fd3776b38d0604d298922f851a94ed7f682623",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/Dockerfile": {
+   "sha": "1c642f14fcabc75c672025e580b99ae6da5ba2adca64a3c81da665395b158346",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/LICENSE.txt": {
+   "sha": "d782a1e765f4848609352fd9d74cc36b103ef6f51900baed06fb1c995188b95f",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/README.md": {
+   "sha": "5247c73b121d30d011faeefd63903d9429b0d91d36c9ac1e2f409420ec2499b2",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/calc_metrics.py": {
+   "sha": "dadf6098c1181e7289c71262693377ecfcc612cb9b11f246771fbb7ceaa1b932",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/dataset_tool.py": {
+   "sha": "add941428f690553a5c7e9889022c8ee2436ed8797ad29083512c90e28a5829a",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/dnnlib/__init__.py": {
+   "sha": "01ee5300565a54d4a309ae87784f314a0c82db6c63e6735d1e9a124327f4c12d",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/dnnlib/util.py": {
+   "sha": "8f4c1e9e7eac60f9bf541b2fc0e649a022b2ddde8178df7f85f924f63e3db426",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/docker_run.sh": {
+   "sha": "87035b65777ecd28bdc1244c4c59cab0afdb9516a9c884ca3fa49b29f0f8b640",
+   "mode": 493
+  },
+  "models/stylegan2-ada-pytorch/docs/dataset-tool-help.txt": {
+   "sha": "95fae57d3b491aeda82e367216d646279357a0653a052ae4bd59275152da3f0c",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/docs/license.html": {
+   "sha": "f71487d6edcf874159c2510a66af0032786f8bc6732341aec1fe389ccf4de208",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/docs/stylegan2-ada-teaser-1024x252.png": {
+   "sha": "5b1e91df014f1564d3f7c67449a41b4d5fbcbac2066ec78aa55fc6af3d3d1a77",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/docs/stylegan2-ada-training-curves.png": {
+   "sha": "5e0feeb4c927a4e8d5daf3ebe8074558b6bd55f7213f391010220138b9601be2",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/docs/train-help.txt": {
+   "sha": "651e057cd4e4eda1e0663078cc6ed045f1b0c0707fbab7dbf401bca4fc9a391c",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/generate.py": {
+   "sha": "8ffc1160a3dbee355e002eea37725445e33cd5645f9f80a5b705435bd7c5991c",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/legacy.py": {
+   "sha": "6496d8ebe84d1e515832eada2c9688968ce23c6e13b1e2bc14e673ad96bb562a",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/metrics/__init__.py": {
+   "sha": "5efa02ab9dadcd7c016c7de60161b08288ae64d3375ed6f287c1501b2635f3d9",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/metrics/frechet_inception_distance.py": {
+   "sha": "6159a9b62eee287ae30386c4a7d3315dc4916e61ecdb6513c756b31e684fdee0",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/metrics/inception_score.py": {
+   "sha": "ed168258bd1ac045acc72437445b774fba793a10ac10b2f43ed894fd6d747912",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/metrics/kernel_inception_distance.py": {
+   "sha": "c025d3fa4176eec2b7d0ad0fe27c8dc6d93405d3e1c3095578ee72f64060c453",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/metrics/metric_main.py": {
+   "sha": "f26b087370636f0db1f084a02afb10bddcb7e2faed7e858be4b5d6226be9ff9a",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/metrics/metric_utils.py": {
+   "sha": "05f53790e0173a06fb0b363c2f4d23cbbe63199b2f6fea412a5e6a0c9ca93f81",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/metrics/perceptual_path_length.py": {
+   "sha": "f6e826ffa344837dde292459fcb24a919f7fc664a47d579aa45a2c3cff606197",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/metrics/precision_recall.py": {
+   "sha": "41d16b3ba192c61bebd35014cf12f5d2acb0b52375aaedd5fd1b4605243ec997",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/projector.py": {
+   "sha": "a429abdc102aba8be508b257ddeef3a4acfabdeb871e6592299ce8448d29ba03",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/style_mixing.py": {
+   "sha": "75e7e5a292ace8fdb98d9e9f23173334b1b2e3f41467e45f667f127e3511d6e6",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/__init__.py": {
+   "sha": "41573fda6f071467e105e595188c3e9641499ba22462046e9bcf725c4a5616cc",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/custom_ops.py": {
+   "sha": "ee123ae0458fbe463000d5962a5b804d9e91b25d3fda8500eeaa6ddf6b5c932a",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/misc.py": {
+   "sha": "8b66e614f3dbb27b9b3280030efcb65a94e5cfd0e9d940302692452cb7c44012",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/ops/__init__.py": {
+   "sha": "41573fda6f071467e105e595188c3e9641499ba22462046e9bcf725c4a5616cc",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/ops/bias_act.cpp": {
+   "sha": "4a3eb091ce936451ac3a0e9c7c771cc5576cba195332cd777ec275cb806f4f53",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/ops/bias_act.cu": {
+   "sha": "bc6b93e2c347cc00b07dfe0f6dca35011c2291645806239cc86632902694d017",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/ops/bias_act.h": {
+   "sha": "f0ca2d087bb22b20f6642e4affd7c77e2ff5b601a2f6d1632a79002608d87aa4",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/ops/bias_act.py": {
+   "sha": "ae9d4a2efbb61f7d21d2e361a5a145704351cc9733d2bd3e5ba4e64938d8e3e3",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/ops/conv2d_gradfix.py": {
+   "sha": "8d59bb824cd8f730032bffd6f02353bae6df96c4541caad31063e3e5f635ffb3",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/ops/conv2d_resample.py": {
+   "sha": "7de74103801ab85e9f909dfe2386f3fcbc53a08a5b8466da147ab37be866c20d",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/ops/fma.py": {
+   "sha": "f3fdd6b890e250124557cba35360a1297cac5bdbc4925325403b44bf290956e9",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/ops/grid_sample_gradfix.py": {
+   "sha": "a49a8195b734ecba95c9b63d035f26faa5d794a0b26eb3e9d5f3c521be29c536",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.cpp": {
+   "sha": "a3930ed91584ab11786f44aca9abad9beab9f4020b564d4c547727da49d70b11",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.cu": {
+   "sha": "af059a0dd7be4ba24e2b6b2f8fb5bcb0a89c4ac8320d17a59f228580164528ca",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.h": {
+   "sha": "9f703976585fd9c07d18cf1c00edd3a495dc641ff1e1e1671e2df2ab24126535",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/ops/upfirdn2d.py": {
+   "sha": "7b5865e70ac4156edaefb2a372fee27dc55eb5661568b337cb4168e8936384a8",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/persistence.py": {
+   "sha": "1f24073d03fbb2d772babbf7b8a1175bec6c3423314c2649e9a8a13d37757121",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/torch_utils/training_stats.py": {
+   "sha": "c1c105b7e5c2fa5883516bf2bc05b588da5f45939d37f3fe281abca4579e7616",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/train.py": {
+   "sha": "269f2073481ab269560ff76d4a866ac98656a494884c3ad0edcf8cc99d9e4c24",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/training/__init__.py": {
+   "sha": "5efa02ab9dadcd7c016c7de60161b08288ae64d3375ed6f287c1501b2635f3d9",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/training/augment.py": {
+   "sha": "fd81c871a9bfbb7feaad138b1e875db05c640060bdbf0342247d209eb48ba8f9",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/training/dataset.py": {
+   "sha": "10e433ffde6e3e63963711390ee8eeaa6f0e5a00da9f883117331a48b36e5145",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/training/loss.py": {
+   "sha": "1bd68d7dc1c92c1b78b91f193a45a433b1ff374614f91909ea8cb88eac7bc2d7",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/training/networks.py": {
+   "sha": "df49fc78a0364015a09b592bb43546af83a6cdaad753d89a2a1a69bd6e171c24",
+   "mode": 420
+  },
+  "models/stylegan2-ada-pytorch/training/training_loop.py": {
+   "sha": "0b589a731712c51791eb22efe0dc1ee6856bf3e9335920db02a3e38dee909eb3",
+   "mode": 420
+  },
+  "requirements.txt": {
+   "sha": "547e33fb4826d84b5cd91d2751d095c11d9ab6922baa2487818da0266fc6fe2d",
+   "mode": 420
+  }
+ }
+}

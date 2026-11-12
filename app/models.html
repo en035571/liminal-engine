@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIMINAL ENGINE · MODELS</title>
+<style>
+:root{--bg:#0e0e10;--panel:#161618;--line:#26262a;--ink:#e8e6e3;--mute:#8b8583;--dim:#7f7b76;--ok:#7fd18a;--warn:#e0a052;--bad:#e05252}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font:12px/1.5 "IBM Plex Mono","SF Mono",Menlo,monospace;letter-spacing:.04em}
+a{color:inherit}button{font:inherit;letter-spacing:inherit;color:inherit}
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:16px;padding:14px 22px;border-bottom:1px solid var(--line);background:var(--bg)}
+.top h1{margin:0;font-size:12px;font-weight:600;letter-spacing:.18em}
+.top .sp{flex:1}
+.btn{border:1px solid var(--line);background:transparent;border-radius:14px;padding:5px 12px;font-size:10px;text-transform:uppercase;cursor:pointer;color:var(--ink);text-decoration:none}
+.btn:hover{border-color:var(--mute)}.btn.go{background:var(--ink);color:var(--bg);border-color:var(--ink)}.btn:disabled{opacity:.35;cursor:default}
+.wrap{padding:8px 22px 60px}
+p.lead{color:var(--mute);max-width:90ch}
+h2{font-size:10px;letter-spacing:.14em;color:var(--mute);font-weight:400;text-transform:uppercase;margin:28px 0 10px;border-top:1px solid var(--line);padding-top:12px;display:flex;gap:10px;align-items:baseline}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.c{background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden;cursor:pointer;position:relative;user-select:none}
+.c:hover{border-color:var(--mute)}.c.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink) inset}
+.c img{width:100%;display:block;background:#000;aspect-ratio:2/1;object-fit:cover}
+.c .ck{position:absolute;top:8px;left:8px;width:22px;height:22px;border-radius:4px;border:1px solid var(--mute);background:rgba(0,0,0,.6);display:grid;place-items:center;font-size:13px;color:transparent}
+.c.on .ck{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.c.have .ck{display:none}
+.c .t{padding:9px 11px}.c b{font-weight:400;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.c .by{color:var(--mute);font-size:10px}
+.tag{display:inline-block;font-size:9px;text-transform:uppercase;letter-spacing:.1em;border:1px solid #3a3a40;border-radius:10px;padding:1px 7px;margin:5px 4px 0 0;color:var(--mute)}
+.tag.on{border-color:var(--ink);color:var(--ink)}.tag.warn{border-color:#7a4a2a;color:var(--warn)}.tag.ok{border-color:#2f6b39;color:var(--ok)}.tag.bad{border-color:#6b2f2f;color:var(--bad)}
+.dl{height:3px;background:var(--line)}.dl i{display:block;height:100%;background:var(--ink);width:0;transition:width .5s}
+.msg{font-size:10px;color:var(--mute);margin-top:4px;word-break:break-word}.msg.bad{color:var(--bad)}
+.count{color:var(--ink)}
+</style></head><body>
+<div class="top"><a class="btn" href="/">← engine</a><h1>MODELS</h1><span class="sp"></span>
+  <span id="sum" style="color:var(--mute);font-size:10px;text-transform:uppercase"></span>
+  <button class="btn" id="starter">pick starter pack</button><button class="btn" id="clear">clear</button>
+  <button class="btn go" id="dl" disabled>download</button></div>
+<div class="wrap">
+  <p class="lead">Every StyleGAN2 model in justinpinkney/awesome-pretrained-stylegan2. Click a card to pick it; picks are saved. Downloads go to <span id="t7dir"></span> and show up as chips in LATENT DREAM. 1024px models render 3–4× slower. Licences marked amber are unknown, non-commercial or research-only: fine to experiment with, check before a release.</p>
+  <div id="list"></div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+let ST={models:[],picks:[]},PICK=new Set(),loaded=false;
+const esc=t=>(t==null?'':String(t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const safeUrl=u=>/^https?:\/\//i.test(u||'')?u:'#';
+const mb=b=>b?(b/1e6).toFixed(0)+' MB':'';
+async function api(p,o){const r=await fetch(p,o);try{return await r.json()}catch(e){return{error:'server '+r.status}}}
+async function post(p,b){return api(p,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})})}
+function savePicks(){post('/api/models/picks',{names:[...PICK]});draw()}
+function card(m){
+  const have=!!m.installed, d=m.dl||{}, on=PICK.has(m.name)&&!have;
+  const lic=String(m.license||'Unknown'), warn=/NC|Nvidia|Unknown/i.test(lic);
+  const tags=[];
+  if(have) tags.push('<span class="tag ok">installed</span>');
+  if(m.starter) tags.push('<span class="tag on">starter</span>');
+  tags.push(`<span class="tag">${esc(m.resolution||'?')}</span>`);
+  tags.push(`<span class="tag${warn?' warn':''}">licence: ${esc(lic.slice(0,22))}</span>`);
+  if(String(m.resolution||'').startsWith('1024')) tags.push('<span class="tag warn">3–4× slower</span>');
+  let status='';
+  if(d.state==='queued') status='<div class="msg">queued</div>';
+  if(d.state==='downloading') status=`<div class="msg">downloading ${d.pct!=null?d.pct+'% · ':''}${mb(d.bytes)}</div>`;
+  if(d.state==='done') status=`<div class="msg" style="color:var(--ok)">downloaded · ${esc(d.msg)}</div>`;
+  if(d.state==='failed') status=`<div class="msg bad">failed: ${esc(d.msg)}</div>`;
+  return `<div class="c${on?' on':''}${have?' have':''}" data-n="${esc(m.name)}">
+    ${m.sample?`<img loading="lazy" src="/api/file?p=${encodeURIComponent(m.sample)}">`:'<div style="aspect-ratio:2/1;display:grid;place-items:center;color:var(--dim)">no sample</div>'}
+    <span class="ck">✓</span>${d.state==='downloading'?`<div class="dl"><i style="width:${d.pct||3}%"></i></div>`:''}
+    <div class="t"><b>${esc(m.name)}</b><div class="by">${esc(m.author||'')} · <a href="${esc(safeUrl(m.source_url||m.author_url))}" target="_blank" onclick="event.stopPropagation()">source</a></div>${tags.join('')}${status}</div></div>`;
+}
+function draw(){
+  const brief=ST.models.filter(m=>m.brief), rest=ST.models.filter(m=>!m.brief);
+  $('#list').innerHTML=`<h2>On brief <span class="count">${brief.length}</span></h2><div class="g">${brief.map(card).join('')}</div>
+    <h2>Everything else in the list <span class="count">${rest.length}</span></h2><div class="g">${rest.map(card).join('')}</div>`;
+  document.querySelectorAll('.c').forEach(c=>c.onclick=()=>{const n=c.dataset.n;const m=ST.models.find(x=>x.name===n);if(m.installed)return;PICK.has(n)?PICK.delete(n):PICK.add(n);savePicks()});
+  const want=[...PICK].filter(n=>{const m=ST.models.find(x=>x.name===n);return m&&!m.installed});
+  const busy=ST.models.some(m=>m.dl&&['queued','downloading'].includes(m.dl.state));
+  $('#sum').textContent=`${want.length} picked · ${ST.models.filter(m=>m.installed).length} installed${busy?' · downloading…':''}`;
+  const where=(ST.where||'T7').toLowerCase(); $('#dl').disabled=!want.length; $('#dl').textContent=want.length?`download ${want.length} to ${where}`:`download to ${where}`;
+  { const d=ST.t7_dir||''; const el=$('#t7dir'); el.textContent=d.split('/').filter(Boolean).slice(-2).join(' › ')||'the models folder'; el.title=d; }
+}
+async function refresh(){const s=await api('/api/models/state');if(s.error)return;ST=s;if(!loaded){PICK=new Set(s.picks||[]);loaded=true}const sig=JSON.stringify([s.models.map(m=>[m.installed,m.dl]),[...PICK]]);if(sig!==refresh.sig){refresh.sig=sig;draw()}}
+$('#starter').onclick=()=>{ST.models.filter(m=>m.starter&&!m.installed).forEach(m=>PICK.add(m.name));savePicks()};
+$('#clear').onclick=()=>{PICK.clear();savePicks()};
+$('#dl').onclick=async()=>{const want=[...PICK].filter(n=>{const m=ST.models.find(x=>x.name===n);return m&&!m.installed});const r=await post('/api/models/download',{names:want});if(r.error)alert(r.error);refresh()};
+refresh();setInterval(refresh,2000);
+</script><script src="/update.js"></script>
+</body></html>

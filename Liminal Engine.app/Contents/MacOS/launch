@@ -1,0 +1,15 @@
+#!/bin/bash
+# Liminal Engine — opens the engine window from the folder this app sits in.
+HERE="$(cd "$(dirname "$0")/../../.." && pwd)"
+cd "$HERE" || exit 1
+export PATH="/opt/homebrew/bin:/usr/local/bin:/opt/local/bin:$PATH"   # ffmpeg lives in Homebrew; apps get a short PATH
+export PORT=8391
+if [ ! -x ./.venv/bin/python ]; then
+  osascript -e 'display dialog "Liminal Engine is not set up yet.\n\nIn the Liminal Engine folder, right-click \"Set Up\" and choose Open. It takes a few minutes, once." buttons {"OK"} default button 1 with title "Liminal Engine"' >/dev/null 2>&1
+  open "$HERE/READ ME FIRST.html"; exit 0
+fi
+if ! command -v ffmpeg >/dev/null 2>&1; then
+  osascript -e 'display dialog "ffmpeg is missing. Run Set Up again; it installs it." buttons {"OK"} default button 1 with title "Liminal Engine"' >/dev/null 2>&1; exit 0
+fi
+mkdir -p "$HOME/Movies/Liminal Engine"
+exec ./.venv/bin/python app/native.py

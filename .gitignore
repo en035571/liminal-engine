@@ -1,0 +1,8 @@
+.venv/
+models/stylegan/
+app/out/
+app/inbox/
+_cleanup/
+.update/
+__pycache__/
+.DS_Store

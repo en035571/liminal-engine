@@ -1,0 +1,1494 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIMINAL ENGINE · CRT</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<style>
+:root{--bg:#0c0c0e;--rail:#101013;--panel:#141418;--panel2:#1a1a1f;--line:#232329;--line2:#30303a;--ink:#e6e4e0;--mute:#8e8a86;--dim:#7f7b76;--acc:#5f8dff;--accink:#07101f;--ok:#7fd18a;--warn:#e0a052;--bad:#e05252;--mono:"IBM Plex Mono","SF Mono",Menlo,monospace;--sans:"IBM Plex Sans",system-ui,-apple-system,sans-serif;--r:4px;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:12px/1.5 var(--mono);letter-spacing:.03em}
+a{color:inherit}button,input,select,textarea{font:inherit;letter-spacing:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+[hidden]{display:none!important}
+.help,.hint{font:11.5px/1.45 var(--sans);letter-spacing:0;color:var(--mute);text-transform:none}
+.hint{margin-top:6px}
+.lbl{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--mute);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.lbl b{font-weight:400;color:var(--ink);letter-spacing:.02em;text-transform:none}
+.lbl a{color:var(--acc);text-decoration:none;text-transform:uppercase;letter-spacing:.12em;font-size:10px}
+
+/* ---- shell ---- */
+.app{height:100%;display:grid;grid-template-rows:48px minmax(0,1fr)}
+.top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);column-gap:16px;align-items:center;padding:0 16px;border-bottom:1px solid var(--line);background:var(--bg)}
+.top h1{margin:0;font-size:12px;font-weight:600;letter-spacing:.18em}
+.top .st{justify-self:end;display:flex;align-items:center;gap:8px;color:var(--mute);text-transform:uppercase;font-size:10px;letter-spacing:.12em;min-width:0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .st::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--dim)}
+body.running .top .st::before{background:var(--acc);box-shadow:0 0 0 3px rgba(95,141,255,.2)}
+body.running .top .st{color:var(--ink)}
+.mode{display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}
+.mode button{border:0;background:transparent;border-radius:999px;padding:6px 14px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);white-space:nowrap}
+.mode button:hover{color:var(--ink)}.mode button.on{background:var(--ink);color:var(--bg)}
+.wrap{display:grid;grid-template-columns:384px minmax(0,1fr);min-height:0}
+.left{border-right:1px solid var(--line);background:var(--rail);display:grid;grid-template-rows:minmax(0,1fr) auto;min-height:0}
+.steps{overflow:auto;padding:14px 12px 8px 44px;position:relative}
+.steps::before{content:"";position:absolute;left:25px;top:30px;bottom:40px;width:1px;background:var(--line2)}
+.gofoot{border-top:1px solid var(--line);padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--rail)}
+.right{padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0;overflow:auto}
+.warn{border:1px solid var(--bad);color:var(--bad);border-radius:var(--r);padding:8px 10px;font:11.5px/1.4 var(--sans);margin:0 0 10px 30px}
+
+/* ---- steps (ledger) ---- */
+.step{position:relative;border-bottom:1px solid var(--line)}
+.step>.hd{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;padding:12px 4px 12px 0;text-align:left;background:none;border:0}.step>.hd>span:nth-child(2){min-width:0}
+.step>.hd .n{position:absolute;left:-30px;top:12px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line2);background:var(--rail);display:grid;place-items:center;font-size:10px;color:var(--mute)}
+.step.done>.hd .n{border-color:var(--ink);color:var(--ink)}
+.step.done>.hd .n span{display:none}.step.done>.hd .n::after{content:"✓";font-size:9px}
+.step.open>.hd .n{background:var(--acc);border-color:var(--acc);color:var(--accink)}
+.step.open>.hd .n span{display:inline}.step.open>.hd .n::after{content:none}
+.step>.hd .t{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.step>.hd .sum{display:block;color:var(--mute);font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em}
+.step>.hd .chev{color:var(--dim);font-size:10px;transition:transform .15s}
+.step.open>.hd .chev{transform:rotate(180deg)}
+.step .bd{display:none;padding:2px 4px 16px 0}
+.step.open .bd{display:flex;flex-direction:column;gap:14px}
+@media (prefers-reduced-motion:reduce){.step .chev{transition:none}}
+
+/* ---- field grid ---- */
+.f{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 12px;align-items:center}
+.fieldrow{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 12px;align-items:center}
+.fieldrow .flab{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.fieldrow .flab+input{grid-column:2}
+.fieldrow input[type=number]{width:84px}
+.fieldrow .flab:not(:first-child){grid-column:auto;justify-self:start}
+.fieldrow .cell{display:flex;gap:8px;align-items:center;grid-column:2}
+input[type=text],input[type=number],textarea{background:var(--bg);border:1px solid var(--line2);border-radius:var(--r);padding:7px 9px;outline:none;width:100%;font-variant-numeric:tabular-nums}
+input[type=text]:focus,input[type=number]:focus,textarea:focus{border-color:var(--acc)}
+.grp[data-only="phys"].hide{display:none}
+label.s output{white-space:nowrap}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* THE CHAIN (11-06): one row per stage, on/off, two or three controls, the rest under MORE */
+#chain{display:grid;gap:6px}
+.stg{border-bottom:1px solid var(--line)}
+.stg:first-child{border-top:1px solid var(--line)}
+.stg.off .sn{color:var(--mute)}
+.sth{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:10px;padding:10px 0;cursor:pointer;width:100%;background:none;border:0;color:inherit;text-align:left;font:inherit}
+.sw{width:28px;height:16px;border-radius:999px;background:var(--line2);position:relative;border:0;cursor:pointer;flex:none;padding:0}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--mute);transition:left .15s}
+.stg:not(.off) .sw{background:var(--acc)}.stg:not(.off) .sw::after{left:14px;background:var(--accink)}
+.left .stg .sth button.sw.none{opacity:.35;cursor:default}
+/* the rail's general button rule (.left button:not(.go):not(.hd)) outranks these, so they are restated at its strength */
+.left .stg .sth button.sw{width:28px;height:16px;padding:0;border:0;border-radius:999px;background:var(--line2)}
+.left .stg:not(.off) button.sw{background:var(--acc);border:0}
+.left button.more:not(.go):not(.hd){border:0;padding:8px 0 4px;color:var(--acc);background:none}
+.sn{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+.ssum{font-size:10.5px;color:var(--mute);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.schev{color:var(--dim);font-size:10px}
+.stbody{display:none;padding:0 0 10px;gap:2px}
+.stg.open .stbody{display:grid}#posWrap:not([hidden]){display:grid}
+.more{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc);background:none;border:0;padding:8px 0 4px;cursor:pointer;justify-self:start}
+.mbody{display:none;border-top:1px dashed var(--line2);margin-top:4px}.mbody.on{display:grid}
+.gearf{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 12px;align-items:center;padding:6px 0}
+.gearf select{width:100%}
+.ticks{display:grid;grid-template-columns:1fr 1fr;column-gap:12px;padding:2px 0 4px}
+.ticks label{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font:11.5px/1.4 var(--sans);color:var(--mute);cursor:pointer}
+.ticks input{accent-color:var(--acc);margin:0;width:12px;height:12px}
+.mineEmpty{font-size:11px;color:var(--mute);padding:6px 0}
+.physonly{font-size:10.5px;color:var(--mute);padding:0 0 9px}
+.tl{display:grid;gap:5px;padding:0 16px 8px}
+.tlh{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+#tlc{width:100%;height:28px;display:block;cursor:pointer;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
+.tlk{display:flex;flex-wrap:wrap;gap:12px;font-size:10px;color:var(--mute)}.tlk i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
+.pair>button[hidden]{display:block!important;visibility:hidden}
+#identRow:has(#identT:empty){display:none}
+#vidPanel:not([hidden]){display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:14px}
+.scrub{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:center}
+.scrub span{font:11px var(--mono);color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.scrub input[type=range]{width:100%;accent-color:var(--acc);margin:0}
+.seg{display:flex;border:1px solid var(--line2);border-radius:var(--r);overflow:hidden;background:var(--bg)}
+.seg button{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;background:transparent;padding:8px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}.seg button.on{background:var(--panel2);color:var(--ink)}
+#vidPanel .seg button.on{color:var(--acc)!important}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
+.pathrow{display:flex;gap:6px}.pathrow input{flex:1;font-size:11px;padding:6px 8px}.pathrow button{flex:none}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line2);border-radius:999px;padding:4px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.1em;background:transparent;color:var(--mute);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip:hover{color:var(--ink);border-color:var(--mute)}.chip.on{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.chip .x{margin-left:6px;opacity:.7}
+
+/* pickers: chip clouds become ledger rows */
+.recent,#cLanes,#lanes,#droppedList{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);margin-top:8px}
+.recent .chip,#cLanes .chip,#lanes .chip,#droppedList .chip{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;max-width:none;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:7px 0;text-align:left;text-transform:none;letter-spacing:.02em;font-size:11px;background:none;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recent .chip:last-child,#cLanes .chip:last-child,#lanes .chip:last-child,#droppedList .chip:last-child{border-bottom:0}
+.recent .chip::before,#cLanes .chip::before,#lanes .chip::before,#droppedList .chip::before{content:"";width:12px;height:12px;border-radius:50%;border:1px solid var(--line2);display:inline-block}
+.recent .chip.on,#cLanes .chip.on,#lanes .chip.on,#droppedList .chip.on{background:none;color:var(--ink)}
+.recent .chip.on::before,#cLanes .chip.on::before,#lanes .chip.on::before,#droppedList .chip.on::before{background:var(--acc);border-color:var(--acc)}
+.recent .chip .dur{color:var(--dim);font-size:10px;font-variant-numeric:tabular-nums}
+#droppedList .chip .x{color:var(--dim);justify-self:end}#droppedList .chip:hover .x{color:var(--bad)}
+.recent:empty,#cLanes:empty,#lanes:empty,#droppedList:empty{display:none}
+.recent{max-height:224px;overflow:auto}
+.drop{border:1px dashed var(--line2);border-radius:var(--r);padding:10px;display:flex;gap:12px;align-items:center;cursor:pointer;min-height:64px;background:var(--panel);transition:border-color .12s}
+.drop:hover,.drop.over{border-color:var(--acc)}
+.drop img,.drop video{width:64px;height:48px;object-fit:cover;border-radius:3px;background:#222;flex:none}
+.drop .ph{width:40px;height:40px;border-radius:3px;background:var(--panel2);display:grid;place-items:center;color:var(--dim);flex:none;font-size:16px}
+.drop .t{min-width:0}.drop .t .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}.drop .t .m{font:11px/1.4 var(--sans);letter-spacing:0;color:var(--mute)}
+.uploading{color:var(--warn)}
+/* model card + picker */
+.mcur{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);padding:8px 0}
+.mcur .t{min-width:0}.mcur .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mcur .m{color:var(--mute);font-size:10px;text-transform:uppercase;letter-spacing:.08em}
+.mcur .chip{border:0;color:var(--acc);padding:6px 0}
+.mth{width:48px;height:48px;border-radius:2px;background:var(--panel2) center/cover no-repeat;flex:none}
+.mtools{display:flex;gap:8px;align-items:center}.mtools input{flex:1;font-size:11px;padding:6px 8px}
+.mgroups .chip{font-size:9px;padding:3px 8px}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-height:300px;overflow:auto;padding-right:2px}
+.mt{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;cursor:pointer;background:var(--panel);text-align:left;padding:0}
+.mt:hover{border-color:var(--mute)}.mt.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+.mt .mth{width:100%;height:auto;aspect-ratio:4/3;border-radius:0}
+.mt span{display:block;padding:4px 5px;font-size:8.5px;line-height:1.3;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);height:2.6em;overflow:hidden}
+.mt.on span{color:var(--ink)}.mt .r{float:right;color:var(--dim)}
+.mth.none{display:grid;place-items:center}.mth.none::after{content:"no preview";font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+/* sliders as ledger rows */
+.grp{display:flex;flex-direction:column}
+.grph{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);padding:4px 0 6px;border-bottom:1px solid var(--line2)}.grph small{color:var(--dim);letter-spacing:.06em;margin-left:6px;font-size:9px}
+.sl{display:grid;grid-template-columns:96px minmax(0,1fr) 48px;gap:4px 12px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+.sl.off{opacity:.4}
+.slh{display:contents}.slh span{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--mute);grid-column:1;grid-row:1}.slh b{font-weight:400;color:var(--ink);grid-column:3;grid-row:1;text-align:right;font-variant-numeric:tabular-nums}
+.sl input[type=range]{grid-column:2;grid-row:1;width:100%;accent-color:var(--acc);margin:0}
+.slr{grid-column:2;grid-row:2;display:flex;justify-content:space-between;font-size:8.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-top:-4px}.slr i{font-style:normal}
+.sl .hint{grid-column:2/4;grid-row:3;margin:0;display:none}
+.sl .seg{grid-column:2/4;grid-row:2;margin-top:2px}
+.sl:hover .hint,.sl:focus-within .hint{display:block}
+.map{display:grid;grid-template-columns:96px 1fr;gap:6px 12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:10px}
+.mapsrc b{display:block;font-weight:400;letter-spacing:.14em}.mapsrc small{display:none}
+.mapto{display:flex;flex-wrap:wrap;gap:4px;align-content:center}.mapto span{border:1px solid var(--line);border-radius:10px;padding:1px 7px;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+.mapto span.on{color:var(--acc);border-color:var(--acc)}
+.note{font:11.5px/1.5 var(--sans);letter-spacing:0;color:var(--warn)}.note:empty{display:none}
+details{border-top:1px solid var(--line);padding-top:8px}summary{cursor:pointer;color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.12em;list-style:none}
+summary::before{content:"advanced · "}details[open] summary::before{content:"advanced · "}summary::after{content:" ▾"}
+.adv{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-top:10px}
+.adv label{display:flex;flex-direction:column;gap:3px;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--mute)}
+.adv label input[type=checkbox]{accent-color:var(--acc)}
+#fx{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line2);border-radius:var(--r);overflow:hidden}
+#fx .chip{border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:0;padding:8px 6px;text-align:center;color:var(--dim);background:none}
+#fx .chip.on{color:var(--ink)}#fx .chip.on::before{content:"● ";color:var(--acc);font-size:8px;vertical-align:1px}
+/* go */
+.go{height:40px;border:0;border-radius:var(--r);background:var(--ink);color:var(--bg);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;padding:0 22px}
+.go:disabled{background:var(--panel2);color:var(--dim);cursor:default}.go.stop{background:transparent;border:1px solid var(--bad);color:var(--bad)}
+.est{color:var(--mute);font-size:11px;letter-spacing:.02em;text-transform:none;text-align:left;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.est:empty::before{content:"Set the steps above";color:var(--dim)}
+
+/* ---- stage ---- */
+.stage{display:flex;align-items:center;gap:14px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.stage .name{color:var(--ink)}.stage .s.ok{color:var(--ok)}.stage .s.bad{color:var(--bad)}.stage .s.run{color:var(--acc)}
+.bar{height:3px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .6s}
+.nums{display:flex;gap:22px;color:var(--mute);font-size:10px;letter-spacing:.12em;text-transform:uppercase}.nums b{font-weight:400;color:var(--ink);font-variant-numeric:tabular-nums}
+body:not(.running):not(.hasjob) .bar,body:not(.running):not(.hasjob) .nums{display:none}
+.view{background:#000;border:1px solid var(--line);border-radius:var(--r);aspect-ratio:16/10;display:grid;place-items:center;overflow:hidden;position:relative;max-height:62vh}
+.view img,.view video{width:100%;height:100%;object-fit:contain;display:block;position:relative}
+.view .empty{position:relative;text-align:center;color:var(--mute);font:11.5px/1.45 var(--sans);letter-spacing:0;text-transform:none}
+.view .empty::before{content:"No signal";display:block;font:500 12px var(--mono);letter-spacing:.03em;color:var(--ink);margin-bottom:2px}
+.view .glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 55%,rgba(95,141,255,.14),transparent 70%),radial-gradient(ellipse 40% 30% at 60% 40%,rgba(127,209,138,.08),transparent 70%);filter:blur(18px);pointer-events:none}
+.view.jog{cursor:ew-resize}
+.view .tag{position:absolute;left:10px;bottom:8px;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--mute);background:rgba(0,0,0,.6);padding:3px 6px;border-radius:3px}
+.tp{display:flex;align-items:center;gap:8px}
+.tpb{flex:none;height:26px;min-width:30px;border:1px solid var(--line2);background:transparent;border-radius:var(--r);color:var(--ink);font-size:10px;padding:0 8px}
+.tpb:hover{border-color:var(--mute)}.tpb.sm{min-width:26px;font-size:13px;line-height:1}.tpb.txt{text-transform:uppercase;letter-spacing:.1em;color:var(--mute)}.tpb.txt.on{color:var(--acc);border-color:var(--acc)}
+.tpbar{flex:1;height:26px;position:relative;cursor:pointer;touch-action:none}
+.tpbar::before{content:"";position:absolute;left:0;right:0;top:12px;height:2px;background:var(--line)}
+.tpbar i{position:absolute;left:0;top:12px;height:2px;background:var(--acc);width:0}
+.tpbar b{position:absolute;top:7px;width:2px;height:12px;background:var(--ink);margin-left:-1px;left:0}
+.tpt{flex:none;color:var(--mute);font-size:10px;font-variant-numeric:tabular-nums;min-width:92px;text-align:right}
+.acts{display:flex;gap:8px;flex-wrap:wrap}.acts:empty{display:none}
+.btn{border:1px solid var(--line2);background:transparent;border-radius:var(--r);padding:5px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--mute)}
+.btn:hover{border-color:var(--mute);color:var(--ink)}.btn.danger{border-color:var(--bad);color:var(--bad)}
+.log{font-size:10px;color:var(--dim);white-space:pre-wrap;max-height:120px;overflow:auto;border-top:1px solid var(--line);padding-top:8px}
+.errline{white-space:pre-wrap;font:11px/1.5 var(--mono);color:#ff6b6b;background:#1a0e0e;border:1px solid #4a2020;border-radius:var(--r);padding:8px 10px}
+/* library */
+.libhead{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);padding-top:12px;margin-top:4px}
+.libhead .lbl{color:var(--ink);flex:none}.libhead .lbl b{color:var(--dim)}
+.libfilt{display:flex;gap:4px}.libfilt button{border:0;background:none;padding:5px 8px;border-radius:999px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.libfilt button.on{background:var(--panel2);color:var(--ink)}
+.libhead .sp{flex:1}
+#libActs{display:flex;gap:6px}
+.lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.card{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel);cursor:pointer;position:relative}
+.card:hover{border-color:var(--mute)}.card.on{border-color:var(--acc)}
+.card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#000}
+.card .c{padding:7px 9px;font-size:10px;color:var(--dim);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:baseline;font-variant-numeric:tabular-nums}
+.card .c b{font-weight:400;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35;word-break:break-all;font-size:11px;letter-spacing:.02em}
+.card .arm{position:absolute;top:6px;left:6px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;background:rgba(0,0,0,.65);color:var(--mute);padding:3px 6px;border-radius:3px}
+.card .rv{position:absolute;right:32px;top:6px;width:22px;height:22px;border:0;border-radius:3px;background:rgba(0,0,0,.7);color:var(--ink);font-size:11px;line-height:22px;text-align:center;opacity:0}.card:hover .rv{opacity:1}
+.card .rm{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:3px;border:0;background:rgba(0,0,0,.7);color:var(--mute);font-size:13px;line-height:22px;text-align:center;opacity:0;transition:opacity .12s}
+.card:hover .rm{opacity:1}.card .rm:hover{color:var(--bad)}
+.card .ck{position:absolute;top:6px;left:6px;width:18px;height:18px;border-radius:3px;border:1px solid var(--mute);background:rgba(0,0,0,.6);display:none;place-items:center;font-size:11px;color:var(--bg)}
+.lib.sel .card .ck{display:grid}.lib.sel .card .rm,.lib.sel .card .arm{display:none}.lib.sel .card.picked{border-color:var(--acc)}.lib.sel .card.picked .ck{background:var(--acc);border-color:var(--acc)}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:99;background:var(--panel2);color:var(--ink);border:1px solid var(--line2);border-radius:var(--r);padding:10px 16px;font:12px/1.4 var(--mono);box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.mix{display:flex;align-items:center;gap:10px}.mix input{flex:1}.mix b{font-weight:400;min-width:34px;text-align:right}
+.coh{display:none}
+@media (max-width:860px){.app{height:auto}.wrap{grid-template-columns:1fr}.left{border-right:0;border-bottom:1px solid var(--line)}.top{grid-template-columns:auto minmax(0,1fr);padding-inline:12px;gap:10px}.top .st{display:none}.mode{overflow:auto;max-width:100%;justify-self:end}.mode button,.mode a{padding:6px 9px}.steps{padding-left:40px}}
+
+/* ---- CRT page specifics ---- */
+.mode a{text-decoration:none;border-radius:999px;padding:6px 14px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);white-space:nowrap}
+.mode a:hover{color:var(--ink)}.mode a.on{background:var(--ink);color:var(--bg)}
+.left button:not(.go):not(.hd){border:1px solid var(--line2);border-radius:var(--r);background:transparent;padding:7px 8px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}.row{flex-wrap:wrap}.row>*{flex:1 1 auto;min-width:0}
+.left button:not(.go):not(.hd):hover{color:var(--ink);border-color:var(--mute)}
+.left button.on:not(.go){background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.left button.rec:not(.go){border-color:var(--bad);color:var(--bad)}
+.left button:disabled{opacity:.4}
+.seg button{border:0!important;border-right:1px solid var(--line)!important;border-radius:0!important}.seg button.on{background:var(--panel2)!important;color:var(--ink)!important}
+#presets,#mypresets{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
+#presets button,#mypresets button{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;align-items:center;width:100%;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;padding:7px 0;text-align:left;text-transform:none;letter-spacing:.02em;font-size:11px;background:none!important;color:var(--mute)}
+#presets button::before,#mypresets button[data-preset]::before{content:"";width:12px;height:12px;border-radius:50%;border:1px solid var(--line2);display:inline-block}
+#presets button.on,#mypresets button.on{color:var(--ink)!important}
+#presets button.on::before,#mypresets button.on::before{background:var(--acc);border-color:var(--acc)}
+#presets button:last-child,#mypresets button:last-child{border-bottom:0!important}
+#mypresets button:not([data-preset]){display:inline-grid;grid-template-columns:1fr;width:auto;color:var(--dim);margin-left:-20px;position:relative;padding:7px 4px}
+#mypresets button:not([data-preset])::before{content:none}
+#mypresets{flex-direction:row;flex-wrap:wrap}#mypresets button[data-preset]{flex:1 1 100%;padding-right:28px}
+select{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:var(--r);color:var(--ink);padding:7px 9px;font:inherit}
+.s{display:grid;grid-template-columns:96px minmax(0,1fr) 48px;gap:8px 12px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);margin:0}
+.s>span{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.s output{font:11px var(--mono);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+.s input[type=range]{width:100%;accent-color:var(--acc);margin:0}
+.s.sel{grid-template-columns:96px minmax(0,1fr)}.s.sel output{display:none}
+#groups{display:flex;flex-direction:column}
+#groups h2{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:14px 0 0;padding:0 0 6px;border-bottom:1px solid var(--line2);font-weight:400}
+.togs{display:flex;flex-direction:column;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
+.tog{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font:11.5px/1.4 var(--sans);letter-spacing:0;color:var(--mute);cursor:pointer}
+.tog:last-child{border-bottom:0}.tog input{accent-color:var(--acc);margin:0;width:12px;height:12px}
+.tog:has(input:checked){color:var(--ink)}
+.go.rec{background:#c94141;color:#fff}
+.right{padding:0;display:grid;grid-template-rows:minmax(0,1fr) auto auto;overflow:hidden}
+.right>*{flex:none}
+main{display:grid;place-items:center;padding:16px;position:relative;min-height:0;overflow:hidden}
+canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-height:100%;aspect-ratio:var(--ar);background:#000;border:1px solid var(--line)}
+.status{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;border-top:1px solid var(--line);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.status .reveal{padding:4px 9px}
+.hint{margin:0}kbd{font:10px var(--mono);background:var(--panel2);border:1px solid var(--line2);border-radius:3px;padding:0 4px}
+</style></head>
+<body>
+<div class="app">
+<div class="top"><h1>LIMINAL ENGINE</h1>
+  <nav class="mode"><a href="/#latent">Latent dream</a><a href="/#collage">Collage</a><a href="/#bank">Cut bank</a><a href="/crt" class="on">CRT</a></nav>
+  <span class="st" id="topst">Ready</span></div>
+<div class="wrap">
+<div class="left">
+<div class="steps"><div class="arm" style="display:contents">
+  <section class="step open" data-step="source">
+    <button class="hd" type="button"><span class="n"><span>1</span></span><span><span class="t">Source</span><span class="sum" id="sumSource">Pick a picture</span></span><span class="chev">▾</span></button>
+    <div class="bd">
+      <div class="f"><label class="lbl" for="logoSel">Logo</label><select id="logoSel" aria-label="Logo"></select></div>
+      <div class="drop" id="drop" tabindex="0"><div class="ph">▭</div><div class="t"><div class="n">Drop an image or video, or click</div></div></div>
+      <input type="file" id="file" accept="image/*,video/*" hidden>
+      <div class="f"><span class="lbl">Position</span><div class="seg"><button id="center">Auto-centre</button><button id="centerReset">Reset</button></div></div>
+      <div><button class="more" id="posBtn" type="button" aria-expanded="false">Fine position ▾</button><div id="posWrap" class="stbody" hidden></div></div>
+      <div class="f"><span class="lbl">Old tape</span><div class="seg"><button id="underPick" title="An earlier recording on the same tape: it ghosts through, and shows fully where the new recording ends">Taped over…</button><button id="underClear" disabled>Clear</button></div></div>
+      <input type="file" id="underFile" accept="image/*,video/*" hidden><p class="hint" id="underName" hidden></p>
+      <div id="vidPanel" hidden>
+        <div class="lbl">Video <b id="vidName"></b></div>
+        <div class="f"><span class="lbl">Play</span><div class="seg"><button id="vPlay">Play</button><button id="vRestart">Restart</button><button id="vLoop" class="on">Loop: on</button><button id="vSound" class="on">Sound: on</button></div></div>
+        <div class="f"><span class="lbl">Deck</span><div class="seg" id="deckSeg" role="group" aria-label="Deck"><button data-d="0" title="Play">▶</button><button data-d="1" title="Pause">❚❚</button><button data-d="2" title="Search ×3">▸▸3</button><button data-d="3" title="Search ×9">▸▸9</button><button data-d="4" title="Rewind ×9">◂◂9</button></div></div>
+        <div class="scrub"><span id="vTime">0:00 / 0:00</span><input type="range" id="vScrub" min="0" max="1" step="0.001" value="0" aria-label="Position in video"></div>
+        <div class="pair"><button class="rec" id="recVideo" title="Steps through the video frame by frame; its sound goes through the set with the picture">Export whole video</button><button id="recVideoLive" title="Plays the video through once and records what you see and hear">Record in real time</button></div>
+      </div>
+    </div>
+  </section>
+  <section class="step done" data-step="look">
+    <button class="hd" type="button"><span class="n"><span>2</span></span><span><span class="t">Look</span><span class="sum" id="sumLook">—</span></span><span class="chev">▾</span></button>
+    <div class="bd">
+      <div><div class="chips" id="presets"></div></div>
+      <div><button class="more" id="mineBtn" type="button" aria-expanded="false">Mine ▾</button>
+        <div id="mineWrap" hidden><div class="lbl" id="myHead" hidden>Your presets</div><div class="chips" id="mypresets" style="margin-top:8px"></div></div></div>
+      <div class="pair"><button id="savePreset">Save as preset…</button><button id="reset">Reset all</button></div>
+      <div class="lbl">The chain</div>
+      <div id="chain"></div>
+      <div id="setExtras">
+      <div class="f"><span class="lbl">Tube</span><div class="seg" id="modelSeg"><button id="mPhys" class="on" title="Linear light, one picture row per scanline, beam width follows brightness">Physical</button><button id="mClassic" title="The look before 11-01">Classic</button></div></div>
+      <div class="f"><span class="lbl">Screen</span><div class="seg" id="arSeg"><button id="ar43" class="on">4:3 TV</button><button id="ar169w">16:9</button><button id="ar169" title="A 4:3 tube centred in a 16:9 frame">Boxed</button></div></div>
+      </div>
+      <div id="groups" hidden></div>
+    </div>
+  </section>
+  <section class="step done" data-step="sequence">
+    <button class="hd" type="button"><span class="n"><span>3</span></span><span><span class="t">Sequence</span><span class="sum" id="sumSeq">—</span></span><span class="chev">▾</span></button>
+    <div class="bd">
+      <div class="togs">
+        <label class="tog"><input type="checkbox" id="optOn" checked><span>Start with switch-on</span></label>
+        <label class="tog"><input type="checkbox" id="optTune"><span>Tune-in after switch-on (snow and roll)</span></label>
+        <label class="tog"><input type="checkbox" id="optOff" checked><span>End with switch-off</span></label>
+        <label class="tog"><input type="checkbox" id="optTone"><span>1 kHz test tone while it holds</span></label>
+      </div>
+      <label class="s"><span>Hold</span><input type="range" id="holdSecs" min="1" max="30" step=".5" value="5"><output id="holdOut">5.0s</output></label>
+      <div id="powerWrap"></div>
+      <div class="f"><span class="lbl">Preview</span><div class="seg"><button id="previewSeq" title="Space also previews">Play</button><button id="loopIdent">Loop: off</button></div></div>
+      <div class="row"><button id="recFree">Start free recording</button></div>
+      <p class="hint" id="identRow"><span id="identT"></span></p>
+    </div>
+  </section>
+  <section class="step done" data-step="output">
+    <button class="hd" type="button"><span class="n"><span>4</span></span><span><span class="t">Output</span><span class="sum" id="sumOut">MP4</span></span><span class="chev">▾</span></button>
+    <div class="bd">
+      <label class="s sel"><span>Video as</span><select id="vfmt">
+        <option value="mp4">MP4 · H.264</option>
+        <option value="prores">MOV · ProRes 422 HQ</option>
+        <option value="webm">WebM (raw)</option>
+        <option value="gif">GIF</option>
+        <option value="png">PNG sequence</option>
+      </select><output></output></label>
+      <label class="s sel"><span>Still size</span><select id="ssize"><option value="1">1× · 1440 × 1080</option><option value="2" selected>2× · 2880 × 2160 (print)</option><option value="3">3× · 4320 × 3240</option></select><output></output></label>
+      <label class="s sel"><span>Exposure</span><select id="sexp"><option value="1">One frame</option><option value="4" selected>4 frames (calmer noise)</option><option value="16">16 frames (long exposure)</option></select><output></output></label>
+      <label class="s sel"><span>Still as</span><select id="sfmt"><option value="png">PNG</option><option value="jpg">JPG</option><option value="tiff">TIFF</option></select><output></output></label>
+      <div class="pair"><button id="still">Save still</button><button id="batch" title="Pick several images; each goes through the tube at the size and exposure above, into one folder">Batch stills…</button></div>
+      <input type="file" id="batchFiles" accept="image/*" multiple hidden>
+      <div class="pair"><button class="reveal" disabled>Show in Finder</button><button class="renders" title="~/Movies/Liminal Engine">Renders folder</button></div>
+      <p class="hint saved" id="saveHint">Files save to Movies › Liminal Engine › crt.</p>
+    </div>
+  </section>
+</div></div>
+<div class="gofoot"><div class="est" id="crtEst">Switch-on · hold 5 s · switch-off</div><button class="go rec" id="recSeq">Record</button></div>
+</div>
+<div class="right">
+  <main><canvas id="cv" width="1440" height="1080"></canvas></main>
+  <div class="tl" id="tl" hidden><div class="tlh"><span>Damage on this tape</span><span id="tlRange"></span></div>
+    <canvas id="tlc" height="28" aria-label="Where tape damage falls over the video; click to jump there"></canvas>
+    <div class="tlk"><span data-k="crease"><i style="background:var(--warn)"></i>crease</span><span data-k="burst"><i style="background:#b98cff"></i>burst</span><span data-k="clog"><i style="background:var(--bad)"></i>head clog</span><span data-k="ckill"><i style="background:#8e8a86"></i>colour loss</span><span data-k="edit"><i style="background:#ffffff"></i>edit</span><span data-k="past"><i style="background:#3d4a66"></i>old recording</span></div></div>
+  <div class="status"><span id="status">Loading…</span><button class="reveal" hidden>Show in Finder</button></div>
+</div>
+</div>
+</div>
+<script>
+"use strict";
+// ---------------- settings ----------------
+// Controls follow the signal chain, the order things happened to a picture in 1985: the camera that shot it,
+// the tape it was recorded on, the air it crossed, the set that decoded it, the tube that lit it.
+// Camera and Tape exist in the Physical tube only. Keys and defaults of older controls are unchanged, so presets hold.
+const GROUPS = [
+ ['Camera', [
+  ['knee','Highlight knee',0,0,1,.01], ['camLag','Tube lag (smear)',0,0,1,.01], ['comet','Comet tails',0,0,1,.01],
+  ['burn','Burn-in',0,0,1,.01], ['reg','Tube registration',0,0,1,.01], ['shade','Corner shading',0,0,1,.01]], 'phys'],
+ ['Tape', [
+  ['tapeFmt','Format',0,0,6,1], ['tapeGen','Generation',1,1,5,1], ['tapeWave','Edge wave',1,0,8,.1],
+  ['tracking','Tracking error',0,0,100,1], ['dropout','Dropouts',2,0,40,1],
+  // DAMAGE (11-06, tape damage atlas): events tied to the tape's own clock, so a bad stretch stays bad for its length
+  ['cond','Tape condition (creases, bursts)',0,0,1,.01], ['mould','Mould / sticky tape',0,0,1,.01], ['clog','Head clog',0,0,1,.01],
+  ['skew','Skew (top hooks sideways)',0,0,1,.01], ['mistrack','Mistracking bands',0,0,1,.01], ['ckill','Colour loss',0,0,1,.01],
+  ['copyprot','Copy protection',0,0,1,.01], ['deck','Deck',0,0,4,1],
+  // TAPED OVER (11-06): an old recording under this one (Source › Old recording)
+  ['underAmt','Old recording shows through',.25,0,1,.01], ['underEnd','New recording ends at',1,0,1,.01]], 'phys'],
+ ['Broadcast', [
+  ['signal','Signal',1,0,1.5,.01], ['snow','Snow',0,0,1,.01], ['grain','Grain (noise)',.04,0,.3,.005], ['ghost','Ghost',.06,0,.5,.01],
+  ['jitter','Sync wobble',.3,0,4,.05], ['hum','Hum bar',.04,0,.4,.01], ['roll','Roll speed',0,0,1,.01], ['interf','Interference',0,0,1,.01]]],
+ ['Set', [
+  ['bleed','Colour bleed',3,0,8,.1], ['sharp','Sharpness (edge ring)',0,0,1,.01],
+  ['bright','Brightness',0,-.3,.3,.01], ['contrast','Contrast',1,.5,1.6,.01], ['sat','Saturation',1,0,2,.01],
+  ['tint','Tint (green/magenta)',0,-.3,.3,.01], ['black','Black level',.03,0,.15,.005]]],
+ ['Tube', [
+  ['lines','Line count',480,240,720,10], ['scan','Scanlines',.42,0,1,.01], ['beam','Beam bloom',.6,0,1,.01],
+  ['maskKind','Mask',0,0,2,1], ['pitch','Mask pitch (triads across)',480,160,900,10], ['mask','Phosphor mask',.22,0,.8,.01],
+  ['converge','Convergence error',0,0,1,.01], ['persist','Phosphor persistence',0,0,1,.01], ['mono','Monochrome tube (P4)',0,0,1,.01],
+  ['curve','Tube curve',.1,0,.3,.005], ['vignette','Vignette',.55,0,1.2,.01], ['corner','Corner round',1,0,1,.01], ['sheen','Glass sheen',.025,0,.15,.005]]],
+ ['Glow', [
+  ['glow','Glow',.6,0,2,.01], ['glowSize','Glow size',1,.2,3,.01], ['glowThresh','Glow threshold',.25,0,.9,.01],
+  ['halation','Halation',.25,0,1.5,.01], ['haloWarm','Halation warmth',.6,0,1,.01]]],
+ ['Position', [['picX','Move left / right',0,-.5,.5,.002], ['picY','Move up / down',0,-.5,.5,.002], ['picS','Size',1,.3,3,.01]]],
+ ['Power', [['power','Power (on → off)',1,0,1,.005]]],
+ // SOUND (11-05): the picture chain's twin (crt_sound.js). "Follows picture" scales everything the picture sliders do to the sound.
+ ['Sound', [['sndAmt','Sound follows picture',.6,0,1,.01], ['speaker','TV speaker',.35,0,1,.01], ['whine','Flyback whine',.15,0,1,.01],
+  ['buzz','Sync buzz',.1,0,1,.01], ['crush','Lo-fi (rate / bits)',0,0,1,.01], ['vol','Volume',1,0,2,.01]]],
+];
+// stepped controls that name their positions
+// one line in the label column; the full wording stays as the hover title
+const SHORT = { knee:'Knee', camLag:'Lag', reg:'Registration', shade:'Shading', tracking:'Tracking', grain:'Grain', roll:'Roll',
+  sharp:'Sharpness', tint:'Tint', pitch:'Mask pitch', mask:'Mask amount', converge:'Convergence', persist:'Persistence', mono:'Monochrome',
+  curve:'Curve', corner:'Corners', sheen:'Sheen', glowThresh:'Threshold', haloWarm:'Halo warmth', picX:'Left / right', picY:'Up / down', power:'Power', lines:'Lines',
+  sndAmt:'Follows', cond:'Condition', mould:'Mould', clog:'Head clog', skew:'Skew', mistrack:'Mistrack', ckill:'Colour loss', copyprot:'Copy prot.', deck:'Deck', underAmt:'Old shows', underEnd:'Ends at', speaker:'Speaker', whine:'Whine', buzz:'Buzz', crush:'Lo-fi', vol:'Volume' };
+const ENUMS = { maskKind:['grille','slot','dot'], tapeFmt:['off','Betacam SP','U-matic','VHS SP','VHS EP','DV','VCD'], tapeGen:['1st gen','2nd gen','3rd gen','4th gen','5th gen'], deck:['play','pause','search ×3','search ×9','rewind ×9'] };
+const DAMAGE = ['cond','mould','clog','skew','mistrack','ckill','copyprot','deck'];
+const DEF = {}; GROUPS.forEach(g=>g[1].forEach(s=>DEF[s[0]]=s[2]));
+const S = {...DEF};
+const PRESETS = {
+  'am:fm v1 (Eric)': {grain:0,snow:0,signal:1.14,ghost:.02,bleed:4.5,jitter:0,hum:.26,roll:0,interf:0,glow:1.64,glowSize:.24,glowThresh:.25,halation:.24,haloWarm:.64,curve:0,scan:.45,mask:.05,vignette:.3,corner:0,sheen:0,lines:630,bright:-.04,contrast:1.02,sat:1,tint:-.08,black:.07,picX:-.068,picY:-.0025,picS:1,power:1},
+  'Clean broadcast': {},
+  'No noise': {grain:0, snow:0, interf:0, jitter:0, hum:0, ghost:0},
+  'Flat monitor': {curve:0, corner:0, vignette:.2, sheen:0, scan:.3, mask:.15},
+  'Weak signal': {speaker:.5, snow:.18, ghost:.22, bleed:5, jitter:1.6, hum:.12, signal:.85, interf:.3},
+  'VHS dub': {bleed:6, ghost:.12, jitter:.9, sat:.75, contrast:.9, black:.06, scan:.3, glow:.8, halation:.5, interf:.1},
+  'Hot phosphor': {glow:1.5, glowSize:1.8, glowThresh:.1, halation:.9, contrast:1.15},
+  'Off-air': {buzz:.25, snow:1, signal:0, roll:0, hum:.2},
+  // real gear (physical tube): values from how each was built, not from screenshots
+  'Sony PVM studio monitor': {speaker:.15, whine:.1, buzz:.03, maskKind:0, pitch:620, mask:.35, scan:.55, beam:.5, curve:.04, vignette:.25, corner:.35, bleed:1, sharp:.12, glow:.45, halation:.12, sheen:.01, converge:.04, persist:.08, ghost:0, grain:.015, jitter:0, hum:0},
+  'Consumer TV, 1985': {speaker:.6, whine:.25, buzz:.15, maskKind:2, pitch:360, mask:.5, scan:.35, beam:.75, curve:.14, vignette:.6, corner:1, bleed:4, sharp:.45, converge:.35, persist:.22, ghost:.06, grain:.03, glow:.7, halation:.35, sheen:.03, jitter:.15},
+  'Betacam SP broadcast': {tapeFmt:1, tapeGen:1, tapeWave:.15, tracking:0, dropout:1, maskKind:0, pitch:560, mask:.3, scan:.45, beam:.55, curve:.05, vignette:.3, corner:.4, bleed:1.5, sharp:.15, ghost:0, grain:.02, jitter:0, hum:0},
+  'U-matic news tape': {tapeFmt:2, tapeGen:2, tapeWave:1.2, tracking:6, dropout:5, maskKind:1, pitch:420, mask:.4, scan:.4, bleed:2.5, sharp:.3, curve:.1, grain:.03, jitter:.1},
+  'VHS, third generation': {speaker:.5, whine:.2, tapeFmt:3, tapeGen:3, tapeWave:2, tracking:15, dropout:6, maskKind:2, pitch:360, mask:.45, scan:.35, beam:.7, bleed:3, sharp:.4, curve:.12, sat:.9, converge:.25, persist:.2, ghost:.04, jitter:.1},
+  'Live tube camera (Saticon)': {knee:.6, camLag:.22, comet:.6, burn:.2, reg:.35, shade:.35, maskKind:0, pitch:560, mask:.3, scan:.45, curve:.05, vignette:.35, corner:.4, bleed:1.5, sharp:.2, ghost:0, jitter:0, hum:0},
+  'B&W security monitor': {speaker:.85, whine:.3, buzz:.3, mono:1, sat:0, tint:0, scan:.5, beam:.5, lines:525, curve:.12, vignette:.7, corner:1, persist:.45, grain:.06, hum:.06, interf:.04, jitter:.25, ghost:.05, glow:.5, halation:.3, haloWarm:0},
+};
+
+// whole looks built from the gear (11-06): the stage menus hold the gear, these six sit at the top
+PRESETS['Rental VHS'] = {...PRESETS['Consumer TV, 1985'], ...PRESETS['VHS, third generation'], cond:.25, clog:.15, speaker:.55, whine:.25, buzz:.15};
+PRESETS['News archive'] = {...PRESETS['Sony PVM studio monitor'], ...PRESETS['U-matic news tape'], speaker:.3};
+PRESETS['Security monitor'] = {...PRESETS['B&W security monitor']};
+// ---------------- UI ----------------
+const $ = id=>document.getElementById(id);
+const sliders = {};
+// every slider is made once here; THE CHAIN (below) decides where it sits
+const SPEC={}; GROUPS.forEach(([name,list])=>list.forEach(x=>SPEC[x[0]]=x));
+const sliderEl={};
+Object.values(SPEC).forEach(([k,label,def,lo,hi,step])=>{
+  if(k==='deck') return;                               // the deck is a transport button now
+  const lab = document.createElement('label'); lab.className='s';
+  const span = document.createElement('span'); span.textContent = SHORT[k]||label; if(SHORT[k]) span.title = label;
+  const r = document.createElement('input'); r.type='range'; r.min=lo; r.max=hi; r.step=step; r.value=def; r.id='s_'+k;
+  const o = document.createElement('output'); o.textContent = lab_(k,def);
+  r.oninput = ()=>{ S[k]=+r.value; o.textContent=lab_(k,S[k]); remember(); markActive(null);
+    if(DAMAGE.includes(k) && S[k]>0 && Math.round(S.tapeFmt)===0){ setVal('tapeFmt',3); status('Tape damage needs a tape: switched the format to VHS SP.'); }
+    chainDirty(); };
+  r.ondblclick = ()=>{ setVal(k, DEF[k]); };
+  lab.append(span, r, o); sliders[k]={r,o}; sliderEl[k]=lab;
+});
+function fmt(v){ return Math.abs(v)>=10 ? Math.round(v) : (+v).toFixed(2); }
+function lab_(k,v){ if(k==='underEnd') return v>=1?'never':Math.round(v*100)+'%'; if(ENUMS[k]){ const a=ENUMS[k], i=Math.round(v)-(k==='tapeGen'?1:0); return a[Math.max(0,Math.min(a.length-1,i))]; } return fmt(v); }
+function setVal(k,v){ S[k]=v; if(sliders[k]){ sliders[k].r.value=v; sliders[k].o.textContent=lab_(k,v);} chainDirty(); }
+// ---------------- THE CHAIN (11-06) ----------------
+// The rail follows the picture: Camera → Tape → Broadcast → TV set → Sound. A stage's switch remembers its values and zeroes
+// them (no new saved state, so every old preset loads unchanged). WEAR and DAMAGE are shortcuts that set the real sliders.
+const STAGES=[
+ {id:'cam', name:'Camera', phys:1, keys:['knee','camLag','comet','burn','reg','shade'], main:['camLag','knee'], gear:['Live tube camera (Saticon)'],
+  isOn:()=>['knee','camLag','comet','burn','reg','shade'].some(k=>S[k]>0), sum:()=>'lag '+fmt(S.camLag)+' · knee '+fmt(S.knee)},
+ {id:'tape', name:'Tape', phys:1, keys:['tapeFmt','tapeGen','tapeWave','tracking','dropout','cond','mould','clog','skew','mistrack','ckill','copyprot','underAmt','underEnd'], main:[], gear:['Betacam SP broadcast','U-matic news tape','VHS, third generation'],
+  isOn:()=>Math.round(S.tapeFmt)>0, sum:()=>lab_('tapeFmt',S.tapeFmt)+(dmgLevel()>0?' · damaged':' · '+lab_('tapeGen',S.tapeGen))},
+ {id:'bc', name:'Broadcast', keys:['signal','snow','grain','ghost','jitter','hum','roll','interf'], main:['signal','snow','ghost'], gear:['No noise','Weak signal','Off-air'],
+  isOn:()=>S.signal!==1||['snow','grain','ghost','jitter','hum','roll','interf'].some(k=>S[k]>0), sum:()=>'signal '+fmt(S.signal)+(S.snow>0?' · snow '+fmt(S.snow):'')},
+ {id:'set', name:'TV set', always:1, keys:['bleed','sharp','bright','contrast','sat','tint','black','lines','scan','beam','maskKind','pitch','mask','converge','persist','mono','curve','vignette','corner','sheen','glow','glowSize','glowThresh','halation','haloWarm'],
+  main:['glow','curve','sat'], gear:['Sony PVM studio monitor','Consumer TV, 1985','B&W security monitor','Flat monitor','Hot phosphor'], sum:()=>model==='physical'?'physical tube':'classic tube'},
+ {id:'snd', name:'Sound', keys:['sndAmt','speaker','whine','buzz','crush','vol'], main:['sndAmt','speaker'],
+  isOn:()=>['sndAmt','speaker','whine','buzz','crush'].some(k=>S[k]>0), sum:()=>'follows '+fmt(S.sndAmt)},
+];
+const OFFVAL={cam:{}, tape:{tapeFmt:0}, bc:{signal:1,snow:0,grain:0,ghost:0,jitter:0,hum:0,roll:0,interf:0}, snd:{sndAmt:0,speaker:0,whine:0,buzz:0,crush:0}};
+['knee','camLag','comet','burn','reg','shade'].forEach(k=>OFFVAL.cam[k]=0);
+const stash={}; const stageEl={};
+function setStage(st,on){ const keys=Object.keys(OFFVAL[st.id]);
+  if(on){ const back=stash[st.id] || (st.id==='cam'?PRESETS['Live tube camera (Saticon)']: st.id==='tape'?{tapeFmt:3}:DEF);
+    keys.forEach(k=>setVal(k, k in back ? back[k] : DEF[k])); }
+  else { stash[st.id]={}; keys.forEach(k=>stash[st.id][k]=S[k]); Object.entries(OFFVAL[st.id]).forEach(([k,v])=>setVal(k,v)); }
+  remember(); markActive(null); applyDeck(); }
+function applyGear(st,name){ const p=PRESETS[name]; st.keys.forEach(k=>setVal(k, k in p ? p[k] : DEF[k])); remember(); markActive(null); status(st.name+': '+name+'.'); }
+// WEAR: how old the tape is — generation, dropouts, tracking, edge wave move together
+function wearLevel(){ const c=x=>Math.max(0,Math.min(1,x)); return c(((S.tapeGen-1)/4 + S.dropout/20 + S.tracking/30 + (S.tapeWave-.3)/3)/4); }
+function setWear(w){ if(Math.round(S.tapeFmt)===0) setVal('tapeFmt',3);
+  setVal('tapeGen',1+Math.round(w*4)); setVal('dropout',Math.round(1+19*w)); setVal('tracking',Math.round(30*w)); setVal('tapeWave',+(.3+3*w).toFixed(1)); remember(); markActive(null); }
+// DAMAGE: how often things go wrong; the ticks pick which kinds (each kind keeps its own slider under MORE)
+const DMG=[['cond','Creases & bursts',1],['clog','Head clog',.8],['mould','Mould',1],['ckill','Colour loss',1],['mistrack','Mistracking',.7],['skew','Skew',.6],['copyprot','Copy protection',1]];
+let ticks=new Set(['cond','clog']); try{ const t=JSON.parse(localStorage.getItem('amfm-crt-ticks')||'null'); if(t) ticks=new Set(t); }catch(e){}
+function dmgLevel(){ return Math.min(1, Math.max(0,...DMG.map(([k,,w])=>S[k]/w))); }
+function setDamage(d){ if(d>0 && Math.round(S.tapeFmt)===0) setVal('tapeFmt',3); DMG.forEach(([k,,w])=>setVal(k, ticks.has(k)? +(d*w).toFixed(2) : 0)); remember(); markActive(null); }
+function macroRow(label,id,get,set){ const lab=document.createElement('label'); lab.className='s';
+  const sp=document.createElement('span'); sp.textContent=label;
+  const r=document.createElement('input'); r.type='range'; r.min=0; r.max=1; r.step=.01; r.id=id; const o=document.createElement('output');
+  r.oninput=()=>{ set(+r.value); o.textContent=fmt(+r.value); }; lab.append(sp,r,o); lab._sync=()=>{ const v=get(); r.value=v; o.textContent=fmt(v); }; return lab; }
+function el2(t,c,x){ const e=document.createElement(t); if(c) e.className=c; if(x!=null) e.textContent=x; return e; }
+function buildChain(){
+  STAGES.forEach(st=>{
+    const box=el2('div','stg'); box.dataset.st=st.id; stageEl[st.id]=box;
+    const hd=el2('div','sth'); hd.setAttribute('role','button'); hd.tabIndex=0; hd.setAttribute('aria-expanded','false');
+    const sw=el2('button','sw'+(st.always?' none':'')); sw.type='button'; sw.setAttribute('aria-label',st.name+' on or off');
+    sw.onclick=e=>{ e.stopPropagation(); if(st.always) return; if(st.phys && model!=='physical'){ status(st.name+' needs the Physical tube.'); return; } setStage(st, !st.isOn()); };
+    const sum=el2('span','ssum'); const ch=el2('span','schev','▾');
+    hd.append(sw, el2('span','sn',st.name), sum, ch);
+    const toggle=()=>{ const o=!box.classList.contains('open'); box.classList.toggle('open',o); hd.setAttribute('aria-expanded',o?'true':'false'); ch.textContent=o?'▴':'▾'; };
+    hd.onclick=toggle; hd.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); } };
+    const body=el2('div','stbody'); const po=el2('div','physonly','Physical tube only: switch the TV set to Physical.'); po.hidden=true;
+    if(st.gear){ const g=el2('div','gearf'); const l=el2('span','lbl','Gear'); const sel=el2('select'); sel.setAttribute('aria-label',st.name+' gear');
+      sel.append(new Option('Pick…','')); st.gear.forEach(n=>sel.append(new Option(n.replace(/ \(.*\)$/,''),n)));
+      sel.onchange=()=>{ if(sel.value){ applyGear(st,sel.value); sel.value=''; } }; g.append(l,sel); body.append(g); }
+    if(st.id==='tape'){
+      const f=el2('div','gearf'); const sel=el2('select'); sel.id='tapeFmtSel'; sel.setAttribute('aria-label','Tape format');
+      ENUMS.tapeFmt.forEach((n,i)=>sel.append(new Option(i?n:'Off',i))); sel.onchange=()=>{ setVal('tapeFmt',+sel.value); remember(); markActive(null); };
+      f.append(el2('span','lbl','Format'),sel); body.append(f);
+      const w=macroRow('Wear','wearR',wearLevel,setWear), d=macroRow('Damage','dmgR',dmgLevel,setDamage); body.append(w,d); box._macros=[w,d];
+      const tk=el2('div','ticks'); DMG.forEach(([k,name,wt])=>{ const lab=el2('label'); const c=el2('input'); c.type='checkbox'; c.id='tick_'+k;
+        c.onchange=()=>{ if(c.checked) ticks.add(k); else ticks.delete(k); try{ localStorage.setItem('amfm-crt-ticks',JSON.stringify([...ticks])); }catch(e){}
+          setVal(k, c.checked? +(Math.max(dmgLevel(),.3)*wt).toFixed(2) : 0); remember(); markActive(null); };
+        lab.append(c, document.createTextNode(name)); tk.append(lab); }); body.append(tk); box._ticks=tk;
+    }
+    st.main.forEach(k=>body.append(sliderEl[k]));
+    if(st.id==='set'){ body.append($('setExtras')); }
+    const rest=st.keys.filter(k=>!st.main.includes(k) && k!=='tapeFmt');
+    if(rest.length){ const mb=el2('button','more','More ('+rest.length+') ▾'); mb.type='button'; mb.setAttribute('aria-expanded','false'); const m=el2('div','mbody');
+      rest.forEach(k=>m.append(sliderEl[k])); mb.onclick=()=>{ const o=m.classList.toggle('on'); mb.setAttribute('aria-expanded',o?'true':'false'); mb.textContent='More ('+rest.length+') '+(o?'▴':'▾'); }; body.append(mb,m); }
+    box.append(hd,po,body); box._sum=sum; box._po=po; $('chain').append(box);
+  });
+  ['picX','picY','picS'].forEach(k=>$('posWrap').append(sliderEl[k])); $('powerWrap').append(sliderEl.power);
+  $('posBtn').onclick=()=>{ const w=$('posWrap'); w.hidden=!w.hidden; $('posBtn').setAttribute('aria-expanded',w.hidden?'false':'true'); $('posBtn').textContent='Fine position '+(w.hidden?'▾':'▴'); };
+  $('mineBtn').onclick=()=>{ const w=$('mineWrap'); w.hidden=!w.hidden; $('mineBtn').setAttribute('aria-expanded',w.hidden?'false':'true'); $('mineBtn').textContent='Mine '+(w.hidden?'▾':'▴'); };
+  document.querySelectorAll('#deckSeg button').forEach(b=>b.onclick=()=>{ const d=+b.dataset.d;
+    if(d>0 && Math.round(S.tapeFmt)===0){ setVal('tapeFmt',3); status('The deck needs a tape: switched the format to VHS SP.'); }
+    setVal('deck',d); remember(); applyDeck(); });
+}
+let chainQueued=false;
+function chainDirty(){ if(chainQueued) return; chainQueued=true; requestAnimationFrame(refreshChain); }
+function refreshChain(){ chainQueued=false; if(!stageEl.cam) return;
+  STAGES.forEach(st=>{ const box=stageEl[st.id], blocked=st.phys && model!=='physical'; const on=st.always || (!blocked && st.isOn());
+    box.classList.toggle('off',!on); box._sum.textContent = blocked ? 'physical tube only' : on ? st.sum() : 'off'; box._po.hidden=!blocked;
+    if(box._macros) box._macros.forEach(m=>m._sync());
+    if(box._ticks) DMG.forEach(([k])=>{ const c=$('tick_'+k); if(S[k]>0) ticks.add(k); c.checked = on && ticks.has(k); c.disabled=!on; }); });
+  const sel=$('tapeFmtSel'); if(sel) sel.value=String(Math.round(S.tapeFmt));
+  document.querySelectorAll('#deckSeg button').forEach(b=>b.classList.toggle('on', +b.dataset.d===(Math.round(S.deck)||0)));
+  tlDirty(); }
+// DAMAGE TIMELINE: the damage is repeatable, so it can be drawn ahead — what falls where over the video
+let tlTimer=null;
+function tlDirty(){ clearTimeout(tlTimer); tlTimer=setTimeout(drawTimeline,250); }
+function drawTimeline(){ const box=$('tl'); const show=isVideo && srcEl && srcEl.duration>0 && model==='physical' && Math.round(S.tapeFmt)>0; box.hidden=!show;
+  document.documentElement.style.setProperty('--tlh', show ? ((box.offsetHeight||64)+10)+'px' : '0px'); if(!show) return; const seen=new Set();
+  const c=$('tlc'), W=c.clientWidth||600, H=28; c.width=W*devicePixelRatio; c.height=H*devicePixelRatio; const x=c.getContext('2d'); x.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  x.clearRect(0,0,W,H); const dur=srcEl.duration, U=uAt(null), cs=getComputedStyle(document.documentElement);
+  const col={clog:cs.getPropertyValue('--bad'), burst:'#b98cff', crease:cs.getPropertyValue('--warn'), ckill:'#8e8a86', edit:'#ffffff', past:'#3d4a66'};
+  for(let px=0; px<W; px++){ const t=px/W*dur; const st=tapeState(t,U);
+    const k = st.edit>0?'edit' : st.past>0?'past' : Math.max(st.clogA,st.clogB)>.05?'clog' : st.burst>0?'burst' : st.crease[2]>0?'crease' : st.ckill>0?'ckill' : null;
+    if(k){ seen.add(k); x.fillStyle=col[k]; x.fillRect(px,5,1,H-10); } }
+  document.querySelectorAll('#tl .tlk span').forEach(sp=>sp.hidden=!seen.has(sp.dataset.k));
+  $('tlRange').textContent='0:00 — '+tfmt(dur); tlHead(); }
+function tlHead(){ const c=$('tlc'); if($('tl').hidden||!isVideo) return; c.style.backgroundImage='linear-gradient(90deg,transparent calc('+(srcEl.currentTime/srcEl.duration*100)+'% - 1px),var(--ink) calc('+(srcEl.currentTime/srcEl.duration*100)+'% - 1px),var(--ink) calc('+(srcEl.currentTime/srcEl.duration*100)+'% + 1px),transparent calc('+(srcEl.currentTime/srcEl.duration*100)+'% + 1px))'; }
+$('tlc').onclick=e=>{ if(!isVideo) return; const r=$('tlc').getBoundingClientRect(); srcEl.currentTime=(e.clientX-r.left)/r.width*srcEl.duration; vidUI(); };
+// the tape's clock is the video's own time, live and in export, so what you scrub is what exports
+const tapeClock=(now)=> (isVideo && srcEl && srcEl.duration>0) ? srcEl.currentTime : now;
+const deckIdx=()=> (model==='physical' && Math.round(S.tapeFmt)>0) ? (Math.round(S.deck)||0) : 0;   // no tape, no deck
+function videoTimeAt(t,dur){ const dk=DECK[deckIdx()], vt = dk.spd>0 ? t*dk.spd : dk.spd===0 ? 0 : dur - t*9; return Math.min(Math.max(0,vt), Math.max(0,dur-0.05)); }
+function remember(){ try{ localStorage.setItem('amfm-crt-look', JSON.stringify(S)); }catch(e){} }
+function restore(){ try{ const o=JSON.parse(localStorage.getItem('amfm-crt-look')||'null'); if(o) Object.keys(DEF).forEach(k=>{ if(k in o) setVal(k,+o[k]); }); }catch(e){} }
+function applyPreset(p){ Object.keys(DEF).forEach(k=>setVal(k, k in PRESETS[p] ? PRESETS[p][k] : DEF[k])); remember(); markActive(p); applyDeck(); }
+let activePreset=null;
+function markActive(name){ activePreset=name; document.querySelectorAll('[data-preset]').forEach(b=>b.classList.toggle('on', b.dataset.preset===name)); try{ localStorage.setItem('amfm-crt-active', name||''); }catch(e){} }
+const LOOKS=['am:fm v1 (Eric)','Clean broadcast','Rental VHS','News archive','Security monitor','Off-air'];
+LOOKS.forEach(p=>{ const b=document.createElement('button'); b.textContent=p; b.dataset.preset=p; b.onclick=()=>applyPreset(p); $('presets').append(b); });
+buildChain();
+function loadMine(){ try{ return JSON.parse(localStorage.getItem('amfm-crt-presets')||'{}'); }catch(e){ return {}; } }
+function saveMine(o){ try{ localStorage.setItem('amfm-crt-presets', JSON.stringify(o)); }catch(e){} }
+function drawMine(){ const box=$('mypresets'); box.textContent=''; const mine=loadMine(); $('myHead').hidden=!Object.keys(mine).length;
+  if(!Object.keys(mine).length){ const e=document.createElement('div'); e.className='mineEmpty'; e.textContent='No saved presets yet. Save as preset… adds one here.'; box.append(e); }
+  Object.keys(mine).forEach(name=>{ const b=document.createElement('button'); b.textContent=name; b.title='Your preset';
+    b.dataset.preset='mine:'+name; if(activePreset==='mine:'+name) b.classList.add('on');
+    b.onclick=()=>{ Object.keys(DEF).forEach(k=>setVal(k, k in mine[name] ? mine[name][k] : DEF[k])); remember(); markActive('mine:'+name); applyDeck(); status('Loaded '+name+'.'); };
+    const x=document.createElement('button'); x.textContent='×'; x.title='Delete '+name; x.setAttribute('aria-label','Delete '+name);
+    x.onclick=()=>{ if(!confirmDelete(name)) return; const m=loadMine(); delete m[name]; saveMine(m); if(activePreset==='mine:'+name) markActive(null); try{ activePreset=localStorage.getItem('amfm-crt-active')||null; }catch(e){}
+drawMine(); markActive(activePreset); status('Deleted '+name+'.'); };
+    box.append(b,x); }); }
+$('savePreset').onclick=()=>{ const mine=loadMine(); const name=(prompt('Name this preset', 'My look '+(Object.keys(mine).length+1))||'').trim();
+  if(!name) return; mine[name]={...S}; saveMine(mine); activePreset='mine:'+name; try{ activePreset=localStorage.getItem('amfm-crt-active')||null; }catch(e){}
+drawMine(); markActive(activePreset); markActive('mine:'+name); status('Saved preset "'+name+'".'); };
+function confirmDelete(name){ return window.confirm('Delete your preset "'+name+'"?'); }
+try{ activePreset=localStorage.getItem('amfm-crt-active')||null; }catch(e){}
+drawMine(); markActive(activePreset);
+$('reset').onclick=()=>applyPreset('Clean broadcast');
+
+const LOGOS = ['amfm-clean.png','amfm-logo-dev-1-01.png','amfm-logo-dev-1-02.png','amfm-logo-dev-1-03.png','amfm-logo-dev-1-04.png'];
+LOGOS.forEach(f=>{ const o=document.createElement('option'); o.value='/crt/logos/'+f; o.textContent=f.replace('.png','').replace(/-/g,' '); $('logoSel').append(o); });
+$('logoSel').onchange = e=>loadImage(e.target.value);
+
+// ---------------- WebGL ----------------
+const cv = $('cv');
+const gl = cv.getContext('webgl2', {preserveDrawingBuffer:true, premultipliedAlpha:false});
+if(!gl){ $('status').textContent='WebGL2 is not available in this browser.'; throw new Error('no webgl2'); }
+const VS = `#version 300 es
+in vec2 p; out vec2 uv; void main(){ uv=p*.5+.5; gl_Position=vec4(p,0,1); }`;
+const CORE = `#version 300 es
+precision highp float; in vec2 uv; out vec4 o;
+uniform sampler2D src; uniform vec2 res; uniform float t, frame, rollpos;
+uniform float rasterAR,picX,picY,picS,grain,snow,signal,ghost,bleed,jitter,hum,roll,interf,curve,scan,mask,vignette,corner,sheen,lines,bright,contrast,sat,tint,black,power,srcAR;
+uint pcg(uint v){ uint st=v*747796405u+2891336453u; uint w=((st>>((st>>28u)+4u))^st)*277803737u; return (w>>22u)^w; }
+float hash(vec2 p){ ivec2 i=ivec2(floor(p)); return float(pcg(uint(i.x)+pcg(uint(i.y))))*(1.0/4294967295.0); }
+vec3 toYIQ(vec3 c){ return vec3(dot(c,vec3(.299,.587,.114)), dot(c,vec3(.596,-.274,-.322)), dot(c,vec3(.211,-.523,.312))); }
+vec3 toRGB(vec3 q){ return vec3(q.x+.956*q.y+.621*q.z, q.x-.272*q.y-.647*q.z, q.x-1.106*q.y+1.703*q.z); }
+vec3 pic(vec2 s){ // source fitted into the 4:3 raster, black outside
+  float ar = srcAR/rasterAR; vec2 q = (s - .5 - vec2(picX, picY))/picS;
+  if(ar>1.0) q.y *= ar; else q.x /= ar;
+  q += .5; if(q.x<0.||q.x>1.||q.y<0.||q.y>1.) return vec3(0);
+  return texture(src, vec2(q.x, 1.0-q.y)).rgb;
+}
+void main(){
+  vec2 p = uv*2.-1.; float r2=dot(p,p); p *= 1.+curve*r2;
+  float vy = power<.5 ? .004 : mix(.004,1.,(power-.5)*2.);
+  float hx = power<.5 ? max(power*2.,.0005) : 1.;
+  vec2 q = vec2(p.x/hx, p.y/vy);
+  vec2 suv = q*.5+.5;
+  float ln = floor(suv.y*lines);
+  float rv = fract(suv.y + rollpos);
+  float bar = roll>.001 ? smoothstep(0.,.01,rv)*(1.-smoothstep(.035,.045,rv)) : 0.;
+  float off = (hash(vec2(ln,frame))-.5)*jitter*.004 + sin(ln/9.+t*20.)*.0012*jitter;  // 0 = no wobble (the sine used to keep a .3 floor)
+  off += interf*.01*sin(suv.y*60.+t*7.)*step(.6, fract(sin(floor(t*3.)*91.)*43.));
+  vec2 s = vec2(suv.x+off, rv);
+  vec2 px = vec2(1./(480.*rasterAR),0.);
+  float Y=0.; for(int i=-1;i<=1;i++) Y += toYIQ(pic(s+px*float(i))).x; Y/=3.;
+  vec2 IQ=vec2(0); float w=0.;
+  for(int i=-6;i<=6;i++){ float k=exp(-float(i*i)/(2.*bleed*bleed+.01)); IQ += toYIQ(pic(s-px*(bleed*.5)+px*float(i))).yz*k; w+=k; }
+  IQ/=w;
+  Y += ghost*toYIQ(pic(s-px*9.)).x;
+  vec3 yiq = vec3(Y,IQ)*signal;
+  yiq.x *= 1.-hum*(.5+.5*cos((suv.y+t*.25)*6.2832));
+  float n = hash(floor(uv*res*.5)+frame*1.37);
+  yiq.x += (n-.5)*(grain+snow*1.1);
+  yiq.yz += (vec2(hash(uv*res+frame),hash(uv*res-frame))-.5)*snow*.25;
+  yiq.x += interf*.15*sin(suv.y*900.+t*40.)*sin(suv.x*30.);
+  yiq.x *= 1.-bar;
+  yiq.yz *= sat; yiq.y += tint*-.15; yiq.z += tint*.15;
+  vec3 c = toRGB(yiq);
+  c = (c-.5)*contrast+.5+bright;
+  c = max(clamp(c,0.,1.), vec3(black));
+  float sl = 1.-scan*(.5-.5*cos(fract(suv.y*lines)*6.2832+3.1416)); c*=sl;
+  float m = mod(floor(uv.x*res.x),3.); vec3 g=vec3(1.-mask);
+  if(m<.5) g.r=1.; else if(m<1.5) g.g=1.; else g.b=1.; c*=g;
+  if(power<1.){
+    float lg = exp(-pow(p.y/(.004+vy*.5),2.))*exp(-pow(p.x/(.01+hx*.6),2.));
+    float boost = smoothstep(.85,.55,power)*smoothstep(0.,.08,power);
+    c = c*step(abs(q.y),1.) + lg*boost*vec3(.9,.95,1.);
+    c *= smoothstep(0.,.06,power);
+  }
+  float vig = clamp(1.-vignette*pow(pow(abs(p.x),4.)+pow(abs(p.y),4.),.6),0.,1.);
+  float e = mix(1.0, smoothstep(1.,.985,abs(p.x))*smoothstep(1.,.985,abs(p.y)), corner);
+  float inside = step(abs(p.x),1.)*step(abs(p.y),1.);
+  c *= vig*e*inside;
+  c += sheen*exp(-(pow(p.x+.45,2.)/.18+pow(p.y+.55,2.)/.08));
+  o = vec4(c,1);
+}`;
+const BLUR = `#version 300 es
+precision highp float; in vec2 uv; out vec4 o; uniform sampler2D src; uniform vec2 dir; uniform float thresh;
+void main(){ vec3 a=vec3(0); float w=0.;
+  for(int i=-8;i<=8;i++){ float k=exp(-float(i*i)/32.); vec3 c=texture(src, uv+dir*float(i)).rgb;
+    if(thresh>=0.) c = max(c-thresh, 0.)/(1.-thresh);
+    a+=c*k; w+=k; }
+  o=vec4(a/w,1); }`;
+const COMP = `#version 300 es
+precision highp float; in vec2 uv; out vec4 o; uniform sampler2D base, glowT, haloT; uniform float glow, halation, warm; uniform vec2 fit;
+void main(){ vec2 q = (uv-.5)/fit+.5;
+  if(q.x<0.||q.x>1.||q.y<0.||q.y>1.){ o=vec4(0,0,0,1); return; }
+  vec3 b=texture(base,q).rgb, g=texture(glowT,q).rgb*glow, h=texture(haloT,q).rgb;
+  float hl = dot(h, vec3(.33)); vec3 hc = mix(vec3(hl), vec3(1.,.55,.3)*hl*1.6, warm)*halation;
+  vec3 c = 1.-(1.-b)*(1.-g)*(1.-hc);
+  o=vec4(c,1); }`;
+function prog(fs){ const p=gl.createProgram();
+  [[gl.VERTEX_SHADER,VS],[gl.FRAGMENT_SHADER,fs]].forEach(([t,s])=>{ const sh=gl.createShader(t); gl.shaderSource(sh,s); gl.compileShader(sh);
+    if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); gl.attachShader(p,sh); });
+  gl.bindAttribLocation(p,0,'p'); gl.linkProgram(p); return p; }
+
+// ---------------- PHYSICAL TUBE (11-01) ----------------
+// Two passes. SIGNAL renders the decoded picture one row per scanline (width RW x height = lines), in the
+// gamma-encoded voltage domain where NTSC decoding actually happens. TUBE maps every screen pixel back through
+// curvature and the power collapse to a raster position, then lights it with the three nearest scanline beams:
+// each beam is a Gaussian whose width grows with its own drive (bright lines swell, dark lines stay thin),
+// energy-normalised so scanlines redistribute light instead of just darkening. Everything after the gun is
+// linear light (CRT gamma 2.4); targets store gamma-encoded values so 8-bit textures keep their shadows.
+const COMMON = `
+uint pcg(uint v){ uint st=v*747796405u+2891336453u; uint w=((st>>((st>>28u)+4u))^st)*277803737u; return (w>>22u)^w; }
+float h3(float a, float b, float c){ return float(pcg(uint(int(a)) + pcg(uint(int(b)) + pcg(uint(int(c))))))*(1.0/4294967295.0); }
+vec3 toYIQ(vec3 c){ return vec3(dot(c,vec3(.299,.587,.114)), dot(c,vec3(.596,-.274,-.322)), dot(c,vec3(.211,-.523,.312))); }
+vec3 toRGB(vec3 q){ return vec3(q.x+.956*q.y+.621*q.z, q.x-.272*q.y-.647*q.z, q.x-1.106*q.y+1.703*q.z); }
+`;
+const SIGNAL = `#version 300 es
+precision highp float; in vec2 uv; out vec4 o;
+uniform sampler2D src; uniform float t, frame, rollpos, lines, W;
+uniform float rasterAR,picX,picY,picS,grain,snow,signal,ghost,bleed,jitter,hum,roll,interf,bright,contrast,sat,tint,black,srcAR,sharp,raster;
+${COMMON}
+vec3 pic(vec2 s){ if(raster>.5) return texture(src, clamp(s, 0., 1.)).rgb;   // camera / tape output: already framed
+  float ar = srcAR/rasterAR; vec2 q = (s - .5 - vec2(picX, picY))/picS;
+  if(ar>1.0) q.y *= ar; else q.x /= ar; q += .5;
+  if(q.x<0.||q.x>1.||q.y<0.||q.y>1.) return vec3(0); return texture(src, vec2(q.x, 1.0-q.y)).rgb; }
+void main(){
+  float row = floor(uv.y*lines);                 // this texel IS one scanline
+  float yc = (row+.5)/lines;                     // its centre on the raster
+  float rv = fract(yc + rollpos);                // where the (rolling) picture is sampled
+  float bar = roll>.001 ? smoothstep(0.,.01,rv)*(1.-smoothstep(.035,.045,rv)) : 0.;
+  float off = (h3(row, frame, 7.)-.5)*jitter*.004 + sin(row/9.+t*20.)*.0012*jitter;
+  off += interf*.01*sin(yc*60.+t*7.)*step(.6, fract(sin(floor(t*3.)*91.)*43.));
+  vec2 s = vec2(uv.x+off, rv);
+  vec2 px = vec2(1./(480.*rasterAR),0.);
+  float Y=0.; for(int i=-1;i<=1;i++) Y += toYIQ(pic(s+px*float(i))).x; Y/=3.;
+  // set "sharpness" = luma peaking: the edge is pushed past itself, leaving the bright/dark outline TVs had
+  float Yw = 0.; for(int i=-3;i<=3;i++) if(i!=0) Yw += toYIQ(pic(s+px*float(i))).x; Yw/=6.;
+  Y += sharp*1.6*(Y-Yw);
+  // NTSC chroma bandwidths: I ~1.3 MHz, Q ~0.4 MHz, so Q smears about three times wider than I
+  float sI = max(bleed,.05), sQ = max(bleed*2.8,.05); vec2 IQ=vec2(0), w2=vec2(0);
+  for(int i=-12;i<=12;i++){ float fi=float(i); vec2 k=vec2(exp(-fi*fi/(2.*sI*sI)), exp(-fi*fi/(2.*sQ*sQ)));
+    vec3 v = toYIQ(pic(s-px*(bleed*.5)+px*fi)); IQ += v.yz*k; w2 += k; }
+  IQ/=w2;
+  Y += ghost*toYIQ(pic(s-px*9.)).x;
+  vec3 yiq = vec3(Y,IQ)*signal;
+  yiq.x *= 1.-hum*(.5+.5*cos((yc+t*.25)*6.2832));
+  // noise lives in the signal, so it is band-limited along the line: smooth horizontally, independent per line
+  float xf = uv.x*W*.35, c0 = floor(xf), fx = smoothstep(0.,1.,fract(xf));
+  float nL = mix(h3(c0, row, frame), h3(c0+1., row, frame), fx);
+  float xc = uv.x*W*.12, d0 = floor(xc), fc = smoothstep(0.,1.,fract(xc));
+  vec2 nC = mix(vec2(h3(d0, row, frame+1e5), h3(d0, row, frame+2e5)), vec2(h3(d0+1., row, frame+1e5), h3(d0+1., row, frame+2e5)), fc);
+  yiq.x += (nL-.5)*(grain+snow*1.3);
+  yiq.yz += (nC-.5)*snow*.3;
+  yiq.x += interf*.15*sin(yc*900.+t*40.)*sin(uv.x*30.);
+  yiq.x *= 1.-bar;
+  yiq.yz *= sat; yiq.y += tint*-.15; yiq.z += tint*.15;
+  vec3 c = toRGB(yiq);
+  c = (c-.5)*contrast+.5+bright;                 // brightness/contrast act on the signal, as on a set
+  c = max(clamp(c,0.,1.), vec3(black));
+  o = vec4(c,1);
+}`;
+const TUBE = `#version 300 es
+precision highp float; in vec2 uv; out vec4 o;
+uniform sampler2D sig, prevT; uniform vec2 res; uniform float lines, curve, scan, beam, mask, vignette, corner, sheen, power, warm;
+uniform float maskKind, pitch, converge, persist, dt, hasPrev, mono;
+vec3 beamAt(vec2 suv, float ch){            // light of one gun (ch 0/1/2) at raster position suv
+  float y = suv.y*lines; float r0 = floor(y); float lit=0., fl=0.;
+  for(int k=-1;k<=1;k++){
+    float r = clamp(r0+float(k), 0., lines-1.);
+    float v = texture(sig, vec2(suv.x, (r+.5)/lines))[int(ch)];
+    float L = pow(v, 2.4);
+    float d = y - (r0+float(k)+.5);
+    float sg = .16 + .30*beam*sqrt(L);
+    lit += L*exp(-d*d/(2.*sg*sg))/(sg*2.5066);
+    if(k==0) fl = L;
+  }
+  return vec3(mix(fl, lit, scan));
+}
+// mask transmission for one screen position, in triad units: 0 aperture grille, 1 slot mask, 2 delta dot mask
+vec3 maskAt(vec2 pt){
+  float tx = pt.x; float k = maskKind;
+  if(k>1.5){                                   // delta: dots on a staggered grid, R G B in a triangle
+    float rowH = .577; float rowI = floor(pt.y/rowH); float x = tx + .5*mod(rowI,2.);
+    vec2 f = vec2(fract(x)*3., fract(pt.y/rowH));
+    float ch = floor(f.x); vec2 cc = vec2(fract(f.x)-.5, f.y-.5);
+    float dot1 = smoothstep(.5,.3,length(cc*vec2(1.,1.1)));
+    vec3 g = vec3(0); g[int(ch)] = dot1; return g;
+  }
+  float ch = floor(fract(tx)*3.); vec3 g = vec3(0); g[int(ch)] = 1.;
+  if(k>.5){                                    // slot: stripes broken into slots, staggered every other triad
+    float col = floor(tx); float yy = fract(pt.y/1.2 + .5*mod(col,2.));
+    g *= smoothstep(.0,.08,yy)*smoothstep(1.,.92,yy);
+  }
+  return g;
+}
+void main(){
+  vec2 p = uv*2.-1.; float r2=dot(p,p); p *= 1.+curve*r2;
+  float vy = power<.5 ? .004 : mix(.004,1.,(power-.5)*2.);
+  float hx = power<.5 ? max(power*2.,.0005) : 1.;
+  float grow = mix(.955, 1., warm);           // the raster grows a little as the high voltage comes up
+  vec2 q = vec2(p.x/hx, p.y/vy)/grow;
+  vec2 suv = q*.5+.5;
+  vec3 c = vec3(0);
+  if(abs(q.x)<=1. && abs(q.y)<=1.){
+    // convergence error: red and blue land slightly off green, worse toward the edges (radial, opposite ways)
+    vec2 cv = p*converge*.0045;
+    c = vec3(beamAt(suv+cv, 0.).r, beamAt(suv, 1.).g, beamAt(suv-cv*.8, 2.).b);
+  }
+  // mask: triads across the screen width, box-filtered over the pixel so fine pitches average out instead of aliasing
+  vec3 g = vec3(0); vec2 tri = vec2(pitch, pitch*res.y/res.x);
+  for(int j=0;j<3;j++) for(int i=0;i<3;i++){ vec2 o2 = (vec2(float(i),float(j))-1.)/3./res; g += maskAt((uv+o2)*tri); }
+  g /= 9.;
+  // each gun only lights its own phosphor (1/3 of the area, less for slots and dots), so the set is driven harder
+  // to make it up: x3 for the stripe share, plus the extra loss of slot gaps or the round dots
+  float kc = maskKind>1.5 ? 1.8 : (maskKind>.5 ? 1.15 : 1.);
+  c *= mix(vec3(1.), g*3.*kc, mask*(1.-mono));
+  // monochrome tube: one continuous P4 phosphor (no mask), a slightly blue white
+  if(mono>0.) c = mix(c, vec3(dot(c, vec3(.3,.59,.11)))*vec3(.90,.95,1.04), mono);
+  if(power<1.){
+    float lg = exp(-pow(p.y/(.004+vy*.5),2.))*exp(-pow(p.x/(.01+hx*.6),2.));
+    float boost = smoothstep(.85,.55,power)*smoothstep(0.,.08,power);
+    c = c + lg*boost*vec3(.8,.9,1.);
+    c *= smoothstep(0.,.06,power);
+  }
+  c *= warm*warm;                              // cathode warming up: light comes up from black
+  float vig = clamp(1.-vignette*pow(pow(abs(p.x),4.)+pow(abs(p.y),4.),.6),0.,1.);
+  float e = mix(1.0, smoothstep(1.,.985,abs(p.x))*smoothstep(1.,.985,abs(p.y)), corner);
+  float inside = step(abs(p.x),1.)*step(abs(p.y),1.);
+  c *= vig*e*inside;
+  // phosphor persistence: P22 green and red glow on for milliseconds, blue fades fastest -> warm trails on motion
+  if(persist>0. && hasPrev>.5){
+    vec3 tau = persist*vec3(.045,.060,.012);
+    vec3 keep = exp(-dt/max(tau,vec3(1e-4)));
+    vec3 prev = pow(texture(prevT, uv).rgb, vec3(2.2));
+    c = max(c, prev*keep);
+  }
+  float sh = sheen*exp(-(pow(p.x+.45,2.)/.18+pow(p.y+.55,2.)/.08));
+  c += pow(sh, 2.2)*e*inside;
+  o = vec4(pow(clamp(c,0.,1.), vec3(1./2.2)), 1);
+}`;
+const BLUR2 = `#version 300 es
+precision highp float; in vec2 uv; out vec4 o; uniform sampler2D src; uniform vec2 dir; uniform float thresh;
+void main(){ vec3 a=vec3(0); float w=0.;
+  for(int i=-8;i<=8;i++){ float k=exp(-float(i*i)/32.); vec3 c=pow(texture(src, uv+dir*float(i)).rgb, vec3(2.2));
+    if(thresh>=0.) c = max(c-thresh, 0.)/(1.-thresh);
+    a+=c*k; w+=k; }
+  o=vec4(pow(a/w, vec3(1./2.2)),1); }`;
+const COMP2 = `#version 300 es
+precision highp float; in vec2 uv; out vec4 o; uniform sampler2D base, glowT, haloT; uniform float glow, halation, warm; uniform vec2 fit;
+void main(){ vec2 q = (uv-.5)/fit+.5;
+  if(q.x<0.||q.x>1.||q.y<0.||q.y>1.){ o=vec4(0,0,0,1); return; }
+  vec3 b=pow(texture(base,q).rgb,vec3(2.2)), g=pow(texture(glowT,q).rgb,vec3(2.2))*glow, h=pow(texture(haloT,q).rgb,vec3(2.2));
+  float hl = dot(h, vec3(.33)); vec3 hc = mix(vec3(hl), vec3(1.,.55,.3)*hl*1.6, warm)*halation;
+  vec3 c = 1.-(1.-b)*(1.-g)*(1.-hc);              // light adds, softly bounded
+  o=vec4(pow(c, vec3(1./2.2)),1); }`;
+
+// CAMERA — a three-tube studio camera (Plumbicon / Saticon), between the scene and the signal.
+//  knee: highlights are compressed above ~80 % instead of clipping (the camera's knee circuit).
+//  lag: the photoconductive target holds charge, worst in low light; part of the last field stays (tau ~0.25 s at full).
+//  comet: a bright moving light overloads the beam's ability to discharge the target, leaving a long decaying tail.
+//  burn-in: a bright subject held still leaves a retained image that shows after it moves (slow accumulator, ~8 s).
+//  registration: the three tubes' rasters never line up exactly; red and blue sit a fixed fraction of a line off.
+//  shading: the optics and tube targets leave colour casts toward the corners (magenta/green shading).
+const CAMERA = `#version 300 es
+precision highp float; in vec2 uv; out vec4 o;
+uniform sampler2D src, prevC, burnT; uniform float srcAR, rasterAR, picX, picY, picS;
+uniform float knee, camLag, comet, burn, reg, shade, dt, hasCam;
+vec3 pic(vec2 s){ float ar = srcAR/rasterAR; vec2 q = (s - .5 - vec2(picX, picY))/picS;
+  if(ar>1.0) q.y *= ar; else q.x /= ar; q += .5;
+  if(q.x<0.||q.x>1.||q.y<0.||q.y>1.) return vec3(0); return texture(src, vec2(q.x, 1.0-q.y)).rgb; }
+float lum(vec3 c){ return dot(c, vec3(.299,.587,.114)); }
+void main(){
+  vec2 rg = reg*vec2(.0019, .0008);
+  vec3 c = vec3(pic(uv+rg).r, pic(uv).g, pic(uv-rg*vec2(.7,-1.1)).b);
+  vec2 d = uv-.5; float r2 = dot(d,d)*4.;
+  c *= 1. + shade*r2*vec3(.10,-.07,.09) - shade*r2*.08;
+  if(knee>0.){ float k0 = 1. - knee*.42;                       // above k0 the response bends over toward 1
+    vec3 x = max(c-k0, 0.); c = min(c, vec3(k0)) + (1.-k0)*(1.-exp(-x/(1.-k0))); }
+  if(hasCam>.5){
+    vec3 prev = texture(prevC, uv).rgb; float Y = lum(c);
+    float keep = camLag>0. ? exp(-dt/(camLag*.25)) : 0.;
+    c = mix(c, prev, keep*(1.-.55*Y));                           // lag: dark areas hold the last field longest
+    float hk = comet>0. ? pow(.965, dt*60.)*comet : 0.;
+    c = max(c, prev*hk*smoothstep(.55,.92,lum(prev)));            // comet: highlights hang on and decay slowly
+    if(burn>0.){ vec3 B = texture(burnT, uv).rgb; c += burn*.45*max(B-c, 0.); }
+  }
+  o = vec4(clamp(c,0.,1.),1);
+}`;
+const BURN = `#version 300 es
+precision highp float; in vec2 uv; out vec4 o; uniform sampler2D cam, burnT; uniform float dt, hasCam;
+void main(){ vec3 c = texture(cam, uv).rgb; vec3 B = hasCam>.5 ? texture(burnT, uv).rgb : vec3(0);   // a fresh tube has no history; burn builds over seconds
+  o = vec4(mix(B, c, 1.-exp(-dt/8.)), 1); }`;
+// TAPE — the recorder, ported from the shye01 tape node (zhuker/ntsc, AVAA head-switching notes, VCR FAQ,
+// US 5,500,739). Works on the 4·fsc grid: 910 samples × 486 lines at 14.318 MS/s. Per format:
+//   Betacam SP  component, luma 4.1 MHz, colour-difference 1.5 MHz, no colour-under, no comb; broadcast TBC → no head-switch step
+//   U-matic     colour-under 688 kHz, chroma ~500 kHz, luma ~3 MHz, comb blend, small head-switch step
+//   VHS SP/EP   colour-under 629 kHz, chroma 320 / 280 kHz, luma 2.4 / 1.4 MHz, chroma delay 9 / 14 samples, comb blend
+const TAPEH = `
+const int NX = 910; const int NY = 486;
+uniform float nC, dC, nL, comb, frame;
+${COMMON}
+vec3 unpk(vec4 t){ return vec3(t.r, (t.g-.5)*1.2, (t.b-.5)*1.2); }
+vec4 pk(vec3 c){ return vec4(clamp(c.x,0.,1.), c.y/1.2+.5, c.z/1.2+.5, 1.); }
+float boxw(int j, float n){ float hw = n*.5, a = abs(float(j));
+  float inside = clamp(hw - a + .5, 0., 1.); float hann = .5 + .5*cos(3.14159265*clamp(a/max(hw,.5), 0., 1.)); return inside*hann; }
+`;
+const TAPEREC = `#version 300 es
+precision highp float; out vec4 o; uniform sampler2D src; uniform float first;
+${TAPEH}
+vec3 at(int x, int y){ x = clamp(x, 0, NX-1); y = clamp(y, 0, NY-1);
+  return first>.5 ? toYIQ(texture(src, (vec2(x,y)+.5)/vec2(NX,NY)).rgb) : unpk(texelFetch(src, ivec2(x,y), 0)); }
+void main(){ ivec2 p = ivec2(gl_FragCoord.xy); int x = p.x, y = p.y; int dc = int(dC+.5);
+  float I=0., Q=0., wc=0.;
+  for(int j=-13;j<=13;j++){ float w = boxw(j, nC); if(w<=0.) continue;
+    vec3 a = at(x-dc+j, y); I += w*a.y; Q += w*a.z; wc += w;
+    if(comb>.5){ vec3 b2 = at(x-dc+j, y+1); I += w*b2.y; Q += w*b2.z; wc += w; } }
+  float Y=0., wy=0.; for(int j=-3;j<=3;j++){ float w = boxw(j, nL); if(w<=0.) continue; Y += w*at(x+j,y).x; wy += w; }
+  o = pk(vec3(Y/wy, I/wc, Q/wc)); }`;
+const TAPEMECH = `#version 300 es
+precision highp float; out vec4 o; uniform sampler2D src; uniform float wave, tracking, dropout, sharpen, hsDelta;
+// damage (11-06): every value below is worked out on the CPU from the tape clock (tapeState) — see the atlas
+uniform float wow, wowPh, clogA, clogB, jump, hhold, burst, dropMul, mould, mouldSeed, skewNow, ckill, cpGain, cpBarY, cpBar, bandN, bandH, deckN, deckPos, deckJit;
+uniform vec3 bandY; uniform vec3 crease;      // crease = (centre 0..1 from top, height, strength)
+uniform sampler2D under; uniform float underOn, ghostU, past, edit;   // taped over: the old recording, how much, after the end, edit glitch
+${TAPEH}
+vec3 samp(float xs, int y){ return unpk(texture(src, (vec2(mod(xs, float(NX)), float(clamp(y,0,NY-1)))+.5)/vec2(NX,NY))); }
+float hh(float a, float b, float c){ return h3(a*7.+13., b, c); }
+float lpn(float line, float seed){ float s=0.; for(int j=0;j<16;j++) s += pow(.85, float(j))*(hh(line-float(j), frame, seed)-.5); return s/.55; }
+float vn(vec2 p, float sd){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);   // value noise for mould patches (fixed on the tape)
+  float a=h3(i.x+500.,i.y,sd), b=h3(i.x+501.,i.y,sd), c=h3(i.x+500.,i.y+1.,sd), d=h3(i.x+501.,i.y+1.,sd); return mix(mix(a,b,f.x),mix(c,d,f.x),f.y); }
+float band(float yN, float c, float h){ float d=abs(yN-c); d=min(d,1.-d); return 1.-smoothstep(h*.5, h*.5+.012, d); }
+void main(){ ivec2 p = ivec2(gl_FragCoord.xy); int x = p.x, y = p.y; float fl = float(NY-1-y), yN = fl/float(NY);
+  int sy = clamp(y - int(jump), 0, NY-1);                 // a burst knocks the picture up or down
+  float wob = wave*lpn(fl, 1.);
+  float e = .06*float(NY), dd = min(fl, float(NY-1)-fl), w = 1.-smoothstep(0., e, dd);
+  float trk = tracking/100.*w;
+  float off = wob + trk*40.*lpn(fl, 2.);
+  float ls = (1.-4.5/262.5)*float(NY) + hh(frame, 5., 9.)/500.;
+  float tpos = fl + float(x)/float(NX) - ls; if(tpos>0.) off += hsDelta*exp(-tpos/3.);
+  off += wow*22.*sin(yN*3.1416 + wowPh);                  // wow: the whole frame bends slowly
+  off += skewNow*90.*exp(-fl/38.);                        // skew: the top lines hook, the TV catches up over ~100 lines
+  off += hhold*fl*2.6;                                     // horizontal hold lost: each line later than the last = diagonal tearing
+  // bands: mistracking anywhere in the frame, search / pause bars, a lengthwise crease — all tear and fill with noise
+  float bnd = 0.;
+  for(int i=0;i<3;i++){ if(float(i)<bandN) bnd = max(bnd, band(yN, bandY[i], bandH)); }
+  if(deckN>0.){ float ph = fract(yN*deckN + deckPos); bnd = max(bnd, 1.-smoothstep(.07, .11, abs(ph-.5))); }
+  float cr = crease.z * band(yN, crease.x, crease.y);
+  float rough = max(bnd, cr);
+  off += rough*30.*(hh(fl, frame, 12.)-.5) + burst*70.*(hh(floor(fl/6.), frame, 21.)-.5) + deckJit*(hh(frame,3.,4.)-.5)*6.;
+  float xs = float(x) - off; vec3 c = samp(xs, sy);
+  float lp=0., wl=0.; for(int j=-3;j<=3;j++){ float wj = boxw(j, nL); if(wj<=0.) continue; lp += wj*samp(xs+float(j), sy).x; wl += wj; }
+  c.x += (c.x - lp/wl)*sharpen*2.;
+  c.x += trk*.7*(hh(float(x), fl, frame+.5)-.5);
+  // noise inside bands and bursts: white streaky snow, colour gone
+  // analog noise: fine snow plus white streaks whose length and start change line by line (not blocks)
+  float nz = hh(float(x), fl, frame+.25);
+  float sl = 6. + 90.*pow(hh(fl, frame, 41.), 2.), sx = float(x) + hh(fl, frame, 42.)*float(NX);
+  float streak = step(.62, hh(floor(sx/sl), fl, frame+.75)) * (.6+.4*hh(fl, frame, 43.));
+  float bl = burst * step(.45, hh(floor(fl/(3.+9.*hh(frame,7.,7.))), frame, 22.));   // a burst breaks up groups of lines, not the whole frame
+  float rn = clamp(rough*.9 + bl, 0., 1.);
+  c.x = mix(c.x, nz*.35 + streak*.75, rn*(.5+.5*max(streak, rough))); c.yz *= 1.-rn;
+  // mould: patches fixed on the tape, full of speckle and a dirty cast
+  float mp = 0.; if(mould>0.){ float m = vn(vec2(float(x)/70., fl/30.), mouldSeed)*.7 + vn(vec2(float(x)/18., fl/9.), mouldSeed+3.)*.3;
+    mp = smoothstep(1.-mould*.42, 1.-mould*.42+.18, m); c.x *= 1.-mp*.18; c.yz = mix(c.yz, vec2(.02,-.015), mp*.35); }
+  // dropouts: the old test, more of them in a bad stretch, in a crease and in mould
+  float pd = (dropout/1000. + trk*.05)*dropMul + cr*.08 + mp*.12 + burst*.04;
+  if(hh(fl, frame, 3.) < pd){ float x0 = hh(fl, frame, 4.)*float(NX), h2 = hh(fl, frame, 6.), len = h2*h2*float(NX)*.5;
+    if(float(x)>=x0 && float(x)<x0+len){ c.x = samp(xs, sy+1).x; c.yz = vec2(0.); } }
+  if(mp>.0){ float sx2 = floor((float(x) + hh(fl, frame, 44.)*90.)/(4.+14.*hh(fl, frame, 45.)));   // mould sheds as short flecks along the line
+    if(hh(sx2, fl, frame+.4) < mp*.09) c.x = mix(c.x, .95, .85); }
+  // head clog: one head reads one field, so a clogged head ruins every other field (flicker); both = snow
+  float bad = mod(fl, 2.) < .5 ? clogA : clogB;          // each head writes one field = every other scanline
+  if(bad>0.){ float s = bad*(.45+.55*hh(fl, frame, 31.)); s = max(s, step(.97, bad)); float sn = hh(float(x), fl, frame+.1);
+    c.x = mix(c.x, sn*.8 + .1, s); c.yz *= 1.-s; }
+  if(underOn>.5){ vec3 old = toYIQ(texture(under, vec2(float(x)/float(NX), fl/float(NY))).rgb);
+    c.x = mix(c.x, old.x, ghostU*(1.-past)); c.yz = mix(c.yz, old.yz, ghostU*.35*(1.-past));   // the erase head never quite cleared it
+    c = mix(c, old, past); }                                                                    // past the end: only the old one is left
+  if(edit>0.){ float bx=floor(float(x)/(18.+40.*hh(floor(fl/5.),frame,51.))), by=floor(fl/(2.+5.*hh(bx,frame,52.)));   // rainbow at an edit point: blotchy, not stripes
+    float m = edit*step(.3, hh(by, frame, 53.));
+    c.yz = mix(c.yz, (vec2(hh(bx,by,frame+.1), hh(bx+9.,by,frame+.2))-.5)*1.3, m);
+    c.x = mix(c.x, hh(float(x),fl,frame+.6)*.7+.15, m*.6); }
+  c.yz *= 1.-ckill;                                          // the TV's colour killer: too weak, colour switched off
+  c.x *= cpGain; c.x *= 1.-cpBar*band(yN, cpBarY, .14);       // copy protection: brightness pumping + a soft dark bar
+  o = vec4(clamp(toRGB(c), 0., 1.), 1.); }`;
+// DIGITAL TAPE (11-06): DV and VCD fail in squares, not streaks. One pass on the format's own grid (720×480):
+// coarse sampling (VCD is 352×240), compression pulls each block toward its average, chroma is subsampled
+// (DV 4:1:1, VCD 4:2:0); damaged blocks hold the previous frame (DV concealment) or slide with a stray motion
+// vector / go green (VCD); a clogged DV head shows as horizontal stripes of older picture; bursts freeze the frame.
+const DIGI = `#version 300 es
+precision highp float; out vec4 o; uniform sampler2D src, prev, under; uniform float fmtD, frame, err, stripes, freeze, q, hasPrev, hasUnder;
+${COMMON}
+const vec2 R = vec2(720.,480.);
+vec3 grab(vec2 uv){ if(fmtD>.5){ vec2 r=vec2(352.,240.); uv=(floor(uv*r)+.5)/r; } return texture(src,uv).rgb; }
+void main(){ vec2 px=gl_FragCoord.xy, uv=px/R; float bs = fmtD>.5 ? 32. : 8.;
+  vec2 b=floor(px/bs), bc=(b+.5)*bs/R, d=bs/R*.25;
+  vec3 c=grab(uv);
+  vec3 avg=(grab(bc+vec2(-d.x,-d.y))+grab(bc+vec2(d.x,-d.y))+grab(bc+vec2(-d.x,d.y))+grab(bc+vec2(d.x,d.y)))*.25;
+  c=mix(c,avg,q);
+  vec3 y=toYIQ(c); vec2 cs = fmtD>.5 ? vec2(4.1,4.) : vec2(4.,1.);
+  vec2 cuv=(floor(px/cs)+.5)*cs/R; y.yz=toYIQ(mix(grab(cuv),avg,q)).yz; c=clamp(toRGB(y),0.,1.);
+  float fr=floor(frame/2.);                                   // DV errors are per frame, not per field
+  float e=h3(b.x+1., b.y+1., fr);
+  float stripe=floor((1.-uv.y)*10.); bool sbad = h3(stripe, floor(fr/3.), 77.) < stripes;
+  if(hasPrev>.5 && (freeze>.5 || e<err || sbad)){
+    vec2 mv = fmtD>.5 ? (vec2(h3(b.x,b.y,fr+3.),h3(b.y,b.x,fr+5.))-.5)*bs*2. : vec2(0.);
+    if(sbad) mv.x += (h3(stripe, floor(fr/3.), 78.)-.5)*90.;  // a clogged stripe slips sideways (DV quilting)
+    vec3 pv = texture(prev,(px+mv)/R).rgb;
+    if(sbad && hasUnder>.5) pv = texture(under, vec2(uv.x, 1.-uv.y)).rgb;   // over-recorded DV: the stripes show the old recording
+    float kind=h3(b.x,b.y,fr+9.);
+    if(freeze>.5 || sbad || kind>=.45) c = pv;               // concealment: the block from before
+    else if(kind<.2) c = fmtD>.5 ? vec3(.08,.5,.14) : vec3(.5); // nothing to conceal with: flat green (MPEG) / grey (DV)
+    else { vec2 f=(vec2(h3(b.x,b.y,fr+11.),h3(b.x,b.y,fr+13.))*3.+.5)*3.1416/bs;   // garbage coefficients: a wrong DCT pattern
+      float g=.5+.4*cos(px.x*f.x*2.)*cos(px.y*f.y*2.); c=clamp(toRGB(vec3(g,(h3(b.x,b.y,fr+15.)-.5)*.6,(h3(b.x,b.y,fr+17.)-.5)*.6)),0.,1.); }
+  }
+  o=vec4(c,1.); }`;
+const P = {core:prog(CORE), blur:prog(BLUR), comp:prog(COMP), sig:prog(SIGNAL), tube:prog(TUBE), blur2:prog(BLUR2), comp2:prog(COMP2), cam:prog(CAMERA), burn:prog(BURN), trec:prog(TAPEREC), tmech:prog(TAPEMECH), digi:prog(DIGI)};
+const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+function tex(w,h){ const t=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
+  [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER].forEach(f=>gl.texParameteri(gl.TEXTURE_2D,f,gl.LINEAR));
+  [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(f=>gl.texParameteri(gl.TEXTURE_2D,f,gl.CLAMP_TO_EDGE));
+  const fb=gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER,fb); gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t,0);
+  return {t,fb,w,h}; }
+let hasPrev=0, hasCam=0, hasDig=0;   // persistence / camera lag / digital concealment need one drawn frame behind them
+let RW=1440; let RH=1080; let T=null; let SCALE=1;
+function buildTargets(){ hasPrev=0; hasCam=0; hasDig=0; if(T) Object.values(T).forEach(x=>{ gl.deleteTexture(x.t); gl.deleteFramebuffer(x.fb); });
+  const CW=Math.round(RW*2/3), CH=Math.round(RH*2/3);
+  T = {base:tex(RW,RH), base2:tex(RW,RH), cam1:tex(CW,CH), cam2:tex(CW,CH), burn1:tex(CW,CH), burn2:tex(CW,CH), tp1:tex(910,486), tp2:tex(910,486), tpo:tex(910,486), dg1:tex(720,480), dg2:tex(720,480), g1:tex(RW/4,RH/4), g2:tex(RW/4,RH/4), h1:tex(RW/8,RH/8), h2:tex(RW/8,RH/8)}; }
+buildTargets();
+let SIG=null, sigKey='';
+function sigTarget(lines){ const key=RW+'x'+lines; if(key===sigKey) return SIG;
+  if(SIG){ gl.deleteTexture(SIG.t); gl.deleteFramebuffer(SIG.fb); } SIG=tex(RW, lines); sigKey=key; return SIG; }
+// light spreads further when it is blurred as light, so the same slider values glow harder; these bring the
+// physical tube's glow and halation back to the strength the sliders had in classic
+let GLOWK=+(new URLSearchParams(location.search).get('gk')||.3), HALOK=+(new URLSearchParams(location.search).get('hk')||.15);
+let model='physical'; try{ model=localStorage.getItem('amfm-crt-model')||'physical'; }catch(e){}
+function setModel(m){ model=m; $('mPhys').classList.toggle('on',m==='physical'); $('mClassic').classList.toggle('on',m==='classic');
+  chainDirty();
+  try{ localStorage.setItem('amfm-crt-model',m); }catch(e){} }
+$('mPhys').onclick=()=>setModel('physical'); $('mClassic').onclick=()=>setModel('classic'); setModel(model);
+const srcTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, srcTex);
+[gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER].forEach(f=>gl.texParameteri(gl.TEXTURE_2D,f,gl.LINEAR));
+[gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(f=>gl.texParameteri(gl.TEXTURE_2D,f,gl.CLAMP_TO_EDGE));
+gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
+let srcEl=null, srcAR=4/3, isVideo=false, srcFile=null;
+// the old recording (taped over): its own texture, a 1×1 black stand-in when there is none
+let underEl=null, underIsVideo=false;
+const underTex=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, underTex);
+gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
+[gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER].forEach(p=>gl.texParameteri(gl.TEXTURE_2D,p,gl.LINEAR));
+[gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(p=>gl.texParameteri(gl.TEXTURE_2D,p,gl.CLAMP_TO_EDGE));
+function uploadUnder(){ if(!underEl) return; gl.bindTexture(gl.TEXTURE_2D, underTex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,underEl); }
+let underUrl=null;
+function loadUnder(f){ if(underUrl) URL.revokeObjectURL(underUrl); const url=URL.createObjectURL(f); underUrl=url;
+  const done=(el,vid)=>{ if(underEl&&underEl.pause) underEl.pause(); underEl=el; underIsVideo=vid; uploadUnder();
+    $('underName').hidden=false; $('underName').textContent='Old recording: '+f.name; $('underClear').disabled=false;
+    if(Math.round(S.tapeFmt)===0){ setVal('tapeFmt',3); status('An old recording needs a tape: switched the format to VHS SP.'); } else status('Old recording: '+f.name+'. Set how much shows through under Tape › More.'); tlDirty(); };
+  if(f.type.startsWith('video')){ const v=document.createElement('video'); v.src=url; v.muted=true; v.loop=true; v.playsInline=true; v.onloadeddata=()=>{ v.play().catch(()=>{}); done(v,true); }; }
+  else { const im=new Image(); im.onload=()=>done(im,false); im.src=url; } }
+$('underPick').onclick=()=>$('underFile').click();
+$('underFile').onchange=e=>{ const f=e.target.files[0]; e.target.value=''; if(f) loadUnder(f); };
+$('underClear').onclick=()=>{ if(underEl&&underEl.pause) underEl.pause(); if(underUrl) URL.revokeObjectURL(underUrl); underUrl=null; underEl=null; underIsVideo=false; $('underName').hidden=true; $('underClear').disabled=true; tlDirty(); status('Old recording cleared.'); };
+function upload(){ if(!srcEl) return; gl.bindTexture(gl.TEXTURE_2D, srcTex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,srcEl); }
+function loadImage(url){ const im=new Image(); im.onload=()=>{ if(srcEl&&srcEl.pause) srcEl.pause(); $('vidPanel').hidden=true; isVideo=false; srcEl=im; tlDirty(); srcAR=im.naturalWidth/im.naturalHeight; upload(); status(); }; im.src=url; }
+let srcUrl=null;
+function loadFile(f){ if(srcUrl) URL.revokeObjectURL(srcUrl); const url=URL.createObjectURL(f); srcUrl=url; srcFile=f;
+  if(f.type.startsWith('video')){ const v=document.createElement('video'); v.src=url; v.loop=$('vLoop').classList.contains('on'); v.playsInline=true; v.preload='auto';
+    v.onloadeddata=()=>{ if(srcEl&&srcEl.pause) srcEl.pause(); isVideo=true; srcEl=v; srcAR=v.videoWidth/v.videoHeight; vidAudio=null;
+      $('vidPanel').hidden=false; $('vidName').textContent=f.name.length>28?f.name.slice(0,26)+'…':f.name;
+      startAudio(); hookVideoAudio(); v.play().catch(()=>{}); vidUI(); applyDeck(); tlDirty(); status(f.name+' loaded. Press Record whole video to export it through the CRT.'); }; }
+  else { const im=new Image(); im.onload=()=>{ if(srcEl&&srcEl.pause) srcEl.pause(); isVideo=false; srcEl=im; srcAR=im.naturalWidth/im.naturalHeight; upload(); $('vidPanel').hidden=true; tlDirty(); status(f.name); }; im.src=url; } }
+let vidAudio=null, vidG=null;
+function hookVideoAudio(){ if(!AC||!isVideo||vidAudio) return;
+  try{ vidAudio=AC.createMediaElementSource(srcEl); vidG=AC.createGain(); vidG.gain.value=$('vSound').classList.contains('on')?1:0;
+       vidAudio.connect(vidG); if(sndNode) vidG.connect(sndNode); else { vidG.connect(AC.destination); vidG.connect(dest); } }catch(e){ status('Could not route the video sound: '+e.message); } }
+const tfmt=x=>{ x=Math.max(0,x||0); return Math.floor(x/60)+':'+String(Math.floor(x%60)).padStart(2,'0'); };
+function vidUI(){ if(!isVideo) return; const v=srcEl; $('vPlay').textContent=v.paused?'Play':'Pause';
+  $('vTime').textContent=tfmt(v.currentTime)+' / '+tfmt(v.duration); if(!scrubbing) $('vScrub').value=v.duration?v.currentTime/v.duration:0; }
+let scrubbing=false;
+$('vPlay').onclick=()=>{ if(!isVideo) return; startAudio(); hookVideoAudio(); AC.resume(); srcEl.paused?srcEl.play():srcEl.pause(); vidUI(); };
+$('vRestart').onclick=()=>{ if(!isVideo) return; srcEl.currentTime=0; srcEl.play(); vidUI(); };
+$('vLoop').onclick=e=>{ const on=!e.target.classList.contains('on'); e.target.classList.toggle('on',on); e.target.textContent='Loop: '+(on?'on':'off'); if(isVideo) srcEl.loop=on; };
+$('vSound').onclick=e=>{ const on=!e.target.classList.contains('on'); e.target.classList.toggle('on',on); e.target.textContent='Sound: '+(on?'on':'off'); if(vidG) vidG.gain.value=on?1:0; };
+$('vScrub').oninput=e=>{ scrubbing=true; if(isVideo&&srcEl.duration) srcEl.currentTime=+e.target.value*srcEl.duration; vidUI(); };
+$('vScrub').onchange=()=>{ scrubbing=false; };
+function autoCenter(){
+  if(!srcEl){ return; }  // on a video this measures the frame on screen right now
+  const w=200, h=Math.round(200/srcAR), c=document.createElement('canvas'); c.width=w; c.height=h;
+  const x=c.getContext('2d'); x.drawImage(srcEl,0,0,w,h); const d=x.getImageData(0,0,w,h).data;
+  const bg=[d[0],d[1],d[2]]; let x0=w,x1=0,y0=h,y1=0;
+  for(let j=0;j<h;j++) for(let i=0;i<w;i++){ const k=(j*w+i)*4;
+    if(Math.abs(d[k]-bg[0])+Math.abs(d[k+1]-bg[1])+Math.abs(d[k+2]-bg[2])>60){ if(i<x0)x0=i; if(i>x1)x1=i; if(j<y0)y0=j; if(j>y1)y1=j; } }
+  if(x1<=x0){ status('Could not find the logo edges.'); return; }
+  // image-space centre offset → screen-space offset inside the 4:3 raster
+  const cx=((x0+x1)/2)/w-.5, cy=((y0+y1)/2)/h-.5;
+  const ar=srcAR/(RW/RH); const fx = ar>1 ? 1 : ar, fy = ar>1 ? 1/ar : 1;
+  setVal('picX', -cx*fx*S.picS); setVal('picY', cy*fy*S.picS); remember();
+  status('Centered.');
+}
+$('center').onclick=autoCenter;
+$('centerReset').onclick=()=>{ setVal('picX',0); setVal('picY',0); setVal('picS',1); remember(); };
+const drop=$('drop'), file=$('file');
+drop.onclick=()=>file.click(); drop.onkeydown=e=>{ if(e.key==='Enter'||e.key===' ') { e.preventDefault(); file.click(); } };
+file.onchange=()=>file.files[0]&&loadFile(file.files[0]);
+['dragover','dragenter'].forEach(ev=>document.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.add('hover'); }));
+['dragleave','drop'].forEach(ev=>document.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.remove('hover'); }));
+document.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f) loadFile(f); });
+
+let wide=false;
+let frameMode='tube43';
+function setAR(mode){ frameMode=mode;
+  $('ar43').classList.toggle('on',mode==='tube43'); $('ar169w').classList.toggle('on',mode==='wide'); $('ar169').classList.toggle('on',mode==='pillar');
+  cv.width = mode==='tube43' ? 1440 : 1920; cv.height=1080; cv.style.setProperty('--ar', mode==='tube43' ? '4/3' : '16/9');
+  const want = mode==='wide' ? 1920 : 1440; if(want!==RW){ RW=want; buildTargets(); }
+  try{ localStorage.setItem('amfm-crt-frame', mode); }catch(e){} }
+$('ar43').onclick=()=>setAR('tube43'); $('ar169w').onclick=()=>setAR('wide'); $('ar169').onclick=()=>setAR('pillar');
+{ let m='tube43'; try{ m=localStorage.getItem('amfm-crt-frame')||'tube43'; }catch(e){} setAR(['tube43','wide','pillar'].includes(m)?m:'tube43'); }
+
+function run(p, target, u, texs){
+  gl.useProgram(p); gl.bindFramebuffer(gl.FRAMEBUFFER, target?target.fb:null);
+  gl.viewport(0,0, target?target.w:cv.width, target?target.h:cv.height);
+  let unit=0; for(const [name,t] of Object.entries(texs)){ gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D,t); gl.uniform1i(gl.getUniformLocation(p,name),unit); unit++; }
+  for(const [k,v] of Object.entries(u)){ const l=gl.getUniformLocation(p,k); if(l===null) continue; Array.isArray(v)? gl['uniform'+v.length+'fv'](l,v) : gl.uniform1f(l,v); }
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+}
+
+// ---------------- sequence: switch-on → (tune-in) → hold → switch-off ----------------
+let identStart=null, loop=false, identDur=7.5;
+const sm=(x,a,b)=>{ const t=Math.min(Math.max((x-a)/(b-a),0),1); return t*t*(3-2*t); };
+const ON=.9, TUNE=2.1, OFF=.9;
+function seqPlan(){ return {on:$('optOn').checked, tune:$('optTune').checked, off:$('optOff').checked, tone:$('optTone').checked, hold:+$('holdSecs').value}; }
+let plan=seqPlan();
+function seqLen(p){ return (p.on?ON:0)+(p.tune?TUNE:0)+p.hold+(p.off?OFF:0); }
+function identMods(t){
+  const p=plan, T=seqLen(p); const m={snow:0, sig:1, roll:0, jit:0, power:1, tone:0, warm:1, off:1};
+  if(p.on) m.power = Math.min(1, t/ON) ;            // classic: dot → line → full picture
+  if(p.on && t<ON) m.power = sm(t,0,ON);
+  if(p.on) m.warm = t<ON ? sm(t,0,ON) : 1;            // physical: the cathode warms, the picture fades up and grows
+  const t0 = p.on?ON:0;
+  if(p.tune){ const tt=t-t0; m.snow=tt<0?0:1-sm(tt,.2,1.5); m.sig=tt<0?1:sm(tt,0,1.0); m.roll=(tt>0)?1-sm(tt,.2,1.5):0; m.jit=tt>0?3*(1-sm(tt,.2,1.8)):0; }
+  const holdStart=t0+(p.tune?TUNE:0), holdEnd=holdStart+p.hold;
+  if(p.tone && t>holdStart && t<holdEnd) m.tone=1;
+  if(p.off){ m.off = 1-sm(t, T-OFF, T); m.power *= m.off; }   // switch-off: collapse to a line, then a dot (both models)
+  return m;
+}
+$('holdSecs').oninput=e=>{ $('holdOut').textContent=(+e.target.value).toFixed(1)+'s'; };
+function playIdent(p){ startAudio(); plan=p||seqPlan(); identDur=seqLen(plan); identStart=performance.now()/1000; }
+$('previewSeq').onclick=()=>playIdent();
+$('loopIdent').onclick=e=>{ loop=!loop; e.target.textContent='Loop: '+(loop?'on':'off'); e.target.classList.toggle('on',loop); };
+document.addEventListener('keydown',e=>{ if(e.code==='Space' && e.target.tagName!=='INPUT' && e.target.tagName!=='SELECT'){ e.preventDefault(); playIdent(); } });
+
+// ---------------- sound (11-05): crt_sound.js, the picture chain's twin ----------------
+// Live: video sound → sndNode → speakers + recorder, params sent every frame. Export: the same processor in an
+// OfflineAudioContext with the switch-on / tune-in / switch-off timeline as a per-field schedule (renderSound).
+let AC=null, dest=null, sndNode=null;
+const SND_LAT=.008;          // crt_sound.js LAT: the offline render is trimmed by this so sound and picture line up
+function soundParams(U, now){ return {amt:S.sndAmt, speaker:S.speaker, whine:S.whine, buzz:S.buzz, crush:S.crush, vol:S.vol,
+  snow:U.snow, signal:U.signal, ghost:U.ghost, jitter:U.jitter, hum:U.hum, roll:U.roll, interf:U.interf, power:S.power, warm:U.warm, off:U.off, tone:U.tone,
+  tapeFmt: model==='physical'?U.tapeFmt:0, tapeGen:U.tapeGen, tapeWave:U.tapeWave, tracking:U.tracking, dropout:U.dropout, lines:U.lines, t:now, ...soundDamage(tapeClock(now),U)}; }
+// what the sound hears of the tape damage: bursts mute and crackle, bad stretches throw more dropouts, search / pause go quiet
+function soundDamage(t,U){ if(model!=='physical'||Math.round(U.tapeFmt)<1) return {burst:0, dropMul:1, deckMute:0, crease:0};
+  const st=tapeState(t,U), d=Math.round(U.deck)||0; return {burst:st.burst, dropMul:st.dropMul, deckMute:d===0?0:1, crease:st.crease[2]}; }
+function startAudio(){ if(AC) return; AC=new AudioContext(); dest=AC.createMediaStreamDestination();
+  AC.audioWorklet.addModule('/crt/crt_sound.js').then(()=>{
+    sndNode=new AudioWorkletNode(AC,'crt-sound',{numberOfInputs:1, numberOfOutputs:1, outputChannelCount:[2], processorOptions:{p:soundParams(uAt(null), performance.now()/1000)}});
+    sndNode.connect(AC.destination); sndNode.connect(dest);
+    if(vidG){ try{ vidG.disconnect(); }catch(e){} vidG.connect(sndNode); }
+  }).catch(e=>{ status('Sound engine did not load ('+e.message+'): playing the plain sound.'); });
+  hookVideoAudio(); }
+// the switch-on / tune-in / switch-off timeline sampled once per field, for the offline render
+function soundSched(p, seconds){ const n=Math.ceil(seconds*59.94)+2, keys=['snow','signal','roll','jitter','warm','off','tone','burst','dropMul','deckMute','crease'], o={};
+  keys.forEach(k=>o[k]=new Float32Array(n)); const keep=plan; plan=p;
+  const dur=isVideo&&srcEl?srcEl.duration:0;
+  for(let i=0;i<n;i++){ const U=uAt(i/59.94); Object.assign(U, soundDamage(dur? videoTimeAt(i/59.94,dur) : i/59.94, U)); keys.forEach(k=>o[k][i]=U[k]); }
+  plan=keep; return o; }
+async function renderSound(input, seconds, p){
+  const SR=48000, oac=new OfflineAudioContext(2, Math.ceil((seconds+SND_LAT)*SR), SR);
+  await oac.audioWorklet.addModule('/crt/crt_sound.js');
+  const node=new AudioWorkletNode(oac,'crt-sound',{numberOfInputs:1, numberOfOutputs:1, outputChannelCount:[2],
+    processorOptions:{p:soundParams(uAt(null),0), sched:soundSched(p, seconds+SND_LAT)}});
+  if(input){ const b=await oac.decodeAudioData(input); const src=oac.createBufferSource(); src.buffer=b; src.connect(node); src.start(0); }
+  node.connect(oac.destination);
+  const out=await oac.startRendering();
+  return wav16(out, Math.round(SND_LAT*SR), Math.ceil(seconds*SR)); }
+function wav16(ab, from, len){ len=Math.min(len, ab.length-from); const ch=ab.numberOfChannels, sr=ab.sampleRate, dv=new DataView(new ArrayBuffer(44+len*ch*2));
+  const w=(o,str)=>{ for(let i=0;i<str.length;i++) dv.setUint8(o+i,str.charCodeAt(i)); };
+  w(0,'RIFF'); dv.setUint32(4,36+len*ch*2,true); w(8,'WAVE'); w(12,'fmt '); dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,ch,true);
+  dv.setUint32(24,sr,true); dv.setUint32(28,sr*ch*2,true); dv.setUint16(32,ch*2,true); dv.setUint16(34,16,true); w(36,'data'); dv.setUint32(40,len*ch*2,true);
+  const data=[...Array(ch)].map((_,c)=>ab.getChannelData(c)); let o=44;
+  for(let i=0;i<len;i++) for(let c=0;c<ch;c++){ const v=Math.max(-1,Math.min(1,data[c][from+i])); dv.setInt16(o, v<0?v*32768:v*32767, true); o+=2; }
+  return new Blob([dv],{type:'audio/wav'}); }
+
+// ---------------- record / still / export ----------------
+let rec=null, chunks=[], recT0=0;
+function startRec(seconds, withSeq, planOverride, onDone){
+  if(rec) return; startAudio();
+  ['ar43','ar169','ar169w','recSeq'].forEach(id=>$(id).disabled=true);
+  const vs=cv.captureStream(30); const st=new MediaStream([...vs.getVideoTracks(), ...dest.stream.getAudioTracks()]);
+  const mt=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(m=>MediaRecorder.isTypeSupported(m));
+  rec=new MediaRecorder(st,{mimeType:mt, videoBitsPerSecond: seconds>60?12e6:24e6}); chunks=[];
+  rec.ondataavailable=e=>chunks.push(e.data);
+  rec.onstop=()=>{ const b=new Blob(chunks,{type:'video/webm'}); rec=null;
+    ['ar43','ar169','ar169w','recSeq'].forEach(id=>$(id).disabled=false); $('recFree').textContent='Start free recording'; $('recFree').classList.remove('on');
+    if(onDone) onDone(); exportFile(b,'video',$('vfmt').value); };
+  rec.start(); recT0=performance.now()/1000;
+  if(withSeq){ loop=false; $('loopIdent').textContent='Loop: off'; $('loopIdent').classList.remove('on'); playIdent(planOverride); }
+  if(seconds) setTimeout(()=>rec&&rec.stop(), seconds*1000);
+}
+$('recSeq').onclick=()=>{ const p=seqPlan(); startRec(seqLen(p)+.35, true); };
+$('recVideo').onclick=()=>{ if(offline){ cancelFast=true; return; } exportFast(); };
+$('recVideoLive').onclick=async ()=>{
+  if(!isVideo){ status('Drop a video first.'); return; } if(rec) return;
+  const v=srcEl, p=seqPlan(); startAudio(); hookVideoAudio(); await AC.resume();
+  const lead=(p.on?ON:0)+(p.tune?TUNE:0);
+  p.hold=Math.max(.5, v.duration - lead - (p.off?OFF:0));   // switch-off lands as the video ends
+  const wasLoop=v.loop; v.loop=false; v.pause(); v.currentTime=0;
+  await new Promise(r=>{ v.onseeked=()=>{ v.onseeked=null; r(); }; });
+  startRec(seqLen(p)+.35, true, p, ()=>{ v.loop=wasLoop; });
+  v.play();
+};
+$('recFree').onclick=e=>{ if(rec){ rec.stop(); } else { startRec(0,false); e.target.textContent='Stop recording'; e.target.classList.add('on'); } };
+// STILLS (11-01): any size, optionally averaged over several fields like a long exposure of a real screen.
+// The live loop pauses (offline), the canvas and every target are rebuilt at SCALE×, frames are drawn at
+// successive field times and summed, then everything is put back exactly as it was.
+async function renderStill(scale, frames){ if(offline) return null;   // an export is drawing
+  const keep={w:cv.width, h:cv.height, RW, RH};
+  offline=true; await new Promise(r=>requestAnimationFrame(r));
+  try{
+    cv.width=keep.w*scale; cv.height=keep.h*scale; RW=keep.RW*scale; RH=keep.RH*scale; SCALE=scale; buildTargets();
+    const W=cv.width, H=cv.height, t0=performance.now()/1000;
+    if(isVideo) upload();
+    if(frames<=1){ draw(t0, 1/59.94, null); return await new Promise(r=>cv.toBlob(r,'image/png')); }
+    const px=new Uint8Array(W*H*4), acc=new Uint16Array(W*H*4);
+    for(let i=0;i<frames;i++){ draw(t0+i/59.94, 1/59.94, null); gl.readPixels(0,0,W,H,gl.RGBA,gl.UNSIGNED_BYTE,px);
+      for(let k=0;k<px.length;k++) acc[k]+=px[k];
+      status('Exposing '+(i+1)+' / '+frames+'…'); await new Promise(r=>setTimeout(r,0)); }
+    const c2=document.createElement('canvas'); c2.width=W; c2.height=H; const x=c2.getContext('2d'); const img=x.createImageData(W,H);
+    const d=img.data, row=W*4;
+    for(let y=0;y<H;y++){ const src=(H-1-y)*row, dst=y*row;            // GL rows run bottom-up
+      for(let k=0;k<row;k++) d[dst+k]=k%4===3 ? 255 : Math.round(acc[src+k]/frames); }
+    x.putImageData(img,0,0);
+    return await new Promise(r=>c2.toBlob(r,'image/png'));
+  } finally {
+    cv.width=keep.w; cv.height=keep.h; RW=keep.RW; RH=keep.RH; SCALE=1; buildTargets(); offline=false;
+  }
+}
+$('still').onclick=async()=>{ const sc=+$('ssize').value, n=+$('sexp').value;
+  status('Rendering still '+sc+'×…'); const b=await renderStill(sc,n); if(b) exportFile(b,'still',$('sfmt').value); };
+// BATCH: each picked image goes through the tube with the current look, size and exposure, saved under its own
+// name into one dated folder. The picture that was loaded before comes back at the end.
+$('batch').onclick=()=>$('batchFiles').click();
+function loadImageFile(f){ return new Promise((res,rej)=>{ const url=URL.createObjectURL(f), im=new Image();
+  im.onload=()=>{ if(srcEl&&srcEl.pause) srcEl.pause(); isVideo=false; srcEl=im; srcFile=f; srcAR=im.naturalWidth/im.naturalHeight; upload(); res(); };
+  im.onerror=()=>rej(new Error('could not read '+f.name)); im.src=url; }); }
+$('batchFiles').onchange=async e=>{
+  const files=[...e.target.files].sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true})); e.target.value='';
+  if(!files.length) return;
+  const sc=+$('ssize').value, n=+$('sexp').value, fmt=$('sfmt').value;
+  const d0=new Date(), z=n=>String(n).padStart(2,'0'); const folder='batch-'+d0.getFullYear()+'-'+z(d0.getMonth()+1)+'-'+z(d0.getDate())+'-'+z(d0.getHours())+z(d0.getMinutes())+z(d0.getSeconds());
+  const before={el:srcEl, file:srcFile, ar:srcAR, vid:isVideo};
+  $('batch').disabled=true; $('still').disabled=true; let last=null, failed=0;
+  try{
+    for(let i=0;i<files.length;i++){
+      status('Batch '+(i+1)+' / '+files.length+' · '+files[i].name);
+      try{ await loadImageFile(files[i]); const b=await renderStill(sc,n);
+        const name=files[i].name.replace(/\.[^.]+$/,'');
+        const r=await fetch('/api/crt_export?kind=still&fmt='+fmt+'&name='+encodeURIComponent(name)+'&folder='+folder,{method:'POST',body:b});
+        const j=await r.json(); if(!r.ok||j.error) throw new Error(j.error||r.status); last=j.path;
+      }catch(err){ failed++; console.error(err); }
+    }
+  } finally {
+    srcEl=before.el; srcFile=before.file; srcAR=before.ar; isVideo=before.vid; if(srcEl) upload();
+    $('batch').disabled=false; $('still').disabled=false;
+  }
+  if(last){ saved(last.replace(/\/[^/]+$/,'')); status('Batch done · '+(files.length-failed)+' of '+files.length+' saved to '+folder+(failed?' · '+failed+' failed':'')); }
+  else status('Batch failed: nothing was saved.');
+};
+
+async function exportFile(blob, kind, fmt){
+  status(kind==='video' ? 'Converting to '+fmt.toUpperCase()+'…' : 'Saving still…');
+  try{
+    const r = await fetch('/api/crt_export?kind='+kind+'&fmt='+fmt, {method:'POST', body:blob});
+    const j = await r.json(); if(!r.ok || j.error) throw new Error(j.error||r.status);
+    saved(j.path);
+  }catch(e){ // engine not reachable: fall back to a browser download of the raw file
+    const ext = kind==='video' ? 'webm' : 'png';
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='amfm-crt-'+stamp()+'.'+ext; document.body.append(a); a.click(); a.remove();
+    status('Engine not reachable ('+e.message+'): saved a raw .'+ext+' to Downloads instead.');
+  }
+}
+const stamp=()=>new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+// SHOW IN FINDER (10-22, Eric): a real button beside the export and in the status line, for the last file saved
+let lastSaved=null;
+function saved(path){ lastSaved=path; const name=path.split('/').pop(); status('Saved '+name);
+  $('saveHint').textContent='Saved '+name;
+  document.querySelectorAll('button.reveal').forEach(b=>{ b.disabled=false; b.hidden=false; }); }
+document.querySelectorAll('button.reveal').forEach(b=>b.onclick=()=>{ if(lastSaved) fetch('/api/reveal',{method:'POST',body:JSON.stringify({p:lastSaved})}); });
+document.querySelectorAll('button.renders').forEach(b=>b.onclick=()=>fetch('/api/renders_folder',{method:'POST',body:'{}'}));
+
+// EXPORT WHOLE VIDEO without playing it through (10-22, Eric: "just have it download instead of having to play
+// through"). The video is stepped frame by frame (29.97 fps); each frame is drawn through the CRT with the switch-on /
+// tune-in / switch-off timeline at that exact moment, then encoded on the spot — the Mac's own H.264 encoder where the
+// browser has one (WebCodecs), every frame as a JPEG where it has not. The engine stitches the frames with the
+// video's own sound and converts to the chosen format.
+let offline=false, cancelFast=false;
+const FPS=30000/1001;
+function seekTo(v,t){ return new Promise(res=>{ let done=false; const fin=()=>{ if(done) return; done=true; v.removeEventListener('seeked',fin); res(); };
+  v.addEventListener('seeked',fin); v.currentTime=t; setTimeout(fin,4000); }); }
+async function post(url, body){ const r=await fetch(url,{method:'POST',body}); const j=await r.json().catch(()=>({})); if(!r.ok||j.error) throw new Error(j.error||('HTTP '+r.status)); return j; }
+async function h264Encoder(w,h){
+  if(typeof VideoEncoder==='undefined') return null;
+  const cfg={codec:'avc1.640033', width:w, height:h, bitrate:40e6, framerate:FPS, avc:{format:'annexb'}, hardwareAcceleration:'prefer-hardware'};
+  try{ const sup=await VideoEncoder.isConfigSupported(cfg); if(!sup.supported) return null; }catch(e){ return null; }
+  const parts=[]; let err=null;
+  const enc=new VideoEncoder({output:(chunk)=>{ const b=new Uint8Array(chunk.byteLength); chunk.copyTo(b); parts.push(b); }, error:(e)=>{ err=e; }});
+  enc.configure(cfg);
+  return { add: async (i)=>{ if(err) throw err; while(enc.encodeQueueSize>6) await new Promise(r=>setTimeout(r,4));
+             const fr=new VideoFrame(cv,{timestamp:Math.round(i*1e6/FPS), duration:Math.round(1e6/FPS)}); enc.encode(fr,{keyFrame:i%60===0}); fr.close(); },
+           done: async ()=>{ await enc.flush(); enc.close(); if(err) throw err; return new Blob(parts,{type:'video/h264'}); } };
+}
+async function exportFast(){
+  if(!isVideo){ status('Drop a video first.'); return; } if(rec||offline) return;
+  const v=srcEl, p=seqPlan(); const lead=(p.on?ON:0)+(p.tune?TUNE:0);
+  p.hold=Math.max(.5, v.duration - lead - (p.off?OFF:0));   // switch-off lands as the video ends, as when recording
+  const total=seqLen(p)+.35, n=Math.ceil(total*FPS), fmt=$('vfmt').value, sound=$('vSound').classList.contains('on');
+  const job=(Date.now().toString(36)+Math.random().toString(36).slice(2,6)).toLowerCase();
+  const was={loop:v.loop, t:v.currentTime, paused:v.paused};
+  offline=true; cancelFast=false; identStart=null; v.pause(); v.loop=false; rollpos=0;
+  ['ar43','ar169','ar169w','recSeq','recVideoLive','recFree','still','batch'].forEach(id=>$(id).disabled=true);
+  $('recVideo').textContent='Stop export';
+  const t0=performance.now();
+  try{
+    const enc=await h264Encoder(cv.width, cv.height);
+    for(let i=0;i<n;i++){
+      if(cancelFast) throw new Error('stopped');
+      const t=i/FPS;
+      await seekTo(v, videoTimeAt(t, v.duration));
+      if(underIsVideo && underEl && underEl.duration) await seekTo(underEl, videoTimeAt(t, v.duration) % underEl.duration);
+      frame++; plan=p; draw(t, 1/FPS, t);
+      if(enc) await enc.add(i);
+      else { const b=await new Promise(r=>cv.toBlob(r,'image/jpeg',.93)); await post('/api/crt_frame?job='+job+'&i='+i, b); }
+      if(i%10===0){ const el=(performance.now()-t0)/1000, left=el/(i+1)*(n-i-1);
+        $('status').textContent='Exporting frame '+(i+1)+' / '+n+' · about '+Math.ceil(left)+' s left'; }
+    }
+    if(enc){ $('status').textContent='Sending the video…'; await post('/api/crt_part?job='+job+'&name=stream', await enc.done()); }
+    if(sound){
+      let input=null;
+      if(srcFile){ await post('/api/crt_part?job='+job+'&name=source', srcFile);
+        $('status').textContent='Reading the video\'s sound…';
+        const r=await fetch('/api/crt_audio?job='+job,{method:'POST'}); if(r.status===200) input=await r.arrayBuffer(); }
+      $('status').textContent='Running the sound through the set…';
+      await post('/api/crt_part?job='+job+'&name=sound', await renderSound(input, total, p));
+    }
+    $('status').textContent='Stitching it with its sound'+(fmt==='mp4'?'':' and converting to '+fmt.toUpperCase())+'…';
+    const j=await post('/api/crt_render?job='+job+'&fmt='+fmt+'&fps=30000/1001');
+    saved(j.path);
+  }catch(e){ status(e.message==='stopped' ? 'Export stopped.' : 'Export failed: '+e.message); }
+  finally{
+    offline=false; v.loop=was.loop; try{ v.currentTime=was.t; }catch(e){} if(!was.paused) v.play().catch(()=>{}); applyDeck();
+    ['ar43','ar169','ar169w','recSeq','recVideoLive','recFree','still','batch'].forEach(id=>$(id).disabled=false);
+    $('recVideo').textContent='Export whole video';
+  }
+}
+function status(msg){ $('status').textContent = msg || 'Ready. Drag sliders, or press Space to preview the sequence.'; }
+
+// ---------------- loop ----------------
+let frame=0, rollpos=0, last=performance.now()/1000;
+// one picture at moment `now` (seconds) — `it` is where the switch-on / tune-in / switch-off timeline is, or null
+// TAPE DAMAGE (11-06): events on the tape's own clock. Each kind cuts time into segments; a hash of the segment says
+// whether something happens there, when, for how long and how badly — so the same moment of tape always looks the same
+// (exports are repeatable) and a bad stretch stays bad for its length. Seeds differ per kind.
+function hj(a,b){ let v=(Math.imul((a|0)^0x9e3779b9, 0x85ebca6b) ^ Math.imul((b|0)+0x632be59b, 0xc2b2ae35))>>>0;
+  v^=v>>>16; v=Math.imul(v,0x7feb352d)>>>0; v^=v>>>15; v=Math.imul(v,0x846ca68b)>>>0; v^=v>>>16; return (v>>>0)/4294967296; }
+function events(t, segLen, seed, rate, look=6){ const out=[], k0=Math.floor(t/segLen);
+  for(let k=k0-look;k<=k0;k++){ if(hj(k,seed)>=rate) continue; const st=(k+hj(k,seed+1))*segLen; out.push({st, h:(n)=>hj(k,seed+2+n)}); } return out; }
+const DECK=[{n:0,v:0,spd:1},{n:1.4,v:0,spd:0,jit:1},{n:2,v:.9,spd:3},{n:5,v:2.4,spd:9},{n:5,v:-2.4,spd:-9}];
+function tapeState(t, U){
+  const st={clogA:0, clogB:0, jump:0, hhold:0, burst:0, dropMul:1, mould:0, mouldSeed:0, skewNow:0, ckill:0, cpGain:1, cpBarY:0, cpBar:0,
+    bandN:0, bandH:0, bandY:[0,0,0], deckN:0, deckPos:0, deckJit:0, crease:[0,0,0], wow:0, wowPh:t*.7};
+  const sm=(x,a,b)=>{ const q=Math.min(Math.max((x-a)/(b-a),0),1); return q*q*(3-2*q); };
+  // head clog: comes on over ~0.8 s, lasts 1–6 s, clears suddenly; usually one head, both at high settings; 1 = fully clogged
+  const clogRate=U.clog*.45 + U.mould*.22;            // mould sheds onto the heads, so mouldy tape clogs them too
+  if(clogRate>0){ for(const e of events(t, 2, 101, clogRate, 4)){ const d=1+5*e.h(0), lv=sm(t,e.st,e.st+.8)*(t<e.st+d?1:0)*(.5+.5*e.h(1));
+      if(e.h(2)<.5 || e.h(3)<U.clog-.55) st.clogA=Math.max(st.clogA,lv); if(e.h(2)>=.5 || e.h(3)<U.clog-.55) st.clogB=Math.max(st.clogB,lv); }
+    const base=Math.max(0,(U.clog-.85)/.15); st.clogA=Math.max(st.clogA,base); st.clogB=Math.max(st.clogB,base*.9); }
+  // tape condition: lengthwise creases (a band at one height for seconds), crosswise bursts (a few fields of breakup,
+  // the picture jumps, sometimes horizontal hold goes), and stretches where dropouts cluster
+  if(U.cond>0){
+    for(const e of events(t, 3, 201, U.cond*.35, 3)){ const d=1+3*e.h(0); if(t>=e.st && t<e.st+d){ const s=.4+.6*e.h(3); if(s>st.crease[2]) st.crease=[e.h(1), .015+.05*e.h(2), s*sm(t,e.st,e.st+.15)]; } }
+    for(const e of events(t, 1, 301, U.cond*.18, 2)){ const d=(3+5*e.h(0))/59.94; if(t>=e.st && t<e.st+d){ st.burst=Math.max(st.burst,.5+.5*e.h(1)); st.jump=(e.h(2)-.5)*50; if(e.h(3)>.55) st.hhold=.4+.6*e.h(4); } }
+    for(const e of events(t, .5, 401, U.cond*.4, 2)){ if(t>=e.st && t<e.st+.3+e.h(0)) st.dropMul=Math.max(st.dropMul, 1+25*e.h(1)*U.cond); }
+  }
+  // mould: patches that drift past with the tape; strength breathes as the patch passes
+  if(U.mould>0){ const k=Math.floor(t/2.5); st.mould=U.mould*(.6+.4*Math.sin(t*.9)); st.mouldSeed=k*13+7; }
+  // wow: worn or stretched tape bends the whole frame slowly sideways
+  st.wow=(U.tapeWave*.12 + U.cond*.6)*Math.sin(t*.31+1.7);
+  // skew: the hook wobbles in size field to field
+  if(U.skew>0) st.skewNow=U.skew*(.55+.3*Math.sin(t*1.3)+.15*(hj(Math.floor(t*59.94),501)-.5));
+  // mistracking: 1–3 bands drifting slowly through the frame
+  if(U.mistrack>0){ st.bandN=1+Math.floor(U.mistrack*2.6); st.bandH=.03+.09*U.mistrack; st.bandY=[0,1,2].map(i=>((hj(i,601)+t*(.012+.01*i)*(i%2?-1:1))%1+1)%1); }
+  // colour loss: the colour killer flickers off in weak stretches, always when a clog or burst hits
+  if(U.ckill>0){ const f=Math.floor(t*59.94); for(const e of events(t, 1.5, 701, U.ckill*.6, 2)){ if(t>=e.st && t<e.st+.4+1.6*e.h(0)) st.ckill=Math.max(st.ckill, hj(f,702)<.3+.6*U.ckill?1:0); } }
+  st.ckill=Math.max(st.ckill, Math.min(1,(st.clogA+st.clogB)*.6), st.burst>0?1:0);
+  // copy protection: the recorder's level control hunts — slow pumping and a soft dark bar rolling through
+  if(U.copyprot>0){ st.cpGain=1-U.copyprot*.38*(.5+.5*Math.sin(t*2*Math.PI/3.4)); st.cpBar=U.copyprot*.55; st.cpBarY=(t*.07)%1; }
+  // taped over: the old recording ghosts under; where the new one ends it takes over (a roll + rainbow at the edit),
+  // and the odd insert edit flashes rainbow for a few fields
+  st.underOn=underEl?1:0; st.ghostU=0; st.past=0; st.edit=0;
+  if(underEl){ st.ghostU=U.underAmt*.35; const dur=(isVideo&&srcEl&&srcEl.duration)||0, endT=U.underEnd<1&&dur? U.underEnd*dur : Infinity;
+    if(t>=endT) st.past=1;
+    const dt=t-endT; if(dt>-.05 && dt<.45){ const k=Math.max(0,dt)/.45; st.edit=1-k; st.jump=(1-k)*(1-k)*243*(Math.floor(t*59.94)%2?1:-1); }
+    for(const e of events(t, 4, 801, U.underAmt*.12, 1)){ if(t>=e.st && t<e.st+.12) st.edit=Math.max(st.edit,.8); } }
+  // deck: pause / search bars (their count and speed set by the mode)
+  const dk=DECK[Math.round(U.deck)||0]; if(dk.n){ st.deckN=dk.n; st.deckPos=(t*dk.v)%1; st.deckJit=dk.jit||0; }
+  return st; }
+// the sliders with the switch-on / tune-in / switch-off timeline applied at `it` (null = no sequence running)
+function uAt(it){
+  const U={...S, warm:1, off:1, tone:0, powerP:S.power};
+  if(it!==null){ const m=identMods(it); U.warm=m.warm; U.off=m.off; U.powerP=S.power*m.off;
+    U.snow=Math.max(S.snow,m.snow); U.signal=S.signal*m.sig; U.roll=Math.max(S.roll,m.roll); U.jitter=S.jitter+m.jit; U.power=S.power*m.power; U.tone=m.tone; }
+  return U; }
+function draw(now, dt, it){
+  const U=uAt(it);
+  if(U.roll>0.001){ rollpos=(rollpos+U.roll*dt*1.6)%1; }
+  else if(rollpos!==0){ // vertical hold catches the frame and locks it back in place
+    const target = rollpos>.5 ? 1 : 0; rollpos += (target-rollpos)*Math.min(1, dt*7);
+    if(Math.abs(target-rollpos)<.0005) rollpos=0; rollpos%=1; }
+  if(sndNode && !offline) sndNode.port.postMessage({p:soundParams(U, now)});
+  if(isVideo) upload();
+  if(underIsVideo && underEl){
+    if(isVideo && !offline && underEl.duration){ const want=videoTimeAt(srcEl.currentTime, srcEl.duration) % underEl.duration;
+      if(Math.abs(underEl.currentTime-want)>.25) underEl.currentTime=want; if(srcEl.paused!==underEl.paused) srcEl.paused?underEl.pause():underEl.play().catch(()=>{}); }
+    uploadUnder(); }
+  const res=[RW,RH];
+  const field = Math.floor(now*59.94);            // noise and jitter advance per NTSC field, not per screen refresh
+  const fit = frameMode==='pillar' ? [1440/1920,1] : [1,1];
+  const g=U.glowSize, h=g*2.2;
+  if(model==='classic'){
+    run(P.core, T.base, {...U, res:[RW/SCALE,RH/SCALE], t:now, frame:field, rollpos, srcAR, rasterAR: RW/RH}, {src:srcTex});
+    run(P.blur, T.g1, {dir:[g*SCALE/(RW/4),0], thresh:U.glowThresh}, {src:T.base.t});
+    run(P.blur, T.g2, {dir:[0,g*SCALE/(RH/4)], thresh:-1}, {src:T.g1.t});
+    run(P.blur, T.h1, {dir:[h*SCALE/(RW/8),0], thresh:U.glowThresh*.6}, {src:T.base.t});
+    run(P.blur, T.h2, {dir:[0,h*SCALE/(RH/8)], thresh:-1}, {src:T.h1.t});
+    run(P.comp, null, {glow:U.glow, halation:U.halation, warm:U.haloWarm, fit}, {base:T.base.t, glowT:T.g2.t, haloT:T.h2.t});
+  } else {
+    const L = Math.max(60, Math.round(U.lines)), st = sigTarget(L);
+    const DT = Math.max(dt,1/240);
+    // CAMERA: frames the picture onto the raster and does what the tubes did (ping-pong for lag/comet, slow burn accumulator)
+    let pc=T.cam1; T.cam1=T.cam2; T.cam2=pc;
+    run(P.cam, T.cam1, {srcAR, rasterAR:RW/RH, picX:U.picX, picY:U.picY, picS:U.picS, knee:U.knee, camLag:U.camLag, comet:U.comet, burn:U.burn, reg:U.reg, shade:U.shade, dt:DT, hasCam}, {src:srcTex, prevC:T.cam2.t, burnT:T.burn2.t});
+    run(P.burn, T.burn1, {dt:DT, hasCam}, {cam:T.cam1.t, burnT:T.burn2.t});   // burn2 = latest accumulator → burn1 = updated
+    let pb=T.burn1; T.burn1=T.burn2; T.burn2=pb;          // keep the newest accumulator in burn2 for the next camera pass
+    hasCam=1;
+    let sigSrc=T.cam1.t;
+    // TAPE: record (and dub) on the 910×486 4·fsc grid, then play back through the transport
+    const F=Math.round(U.tapeFmt);
+    if(F>=5){
+      const st=tapeState(tapeClock(now),U), dk=Math.round(U.deck)||0;
+      const err=Math.min(.9,(U.dropout/40*.004 + U.mould*.01)*st.dropMul + st.burst*.3 + (dk>1?.35:0));
+      run(P.digi, T.dg1, {fmtD:F-5, frame:field, err, stripes:Math.max(st.clogA,st.clogB)*.7, freeze:st.burst>.75?1:0,
+        q:(F===6?.32:.06)+(U.tapeGen-1)*.08, hasPrev:hasDig, hasUnder:underEl?1:0}, {src:T.cam1.t, prev:T.dg2.t, under:underTex});
+      const x=T.dg1; T.dg1=T.dg2; T.dg2=x; hasDig=1; sigSrc=T.dg2.t;
+    } else if(F>0){
+      const fm=[null, {nC:4.8,dC:0,nL:1.75,comb:0,sh:.3,hs:0}, {nC:14,dC:6,nL:2.4,comb:1,sh:.7,hs:12}, {nC:22,dC:9,nL:3,comb:1,sh:1,hs:21}, {nC:26,dC:14,nL:5,comb:1,sh:1.2,hs:21}][F];
+      const tu={nC:fm.nC, dC:fm.dC, nL:fm.nL, comb:fm.comb, frame:field};
+      run(P.trec, T.tp1, {...tu, first:1}, {src:T.cam1.t});
+      let a=T.tp1, b=T.tp2;
+      for(let gI=2; gI<=Math.round(U.tapeGen); gI++){ run(P.trec, b, {...tu, first:0}, {src:a.t}); const x=a; a=b; b=x; }
+      run(P.tmech, T.tpo, {...tu, wave:U.tapeWave, tracking:U.tracking, dropout:U.dropout, sharpen:fm.sh, hsDelta:fm.hs, ...tapeState(tapeClock(now), U)}, {src:a.t, under:underTex});
+      sigSrc=T.tpo.t;
+    }
+    run(P.sig, st, {...U, raster:1, sharp:U.sharp, t:now, frame:field, rollpos, srcAR, rasterAR: RW/RH, lines:L, W:RW/SCALE}, {src:sigSrc});
+    const prev=T.base; T.base=T.base2; T.base2=prev;          // T.base2 now holds the frame before
+    run(P.tube, T.base, {res:[RW/SCALE,RH/SCALE], lines:L, curve:U.curve, scan:U.scan, beam:U.beam, mask:U.mask, vignette:U.vignette, corner:U.corner, sheen:U.sheen,
+      power:U.powerP, warm:U.warm, maskKind:Math.round(U.maskKind), pitch:U.pitch, converge:U.converge, persist:U.persist, dt:DT, hasPrev, mono:U.mono}, {sig:st.t, prevT:T.base2.t});
+    hasPrev=1;
+    const tg=Math.pow(U.glowThresh,2.2);         // thresholds were tuned on encoded values; same feel in linear
+    run(P.blur2, T.g1, {dir:[g*SCALE/(RW/4),0], thresh:tg}, {src:T.base.t});
+    run(P.blur2, T.g2, {dir:[0,g*SCALE/(RH/4)], thresh:-1}, {src:T.g1.t});
+    run(P.blur2, T.h1, {dir:[h*SCALE/(RW/8),0], thresh:tg*.6}, {src:T.base.t});
+    run(P.blur2, T.h2, {dir:[0,h*SCALE/(RH/8)], thresh:-1}, {src:T.h1.t});
+    run(P.comp2, null, {glow:U.glow*GLOWK, halation:U.halation*HALOK, warm:U.haloWarm, fit}, {base:T.base.t, glowT:T.g2.t, haloT:T.h2.t});
+  }
+}
+// DECK (11-06): pause holds the frame, search plays it fast, rewind runs it backwards (the bars come from tapeState)
+function applyDeck(){ if(!isVideo||offline) return; const d=DECK[deckIdx()], v=srcEl;
+  if(d.spd===0||d.spd<0){ v.pause(); } else { v.playbackRate=Math.min(16,d.spd); if(v.paused) v.play().catch(()=>{}); } vidUI(); }
+function tick(){
+  const now=performance.now()/1000, dt=now-last; last=now;
+  if(isVideo && !offline && DECK[deckIdx()].spd<0){ srcEl.currentTime=Math.max(0, srcEl.currentTime-dt*9); }
+  if(offline){ requestAnimationFrame(tick); return; }   // the export is drawing; the screen shows its frames
+  frame++;
+  let it=null;
+  if(identStart!==null){ it=now-identStart; $('identT').textContent=it.toFixed(1)+'s';
+    if(it>identDur+.4){ if(loop) identStart=now; else { identStart=null; $('identT').textContent=''; } } }
+  if(rec) $('status').textContent='Recording… '+(now-recT0).toFixed(1)+'s';
+  draw(now, dt, it);
+  if(isVideo && frame%6===0){ vidUI(); tlHead(); }
+  requestAnimationFrame(tick);
+}
+restore(); loadImage('/crt/logos/'+LOGOS[0]); status(); requestAnimationFrame(tick);
+</script>
+
+<script>
+(function(){
+const q=s=>document.querySelector(s), qa=s=>[...document.querySelectorAll(s)];
+qa('.step>.hd').forEach(h=>h.addEventListener('click',()=>{const sec=h.parentElement;const was=sec.classList.contains('open');qa('.step').forEach(x=>x.classList.remove('open'));if(!was)sec.classList.add('open');}));
+function sums(){
+  const sel=q('#logoSel'); const vn=q('#vidName'); const vp=q('#vidPanel');
+  q('#sumSource').textContent=(vp&&!vp.hidden&&vn&&vn.textContent)?'Video · '+vn.textContent:(sel&&sel.selectedOptions[0]?sel.selectedOptions[0].textContent:'Pick a picture');
+  q('.step[data-step="source"]').classList.toggle('done',true);
+  const ap=q('[data-preset].on'); const ar=q('#arSeg button.on');
+  q('#sumLook').textContent=(ap?ap.textContent.trim():'Custom')+(ar?' · '+ar.textContent.trim():'');
+  const on=[['optOn','switch-on'],['optTune','tune-in'],['optOff','switch-off'],['optTone','tone']].filter(([id])=>q('#'+id)&&q('#'+id).checked).map(x=>x[1]);
+  const hold=q('#holdOut')?q('#holdOut').textContent:'';
+  const seq=[...on.slice(0,on.indexOf('switch-off')>=0?on.indexOf('switch-off'):on.length),'hold '+hold,...(on.includes('switch-off')?['switch-off']:[])].join(' · ');
+  q('#sumSeq').textContent=seq; q('#crtEst').textContent=seq;
+  const vf=q('#vfmt'), sf=q('#sfmt'); q('#sumOut').textContent=(vf?vf.selectedOptions[0].textContent:'')+' · stills '+(sf?sf.selectedOptions[0].textContent:'');
+  const st=q('#status'); if(st){q('#topst').textContent=/^ready/i.test(st.textContent)?'Ready':(st.textContent||'Ready').slice(0,48);}
+}
+document.querySelector('.left').addEventListener('input',sums);document.querySelector('.left').addEventListener('change',sums);document.querySelector('.left').addEventListener('click',()=>setTimeout(sums,0));
+setInterval(sums,1500);setTimeout(sums,400);
+})();
+</script>
+<script src="/update.js"></script>
+</body></html>
