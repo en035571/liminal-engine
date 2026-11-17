@@ -129,64 +129,104 @@ def deliver(path, kind):
 CRT_OUT = OUT / "_work" / "crt"      # browser recordings, frame jobs, raw stills: working files, not deliverables
 CRT_DELIV = DELIV / "crt"
 _SAFE_NAME = re.compile(r"[^\w .()\-]+")
+CRT_BUSY = [0]   # CRT saves / renders in flight: an update waits for them
+def crt_deliv():
+    """Liminal Engine/crt, or the local offline folder when the T7 went away mid-session (as deliver() does)."""
+    try: CRT_DELIV.mkdir(parents=True, exist_ok=True); return CRT_DELIV
+    except OSError:
+        d = Path.home() / "Movies" / "Liminal Engine (offline)" / "crt"; d.mkdir(parents=True, exist_ok=True); return d
+def crt_stem():   # second-stamped name + a short random tail: two windows saving in the same second never collide
+    return "amfm-crt-" + time.strftime("%Y%m%d-%H%M%S") + "-" + os.urandom(2).hex()
+def need_ffmpeg():
+    if not FFMPEG: raise RuntimeError("ffmpeg isn't installed (brew install ffmpeg); only WebM recordings, PNG stills and ASCII text can be saved without it")
+def ff_to(cmd, dst, timeout=1800):
+    """Run ffmpeg into a hidden .part file next to dst and rename it on success: a failed or timed-out encode never
+    leaves a half-written video in the deliveries folder. cmd ends where the output path goes."""
+    need_ffmpeg(); tmp = dst.with_name("." + dst.stem + ".part" + dst.suffix)
+    try:
+        r = subprocess.run([*cmd, str(tmp)], capture_output=True, text=True, timeout=timeout)
+        if r.returncode != 0: raise RuntimeError((r.stderr.strip().splitlines() or ["ffmpeg failed"])[-1])
+        os.replace(tmp, dst); return dst
+    except subprocess.TimeoutExpired: raise RuntimeError("ffmpeg took longer than %d min" % (timeout // 60))
+    finally: Path(tmp).unlink(missing_ok=True)
 def crt_export(body, kind, fmt, name=None, folder=None):
     """CRT arm: the page records/grabs in the browser (webm / png); turn it into the chosen file type.
     Stills may carry a name and a folder (batch stills, 11-01) so a fast run never overwrites itself."""
-    CRT_OUT.mkdir(parents=True, exist_ok=True); CRT_DELIV.mkdir(parents=True, exist_ok=True)
+    CRT_OUT.mkdir(parents=True, exist_ok=True)
     stem = "amfm-crt-" + time.strftime("%Y%m%d-%H%M%S")
     raw = CRT_OUT / "_raw"; raw.mkdir(exist_ok=True)
-    if kind == "still":
-        out_dir = CRT_DELIV
-        if folder:
-            out_dir = CRT_DELIV / (_SAFE_NAME.sub("_", folder).strip(" .")[:80] or "batch"); out_dir.mkdir(exist_ok=True)
-        if name: stem = _SAFE_NAME.sub("_", name).strip(" .")[:120] or stem
-        src = raw / (stem + "-" + os.urandom(3).hex() + ".png"); src.write_bytes(body)
-        if fmt == "png":
-            dst = out_dir / (stem + ".png"); shutil.copyfile(src, dst); return dst
-        dst = out_dir / (stem + (".jpg" if fmt == "jpg" else ".tif"))
-        args = ["-q:v", "2"] if fmt == "jpg" else ["-compression_algo", "lzw"]
-        subprocess.run([FFMPEG, "-v", "error", "-y", "-i", str(src), *args, str(dst)], check=True, capture_output=True, timeout=60)
+    if kind == "video":   # the take goes to disk first: whatever fails after this, the recording survives
+        head = body.open("rb").read(8) if isinstance(body, Path) else body[:8]
+        is_mp4 = head[4:8] == b"ftyp"; stem = crt_stem()
+        src = raw / (stem + (".mp4" if is_mp4 else ".webm"))
+        if isinstance(body, Path): os.replace(body, src)
+        else: src.write_bytes(body)
+        try:
+            dd = crt_deliv()
+            if fmt == "webm" and not is_mp4:
+                dst = dd / (stem + ".webm"); shutil.copyfile(src, dst); src.unlink(missing_ok=True); return dst
+            dst = crt_convert(src, fmt, stem, dd)
+        except ValueError: raise
+        except Exception as e:
+            raise RuntimeError(str(e)[-300:] + " · the recording is kept at " + str(src))
+        src.unlink(missing_ok=True)   # converted: the raw recording was only a working file
         return dst
-    # Chrome records WebM; Safari's engine (the native app) may only record MP4 — name the file by what it really is
-    is_mp4 = body[4:8] == b"ftyp"
-    src = raw / (stem + (".mp4" if is_mp4 else ".webm")); src.write_bytes(body)
-    if fmt == "webm" and not is_mp4:
-        dst = CRT_DELIV / (stem + ".webm"); shutil.copyfile(src, dst); src.unlink(missing_ok=True); return dst
-    dst = crt_convert(src, fmt, stem)
-    src.unlink(missing_ok=True)   # converted: the raw recording was only a working file
-    return dst
+    if isinstance(body, Path): b = body.read_bytes(); body.unlink(missing_ok=True); body = b
+    CRT_DELIV_ = crt_deliv()
+    if kind == "text":   # ASCII saved as characters (11-16): the page builds the file; only these three types
+        ext = {"txt": ".txt", "html": ".html", "svg": ".svg"}.get(fmt)
+        if not ext: raise ValueError("unknown text format")
+        base = stem + "-%03d-ascii" % (int(time.time() * 1000) % 1000); dst = CRT_DELIV_ / (base + ext); n = 2
+        while dst.exists(): dst = CRT_DELIV_ / (base + "-" + str(n) + ext); n += 1   # two saves in one moment never overwrite
+        with open(dst, "xb") as f: f.write(body)
+        return dst
+    if kind == "still":
+        out_dir = CRT_DELIV_
+        if folder:
+            out_dir = CRT_DELIV_ / (_SAFE_NAME.sub("_", folder).strip(" .")[:80] or "batch"); out_dir.mkdir(exist_ok=True)
+        if name: stem = _SAFE_NAME.sub("_", name).strip(" .")[:120] or stem
+        ext = {"png": ".png", "jpg": ".jpg", "tif": ".tif", "tiff": ".tif"}.get(fmt)
+        if not ext: raise ValueError("unknown still format")
+        if not name: stem += "-%03d" % (int(time.time() * 1000) % 1000)
+        dst = out_dir / (stem + ext); n = 2
+        while dst.exists(): dst = out_dir / (stem + "-" + str(n) + ext); n += 1   # same second, or IMG_1.jpg + IMG_1.png in a batch: never overwrite
+        if fmt == "png":
+            with open(dst, "xb") as f: f.write(body)
+            return dst
+        need_ffmpeg(); src = raw / (stem + "-" + os.urandom(3).hex() + ".png"); src.write_bytes(body)
+        args = ["-q:v", "2"] if fmt == "jpg" else ["-compression_algo", "lzw"]
+        try: return ff_to([FFMPEG, "-v", "error", "-y", "-i", str(src), *args], dst, 120)
+        finally: src.unlink(missing_ok=True)   # the PNG was only a working copy for ffmpeg
+    raise ValueError("unknown kind")
 
 
-def crt_convert(src, fmt, stem):
+def crt_convert(src, fmt, stem, dd):
     """A finished CRT video (browser recording, or frames already stitched) → the chosen file type."""
     cfr = ["-r", "30000/1001"]     # browser recordings have uneven timing; editors want constant frame rate
     if fmt == "webm":
-        dst = CRT_DELIV / (stem + ".webm")
-        cmd = [FFMPEG, "-v", "error", "-y", "-i", str(src), "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "18", "-row-mt", "1",
-               "-c:a", "libopus", "-b:a", "192k", str(dst)]
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
-        if r.returncode != 0: raise RuntimeError(r.stderr.strip() or "ffmpeg failed")
-        return dst
+        dst = dd / (stem + ".webm")
+        return ff_to([FFMPEG, "-v", "error", "-y", "-i", str(src), "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "18", "-row-mt", "1",
+               "-c:a", "libopus", "-b:a", "192k"], dst)
     if fmt == "mp4":
-        dst = CRT_DELIV / (stem + ".mp4")
+        dst = dd / (stem + ".mp4")
         cmd = [FFMPEG, "-v", "error", "-y", "-i", str(src), *cfr, "-c:v", "libx264", "-crf", "14", "-preset", "slow", "-pix_fmt", "yuv420p",
-               "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart", str(dst)]
+               "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart"]
     elif fmt == "prores":
-        dst = CRT_DELIV / (stem + ".mov")
+        dst = dd / (stem + ".mov")
         cmd = [FFMPEG, "-v", "error", "-y", "-i", str(src), *cfr, "-c:v", "prores_ks", "-profile:v", "3", "-pix_fmt", "yuv422p10le",
-               "-c:a", "pcm_s16le", str(dst)]
+               "-c:a", "pcm_s16le"]
     elif fmt == "gif":
-        dst = CRT_DELIV / (stem + ".gif")
+        dst = dd / (stem + ".gif")
         cmd = [FFMPEG, "-v", "error", "-y", "-i", str(src), "-vf",
-               "fps=15,scale=960:-2:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4", str(dst)]
+               "fps=15,scale=960:-2:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4"]
     elif fmt == "png":
-        dst = CRT_DELIV / (stem + "_png"); dst.mkdir(exist_ok=True)
-        cmd = [FFMPEG, "-v", "error", "-y", "-i", str(src), *cfr, str(dst / "frame_%04d.png")]
+        need_ffmpeg(); dst = dd / (stem + "_png"); dst.mkdir(exist_ok=False)
+        r = subprocess.run([FFMPEG, "-v", "error", "-y", "-i", str(src), *cfr, str(dst / "frame_%04d.png")], capture_output=True, text=True, timeout=1800)
+        if r.returncode != 0: raise RuntimeError((r.stderr.strip().splitlines() or ["ffmpeg failed"])[-1])
+        return dst
     else:
         raise ValueError("unknown format " + fmt)
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
-    if r.returncode != 0: raise RuntimeError(r.stderr.strip() or "ffmpeg failed")
-    return dst
+    return ff_to(cmd, dst)
 
 
 # EXPORT WHOLE VIDEO without playing it through (10-22, Eric: "just have it download instead of having to play
@@ -195,29 +235,36 @@ def crt_convert(src, fmt, stem):
 # original video (part "source") for its sound. Here they are stitched, then converted like a recording.
 _JOB_OK = re.compile(r"^[a-z0-9]{4,24}$")
 def crt_job_dir(job):
-    if not _JOB_OK.match(job or ""): raise ValueError("bad job")
+    if not _JOB_OK.fullmatch(job or ""): raise ValueError("bad job")
     d = CRT_OUT / "_raw" / ("job-" + job); d.mkdir(parents=True, exist_ok=True); return d
 
 def crt_frame(job, i, body):
     if not body or body[:2] != b"\xff\xd8": raise ValueError("not a JPEG frame")
+    if str(i) == "0": need_ffmpeg()   # say so at the first frame, not after stepping the whole video
     (crt_job_dir(job) / ("%06d.jpg" % int(i))).write_bytes(body)
 
 def crt_part(job, name, body):
     if name not in ("stream", "source", "sound"): raise ValueError("bad part")
+    if name == "stream": need_ffmpeg()
+    dst = crt_job_dir(job) / {"stream": "stream.h264", "source": "source.bin", "sound": "sound.wav"}[name]
+    if isinstance(body, Path):
+        if body.stat().st_size == 0: body.unlink(missing_ok=True); raise ValueError("empty part")
+        os.replace(body, dst); return
     if not body: raise ValueError("empty part")
-    (crt_job_dir(job) / {"stream": "stream.h264", "source": "source.bin", "sound": "sound.wav"}[name]).write_bytes(body)
+    dst.write_bytes(body)
 
 def crt_audio(job):
     """The uploaded video's sound as 48 kHz stereo WAV for the page's sound chain, or None when it has none."""
     d = crt_job_dir(job); src = d / "source.bin"; dst = d / "source.wav"
     if not src.exists(): return None
+    need_ffmpeg()
     r = subprocess.run([FFMPEG, "-v", "error", "-y", "-i", str(src), "-map", "0:a:0?", "-vn", "-ac", "2", "-ar", "48000", "-c:a", "pcm_s16le", "-f", "wav", str(dst)],
                        capture_output=True, text=True, timeout=600)
     if r.returncode != 0 or not dst.exists() or dst.stat().st_size <= 44: return None
     return dst
 
 def crt_render(job, fmt, fps):
-    d = crt_job_dir(job)
+    d = crt_job_dir(job); need_ffmpeg()
     stream = d / "stream.h264"
     if stream.exists():
         # a raw H.264 stream carries no timestamps: wrap it first (no re-encode), or the sound will not line up with it
@@ -228,42 +275,45 @@ def crt_render(job, fmt, fps):
         frames_in = ["-i", str(wrapped)]
     elif any(d.glob("*.jpg")): frames_in = ["-framerate", fps, "-i", str(d / "%06d.jpg")]
     else: raise ValueError("no frames arrived")
-    stem = "amfm-crt-" + time.strftime("%Y%m%d-%H%M%S")
+    stem = crt_stem(); dd = crt_deliv()
     src = d / "source.bin"
     snd = d / "sound.wav"     # the page's CRT sound render (11-05) wins over the video's own sound
     if snd.exists(): src = snd
     audio_in, amap = (["-i", str(src)], ["-map", "1:a:0?"]) if src.exists() else ([], [])
     try:
         if fmt == "png":   # frames straight out, no sound
-            dst = CRT_DELIV / (stem + "_png"); dst.mkdir(exist_ok=True)
+            dst = dd / (stem + "_png"); dst.mkdir(exist_ok=False)
             cmd = [FFMPEG, "-v", "error", "-y", *frames_in, str(dst / "frame_%04d.png")]
         elif fmt == "gif":
-            dst = CRT_DELIV / (stem + ".gif")
+            dst = dd / (stem + ".gif")
             cmd = [FFMPEG, "-v", "error", "-y", *frames_in, "-vf",
-                   "fps=15,scale=960:-2:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4", str(dst)]
+                   "fps=15,scale=960:-2:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4"]
         else:
             # one pass: the frames + the video's own sound (padded with silence so the picture is never cut short).
             # MP4 from the Mac's encoder is already H.264 — it is only wrapped, not encoded again.
             pad = ["-af", "apad", "-shortest"] if amap else []
             if fmt == "mp4":
-                dst = CRT_DELIV / (stem + ".mp4")
+                dst = dd / (stem + ".mp4")
                 v = ["-c:v", "copy"] if stream.exists() else ["-c:v", "libx264", "-crf", "14", "-preset", "medium", "-pix_fmt", "yuv420p"]
                 tail = [*v, "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart"]
             elif fmt == "prores":
-                dst = CRT_DELIV / (stem + ".mov")
+                dst = dd / (stem + ".mov")
                 tail = ["-c:v", "prores_ks", "-profile:v", "3", "-pix_fmt", "yuv422p10le", "-c:a", "pcm_s16le"]
             elif fmt == "webm":
-                dst = CRT_DELIV / (stem + ".webm")
+                dst = dd / (stem + ".webm")
                 tail = ["-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "18", "-row-mt", "1", "-deadline", "good", "-cpu-used", "4", "-c:a", "libopus", "-b:a", "192k"]
             else:
                 raise ValueError("unknown format " + fmt)
-            cmd = [FFMPEG, "-v", "error", "-y", *frames_in, *audio_in, "-map", "0:v", *amap, *tail, *pad, str(dst)]
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
-        if r.returncode != 0: raise RuntimeError((r.stderr.strip() or "ffmpeg failed") + f" · the frames are kept in {d}")
+            cmd = [FFMPEG, "-v", "error", "-y", *frames_in, *audio_in, "-map", "0:v", *amap, *tail, *pad]
+        if fmt == "png":
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
+            if r.returncode != 0: raise RuntimeError((r.stderr.strip().splitlines() or ["ffmpeg failed"])[-1])
+        else: ff_to(cmd, dst)
         shutil.rmtree(d, ignore_errors=True)   # done: the job folder was only a staging area for this one file
         return dst
-    except Exception:
-        raise   # on failure the upload stays, so a retry doesn't mean stepping the whole video again
+    except ValueError: raise
+    except Exception as e:
+        raise RuntimeError(str(e)[-300:] + f" · the frames are kept in {d}")
 
 
 def list_models():
@@ -612,7 +662,7 @@ class H(BaseHTTPRequestHandler):
         self.send_response(code); self.send_header("Content-Type", "application/json"); self.send_header("Content-Length", str(len(b)))
         self.send_header("Cache-Control", "no-store"); self.end_headers(); self.wfile.write(b)
 
-    def send_file(self, path, ctype=None):
+    def send_file(self, path, ctype=None, sandbox=False):
         p = Path(path)
         if not p.is_file(): self.send_error(404); return
         ctype = ctype or {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".tif": "image/tiff", ".tiff": "image/tiff",
@@ -634,7 +684,8 @@ class H(BaseHTTPRequestHandler):
             self.send_response(206); self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
         else:
             self.send_response(200)
-        self.send_header("Accept-Ranges", "bytes"); self.send_header("Content-Type", ctype)
+        self.send_header("Accept-Ranges", "bytes"); self.send_header("Content-Type", ctype); self.send_header("X-Content-Type-Options", "nosniff")
+        if sandbox: self.send_header("Content-Security-Policy", "sandbox")   # an .html from disk can be viewed, never run scripts on this origin
         self.send_header("Content-Length", str(end - start + 1)); self.send_header("Cache-Control", "no-store"); self.end_headers()
         with open(p, "rb") as f:
             f.seek(start); left = end - start + 1
@@ -685,6 +736,8 @@ class H(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.bad_host(): return
+        if self.path.startswith("/api/") and (self.headers.get("Sec-Fetch-Site") or "") == "cross-site":
+            return self.send_error(403)   # another website's <img>/<video> probing local files
         u = urllib.parse.urlparse(self.path); q = urllib.parse.parse_qs(u.query)
         if u.path in ("/", "/index.html"): return self.send_file(APP / "index.html")
         if u.path == "/favicon.ico": self.send_response(204); self.end_headers(); return
@@ -712,7 +765,7 @@ class H(BaseHTTPRequestHandler):
                                    "root": str(ROOT), "engine_ok": LATENT.exists() and PY.exists()})
         if u.path == "/api/file":
             p = self.safe_path(q.get("p", [""])[0])
-            return self.send_file(p) if p else self.send_error(403)
+            return self.send_file(p, sandbox=True) if p else self.send_error(403)
         if u.path == "/api/frame":
             # latest frame of the current job, or frame n of an output
             if job and q.get("latest"):
@@ -737,7 +790,7 @@ class H(BaseHTTPRequestHandler):
                 th = td / (out.parent.name + "--" + out.stem + "_thumb.jpg")
             if not th.exists() and out.exists():
                 d = ffprobe_duration(out)
-                subprocess.run([FFMPEG or "ffmpeg", "-y", "-v", "error", "-ss", f"{d/2:.2f}", "-i", str(out), "-frames:v", "1", "-vf", "scale=480:-2", str(th)], capture_output=True)
+                subprocess.run([FFMPEG or "ffmpeg", "-y", "-v", "error", "-ss", f"{d/2:.2f}", "-i", str(out), "-frames:v", "1", "-vf", "scale=480:-2", str(th)], capture_output=True, timeout=30)
             return self.send_file(th) if th.exists() else self.send_error(404)
         if u.path in ("/api/reveal", "/api/open"):
             # These hand a path to macOS `open`, which will execute an app or an
@@ -748,17 +801,42 @@ class H(BaseHTTPRequestHandler):
     def do_POST(self):
         u = urllib.parse.urlparse(self.path); q = urllib.parse.parse_qs(u.query)
         if self.bad_host() or self.deny_cross_site(): return
-        n = int(self.headers.get("Content-Length") or 0)
+        try: n = int(self.headers.get("Content-Length") or 0)
+        except ValueError: n = -1
+        if n < 0: return self.send_json({"error": "bad Content-Length"}, code=400)
         if u.path == "/api/upload" and n > MAX_UPLOAD:
             return self.send_json({"error": f"file is larger than {MAX_UPLOAD // (1024*1024)} MB"}, code=413)
-        body = self.rfile.read(n) if n else b""
+        streamed = u.path == "/api/crt_part" or (u.path == "/api/crt_export" and q.get("kind", ["video"])[0] == "video")
+        if streamed and n:   # recordings and source videos can be GBs: straight to disk in 1 MB pieces, never whole in memory
+            CRT_OUT.mkdir(parents=True, exist_ok=True); (CRT_OUT / "_raw").mkdir(exist_ok=True)
+            body = CRT_OUT / "_raw" / ("incoming-" + os.urandom(6).hex()); got = 0
+            try:
+                with open(body, "wb") as f:
+                    while got < n:
+                        chunk = self.rfile.read(min(1 << 20, n - got))
+                        if not chunk: break
+                        f.write(chunk); got += len(chunk)
+            except BaseException:
+                body.unlink(missing_ok=True); raise   # a dropped connection or a full disk leaves no partial file
+            if got != n: body.unlink(missing_ok=True); return self.send_json({"error": "the upload was cut short"}, 400)
+        else:
+            body = self.rfile.read(n) if n else b""
+            if len(body) != n: return self.send_json({"error": "the upload was cut short"}, 400)
+        try: return self._post(u, q, body)
+        finally:
+            if isinstance(body, Path): body.unlink(missing_ok=True)   # a streamed body the handler didn't move into place
+
+    def _post(self, u, q, body):
         if u.path == "/api/renders_folder":
             subprocess.Popen(["open", str(DELIV)]); return self.send_json({"ok": True, "path": str(DELIV)})
+        if u.path == "/api/open_browser":   # the CRT in the default browser (11-16: the app window may not get the camera)
+            subprocess.Popen(["open", f"http://127.0.0.1:{PORT}/crt"]); return self.send_json({"ok": True})
         if u.path == "/api/update/check":
             return self.send_json(updater.check(force=True))
         if u.path == "/api/update/apply":
             def busy():
                 if job and job.get("running"): return "a render is running; update when it's done"
+                if CRT_BUSY[0]: return "a CRT export is saving; update when it's done"
                 if any(d.get("state") in ("queued", "downloading") for d in models_lib.DL.values()):
                     return "a model is downloading; update when it's done"
             ok, why = updater.apply(busy)
@@ -810,15 +888,21 @@ class H(BaseHTTPRequestHandler):
             return self.send_file(wav, "audio/wav")
         if u.path == "/api/crt_render":
             fps = q.get("fps", ["30000/1001"])[0]
-            if not re.match(r"^\d{1,6}(/\d{1,5})?$", fps): return self.send_json({"error": "bad fps"}, 400)
+            if not re.fullmatch(r"[1-9]\d{0,5}(/[1-9]\d{0,4})?", fps): return self.send_json({"error": "bad fps"}, 400)
+            CRT_BUSY[0] += 1
             try: out = crt_render(q.get("job", [""])[0], q.get("fmt", ["mp4"])[0], fps)
+            except ValueError as e: return self.send_json({"error": str(e)[-400:]}, 400)
             except Exception as e: return self.send_json({"error": str(e)[-400:]}, 500)
+            finally: CRT_BUSY[0] -= 1
             return self.send_json({"ok": True, "path": str(out)})
         if u.path == "/api/crt_export":
             kind = q.get("kind", ["video"])[0]; fmt = q.get("fmt", ["mp4"])[0]
-            if not body: return self.send_json({"error": "nothing was recorded"}, 400)
+            if not body or (isinstance(body, Path) and body.stat().st_size == 0): return self.send_json({"error": "nothing was recorded"}, 400)
+            CRT_BUSY[0] += 1
             try: out = crt_export(body, kind, fmt, q.get("name", [None])[0], q.get("folder", [None])[0])
+            except ValueError as e: return self.send_json({"error": str(e)[-400:]}, 400)
             except Exception as e: return self.send_json({"error": str(e)[-400:]}, 500)
+            finally: CRT_BUSY[0] -= 1
             return self.send_json({"ok": True, "path": str(out)})
         if u.path == "/api/latent":
             try: req = json.loads(body or b"{}")

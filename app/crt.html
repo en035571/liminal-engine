@@ -99,6 +99,8 @@ label.s output{white-space:nowrap}
 .pair>button[hidden]{display:block!important;visibility:hidden}
 #identRow:has(#identT:empty){display:none}
 #vidPanel:not([hidden]){display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:14px}
+#camPanel:not([hidden]),#camBlocked:not([hidden]){display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:14px}
+.asciiTxt{display:grid;gap:6px;padding:8px 0;border-bottom:1px solid var(--line)}.asciiTxt textarea{min-height:56px;resize:vertical;font-size:11px}
 .scrub{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:center}
 .scrub span{font:11px var(--mono);color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
 .scrub input[type=range]{width:100%;accent-color:var(--acc);margin:0}
@@ -126,6 +128,8 @@ label.s output{white-space:nowrap}
 .recent{max-height:224px;overflow:auto}
 .drop{border:1px dashed var(--line2);border-radius:var(--r);padding:10px;display:flex;gap:12px;align-items:center;cursor:pointer;min-height:64px;background:var(--panel);transition:border-color .12s}
 .drop:hover,.drop.over{border-color:var(--acc)}
+body.locked .steps .bd, body.locked .tl, body.locked .gofoot{pointer-events:none; opacity:.55}
+body.locked #recVideo{pointer-events:auto; opacity:1}
 .drop img,.drop video{width:64px;height:48px;object-fit:cover;border-radius:3px;background:#222;flex:none}
 .drop .ph{width:40px;height:40px;border-radius:3px;background:var(--panel2);display:grid;place-items:center;color:var(--dim);flex:none;font-size:16px}
 .drop .t{min-width:0}.drop .t .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}.drop .t .m{font:11px/1.4 var(--sans);letter-spacing:0;color:var(--mute)}
@@ -258,6 +262,14 @@ select{width:100%;background:var(--bg);border:1px solid var(--line2);border-radi
 .right{padding:0;display:grid;grid-template-rows:minmax(0,1fr) auto auto;overflow:hidden}
 .right>*{flex:none}
 main{display:grid;place-items:center;padding:16px;position:relative;min-height:0;overflow:hidden}
+/* PERFORM (11-16) */
+.meter{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin:8px 0 4px}.meter i{display:block;height:100%;width:0;background:var(--acc);transition:width .05s linear}
+.learn-t{outline:2px solid var(--acc)!important;outline-offset:2px}
+#midiMap .mm{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid var(--line)}
+#midiMap .mmx{background:none;border:0;color:var(--mute);cursor:pointer;font-size:13px;padding:0 4px}
+#cv:fullscreen{background:#000;object-fit:contain;width:100vw;height:100vh}
+body.present{overflow:hidden;background:#000}
+body.present #cv{position:fixed;inset:0;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;object-fit:contain;background:#000;z-index:1000;cursor:none}
 canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-height:100%;aspect-ratio:var(--ar);background:#000;border:1px solid var(--line)}
 .status{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;border-top:1px solid var(--line);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
 .status .reveal{padding:4px 9px}
@@ -277,6 +289,19 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
       <div class="f"><label class="lbl" for="logoSel">Logo</label><select id="logoSel" aria-label="Logo"></select></div>
       <div class="drop" id="drop" tabindex="0"><div class="ph">▭</div><div class="t"><div class="n">Drop an image or video, or click</div></div></div>
       <input type="file" id="file" accept="image/*,video/*" hidden>
+      <div class="f"><span class="lbl">Camera</span><div class="seg"><button id="camGo" title="Use a camera as the picture, live through the whole set">Live camera</button><button id="camStop" disabled>Stop</button></div></div>
+      <div id="camPanel" hidden>
+        <div class="gearf"><span class="lbl">Device</span><select id="camDev" aria-label="Camera"></select></div>
+        <div class="gearf"><span class="lbl">Camera B</span><select id="camDevB" aria-label="Second camera"><option value="">None</option></select></div>
+        <div class="f" id="cutRow" hidden><span class="lbl">Cut</span><div class="seg"><button id="cutA" data-hit="camA" title="Cut to camera A (1)">A</button><button id="cutB" data-hit="camB" title="Cut to camera B (2)">B</button><button id="cutFlip" aria-pressed="false" title="Cut through a burst of snow, like changing channel">Flip cut: off</button></div></div>
+        <div class="f"><span class="lbl">Options</span><div class="seg"><button id="camMirror" title="Flip left and right, like a mirror" aria-pressed="false">Mirror</button><button id="camMic" title="Record your microphone through the TV sound" aria-pressed="false">Mic</button><button id="camHear" title="Play the sound out loud while live (use headphones, or it feeds back)" aria-pressed="false">Hear</button></div></div>
+        <div class="pair"><button class="rec" id="camRec">Record</button><button id="camStill" title="Saves a still at the size under Output">Still</button></div>
+        <div class="f"><span class="lbl">Motion</span><div class="seg"><button id="motGo" title="Records only while something moves, then saves each clip">Record on motion: off</button></div></div>
+        <label class="s"><span>Sensitivity</span><input type="range" id="motSens" min="0" max="1" step=".01" value=".6"><output id="motSensO">0.60</output></label>
+        <label class="s"><span>Keep going</span><input type="range" id="motKeep" min="1" max="20" step="1" value="4" title="Seconds to keep recording after the movement stops"><output id="motKeepO">4 s</output></label>
+        <p class="hint" id="motState" hidden></p>
+      </div>
+      <div id="camBlocked" hidden><p class="note" id="camWhy"></p><div class="pair"><button id="camBrowser">Open CRT in browser</button></div></div>
       <div class="f"><span class="lbl">Position</span><div class="seg"><button id="center">Auto-centre</button><button id="centerReset">Reset</button></div></div>
       <div><button class="more" id="posBtn" type="button" aria-expanded="false">Fine position ▾</button><div id="posWrap" class="stbody" hidden></div></div>
       <div class="f"><span class="lbl">Old tape</span><div class="seg"><button id="underPick" title="An earlier recording on the same tape: it ghosts through, and shows fully where the new recording ends">Taped over…</button><button id="underClear" disabled>Clear</button></div></div>
@@ -286,7 +311,7 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
         <div class="f"><span class="lbl">Play</span><div class="seg"><button id="vPlay">Play</button><button id="vRestart">Restart</button><button id="vLoop" class="on">Loop: on</button><button id="vSound" class="on">Sound: on</button></div></div>
         <div class="f"><span class="lbl">Deck</span><div class="seg" id="deckSeg" role="group" aria-label="Deck"><button data-d="0" title="Play">▶</button><button data-d="1" title="Pause">❚❚</button><button data-d="2" title="Search ×3">▸▸3</button><button data-d="3" title="Search ×9">▸▸9</button><button data-d="4" title="Rewind ×9">◂◂9</button></div></div>
         <div class="scrub"><span id="vTime">0:00 / 0:00</span><input type="range" id="vScrub" min="0" max="1" step="0.001" value="0" aria-label="Position in video"></div>
-        <div class="pair"><button class="rec" id="recVideo" title="Steps through the video frame by frame; its sound goes through the set with the picture">Export whole video</button><button id="recVideoLive" title="Plays the video through once and records what you see and hear">Record in real time</button></div>
+        <div class="pair"><button class="rec" id="recVideo" title="Steps through the video frame by frame; its sound goes through the set with the picture">Export whole video</button><button id="recVideoLive" title="Plays the video through once and records what you see and hear. Hits and sound-react stay off so it matches the video">Record in real time</button></div>
       </div>
     </div>
   </section>
@@ -297,6 +322,7 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
       <div><button class="more" id="mineBtn" type="button" aria-expanded="false">Mine ▾</button>
         <div id="mineWrap" hidden><div class="lbl" id="myHead" hidden>Your presets</div><div class="chips" id="mypresets" style="margin-top:8px"></div></div></div>
       <div class="pair"><button id="savePreset">Save as preset…</button><button id="reset">Reset all</button></div>
+      <div class="pair"><button id="copyAmfm" title="Copies the current look as JSON for the AM.FM station (admin › Station › Picture)">Copy settings for AM.FM</button></div>
       <div class="lbl">The chain</div>
       <div id="chain"></div>
       <div id="setExtras">
@@ -328,7 +354,7 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
       <label class="s sel"><span>Video as</span><select id="vfmt">
         <option value="mp4">MP4 · H.264</option>
         <option value="prores">MOV · ProRes 422 HQ</option>
-        <option value="webm">WebM (raw)</option>
+        <option value="webm">WebM (VP9)</option>
         <option value="gif">GIF</option>
         <option value="png">PNG sequence</option>
       </select><output></output></label>
@@ -339,6 +365,25 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
       <input type="file" id="batchFiles" accept="image/*" multiple hidden>
       <div class="pair"><button class="reveal" disabled>Show in Finder</button><button class="renders" title="~/Movies/Liminal Engine">Renders folder</button></div>
       <p class="hint saved" id="saveHint">Files save to Movies › Liminal Engine › crt.</p>
+    </div>
+  </section>
+  <section class="step done" data-step="perform">
+    <button class="hd" type="button"><span class="n"><span>5</span></span><span><span class="t">Perform</span><span class="sum" id="sumPerf">Hotkeys on</span></span><span class="chev">▾</span></button>
+    <div class="bd">
+      <div class="seg" id="hitSeg" style="margin-top:4px"><button data-hit="flip" title="Channel flip (F)">Flip</button><button data-hit="track" title="Tracking loss while held (T)">Tracking</button><button data-hit="glitch" title="Tape damage while held (G)">Damage</button><button data-hit="power" id="hitPower" title="Power off / on (P)">TV off</button></div>
+      <p class="hint">Hits act on the TV (not pure ASCII). F flip · T tracking (hold) · G damage (hold) · P power · A ASCII · M mirror · Y replay text · 1 / 2 camera · R record · O output window · Space sequence · Esc leaves full screen</p>
+      <div class="f"><span class="lbl">Keys</span><div class="seg"><button id="keysOn" aria-pressed="true">Hotkeys: on</button></div></div>
+      <div class="f"><span class="lbl">MIDI</span><div class="seg"><button id="midiGo">Connect</button><button id="midiLearn" aria-pressed="false" disabled>Learn</button><button id="midiClear" disabled>Clear</button></div></div>
+      <p class="hint" id="midiState">Map knobs to any slider and pads to the hits: Learn, touch the control, then move the knob or hit the pad.</p>
+      <div id="midiMap" class="hint"></div>
+      <div class="f"><span class="lbl">React</span><div class="seg" id="reactSeg"><button data-r="0">Off</button><button data-r="1" title="Whatever goes into the TV sound: the video, or your mic">Sound</button><button data-r="2" title="Listens to the room (music, voice). Never plays out or records">Room</button></div></div>
+      <label class="s"><span>Amount</span><input type="range" id="reactAmt" min="0" max="1" step=".01" value=".6"><output id="reactAmtO">0.60</output></label>
+      <label class="s"><span>Sensitivity</span><input type="range" id="reactSens" min="0" max="1" step=".01" value=".5"><output id="reactSensO">0.50</output></label>
+      <div class="f"><span class="lbl">Beats</span><div class="seg"><button id="reactBeat" aria-pressed="false" title="A sharp hit in the sound flips the channel">Beats flip: off</button></div></div>
+      <div class="meter" aria-hidden="true"><i id="reactLvl"></i></div>
+      <p class="hint" id="reactState">Sound: the video or your mic. Room: listens only. Loud stretches lose tracking and damage the tape.</p>
+      <div class="f"><span class="lbl">Screen</span><div class="seg"><button id="outWin" title="The clean picture in its own window: drag it to the projector, double-click it for fullscreen (O)">Output window</button><button id="outFull" title="Only the picture, full screen. Esc to leave">Fullscreen</button></div></div>
+      <p class="hint" id="outState" hidden></p>
     </div>
   </section>
 </div></div>
@@ -360,6 +405,16 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
 // the tape it was recorded on, the air it crossed, the set that decoded it, the tube that lit it.
 // Camera and Tape exist in the Physical tube only. Keys and defaults of older controls are unchanged, so presets hold.
 const GROUPS = [
+ // ASCII (11-16): the picture turned into characters before anything else touches it; "Shown" puts it on the TV or alone
+ ['ASCII', [
+  ['asciiOn','ASCII',0,0,1,1], ['asciiCols','Columns',120,30,300,2], ['asciiSet','Characters',0,0,5,1], ['asciiCol','Colour',0,0,6,1],
+  ['asciiGain','Contrast',1.1,.5,2.5,.01], ['asciiInv','Invert',0,0,1,1], ['asciiBg','Picture behind',0,0,1,.01], ['asciiPure','Shown',0,0,1,1],
+  ['asciiEdge','Edges (follow the outlines; letters and blocks only)',0,0,1,.01], ['asciiAnim','Motion',0,0,2,1], ['asciiRate','Speed',.5,0,1,.01]]],
+ // SLIT-SCAN (11-16): time smeared across the picture, before anything else
+ ['Slit-scan', [['slitOn','Slit-scan',0,0,1,1], ['slitDir','Direction',0,0,4,1], ['slitLen','Time spread',.5,0,1,.01], ['slitStep','Slowness (frames between slices)',2,1,8,1]]],
+ // MATERIAL (11-16): the picture as a physical print or a scope trace, after ASCII; "Shown" puts it on the TV or alone
+ ['Material', [['matOn','Material',0,0,1,1], ['matKind','Material',0,0,7,1], ['matAmt','Contrast',.5,0,1,.01], ['matSize','Dot size',.4,0,1,.01],
+  ['matWear','Wear',.4,0,1,.01], ['matInk','Inks (risograph)',0,0,3,1], ['matPure','Shown',0,0,1,1]]],
  ['Camera', [
   ['knee','Highlight knee',0,0,1,.01], ['camLag','Tube lag (smear)',0,0,1,.01], ['comet','Comet tails',0,0,1,.01],
   ['burn','Burn-in',0,0,1,.01], ['reg','Tube registration',0,0,1,.01], ['shade','Corner shading',0,0,1,.01]], 'phys'],
@@ -398,8 +453,13 @@ const GROUPS = [
 const SHORT = { knee:'Knee', camLag:'Lag', reg:'Registration', shade:'Shading', tracking:'Tracking', grain:'Grain', roll:'Roll',
   sharp:'Sharpness', tint:'Tint', pitch:'Mask pitch', mask:'Mask amount', converge:'Convergence', persist:'Persistence', mono:'Monochrome',
   curve:'Curve', corner:'Corners', sheen:'Sheen', glowThresh:'Threshold', haloWarm:'Halo warmth', picX:'Left / right', picY:'Up / down', power:'Power', lines:'Lines',
-  sndAmt:'Follows', cond:'Condition', mould:'Mould', clog:'Head clog', skew:'Skew', mistrack:'Mistrack', ckill:'Colour loss', copyprot:'Copy prot.', deck:'Deck', underAmt:'Old shows', underEnd:'Ends at', speaker:'Speaker', whine:'Whine', buzz:'Buzz', crush:'Lo-fi', vol:'Volume' };
-const ENUMS = { maskKind:['grille','slot','dot'], tapeFmt:['off','Betacam SP','U-matic','VHS SP','VHS EP','DV','VCD'], tapeGen:['1st gen','2nd gen','3rd gen','4th gen','5th gen'], deck:['play','pause','search ×3','search ×9','rewind ×9'] };
+  sndAmt:'Follows', cond:'Condition', mould:'Mould', clog:'Head clog', skew:'Skew', mistrack:'Mistrack', ckill:'Colour loss', copyprot:'Copy prot.', deck:'Deck', underAmt:'Old shows', underEnd:'Ends at', speaker:'Speaker', whine:'Whine', buzz:'Buzz', crush:'Lo-fi', vol:'Volume',
+  asciiCols:'Columns', asciiSet:'Characters', asciiCol:'Colour', asciiGain:'Contrast', asciiInv:'Invert', asciiBg:'Behind', asciiPure:'Shown', asciiEdge:'Edges', asciiAnim:'Motion', asciiRate:'Speed',
+  slitDir:'Direction', slitLen:'Spread', slitStep:'Slowness', matKind:'Material', matAmt:'Contrast', matSize:'Dot size', matWear:'Wear', matInk:'Inks', matPure:'Shown' };
+const ENUMS = { asciiSet:['ramp','blocks','your text','braille','teletext','PETSCII'], asciiCol:['source','phosphor','amber','white','ANSI 16','teletext 8','C64'], asciiAnim:['still','typing','scramble'],
+  slitDir:['top → bottom','bottom → top','left → right','right → left','centre out'], slitOn:['off','on'], matOn:['off','on'],
+  matKind:['xerox','1-bit Mac','Game Boy','halftone','risograph','thermal receipt','fax','oscilloscope'], matInk:['pink + blue','red + teal','yellow + purple','orange + green'], matPure:['on the TV','alone'], asciiInv:['off','on'], asciiPure:['on the TV','pure'], asciiOn:['off','on'],
+  maskKind:['grille','slot','dot'], tapeFmt:['off','Betacam SP','U-matic','VHS SP','VHS EP','DV','VCD'], tapeGen:['1st gen','2nd gen','3rd gen','4th gen','5th gen'], deck:['play','pause','search ×3','search ×9','rewind ×9'] };
 const DAMAGE = ['cond','mould','clog','skew','mistrack','ckill','copyprot','deck'];
 const DEF = {}; GROUPS.forEach(g=>g[1].forEach(s=>DEF[s[0]]=s[2]));
 const S = {...DEF};
@@ -451,6 +511,12 @@ function setVal(k,v){ S[k]=v; if(sliders[k]){ sliders[k].r.value=v; sliders[k].o
 // The rail follows the picture: Camera → Tape → Broadcast → TV set → Sound. A stage's switch remembers its values and zeroes
 // them (no new saved state, so every old preset loads unchanged). WEAR and DAMAGE are shortcuts that set the real sliders.
 const STAGES=[
+ {id:'slit', name:'Slit-scan', keys:['slitDir','slitLen','slitStep'], main:['slitDir','slitLen','slitStep'],
+  isOn:()=>S.slitOn>0, sum:()=>lab_('slitDir',S.slitDir)+' · spread '+fmt(S.slitLen)},
+ {id:'ascii', name:'ASCII', keys:['asciiCols','asciiSet','asciiCol','asciiGain','asciiInv','asciiBg','asciiPure','asciiEdge','asciiAnim','asciiRate'], main:['asciiCols','asciiSet','asciiCol','asciiEdge','asciiAnim','asciiPure'],
+  isOn:()=>S.asciiOn>0, sum:()=>lab_('asciiSet',S.asciiSet)+' · '+Math.round(S.asciiCols)+' cols'+(S.asciiPure>0?' · pure':'')},
+ {id:'mat', name:'Material', keys:['matKind','matAmt','matSize','matWear','matInk','matPure'], main:['matKind','matAmt','matSize','matWear','matInk','matPure'],
+  isOn:()=>S.matOn>0, sum:()=>lab_('matKind',S.matKind)+(S.matPure>0?' · alone':'')},
  {id:'cam', name:'Camera', phys:1, keys:['knee','camLag','comet','burn','reg','shade'], main:['camLag','knee'], gear:['Live tube camera (Saticon)'],
   isOn:()=>['knee','camLag','comet','burn','reg','shade'].some(k=>S[k]>0), sum:()=>'lag '+fmt(S.camLag)+' · knee '+fmt(S.knee)},
  {id:'tape', name:'Tape', phys:1, keys:['tapeFmt','tapeGen','tapeWave','tracking','dropout','cond','mould','clog','skew','mistrack','ckill','copyprot','underAmt','underEnd'], main:[], gear:['Betacam SP broadcast','U-matic news tape','VHS, third generation'],
@@ -462,17 +528,19 @@ const STAGES=[
  {id:'snd', name:'Sound', keys:['sndAmt','speaker','whine','buzz','crush','vol'], main:['sndAmt','speaker'],
   isOn:()=>['sndAmt','speaker','whine','buzz','crush'].some(k=>S[k]>0), sum:()=>'follows '+fmt(S.sndAmt)},
 ];
-const OFFVAL={cam:{}, tape:{tapeFmt:0}, bc:{signal:1,snow:0,grain:0,ghost:0,jitter:0,hum:0,roll:0,interf:0}, snd:{sndAmt:0,speaker:0,whine:0,buzz:0,crush:0}};
+const OFFVAL={slit:{slitOn:0}, mat:{matOn:0}, ascii:{asciiOn:0}, cam:{}, tape:{tapeFmt:0}, bc:{signal:1,snow:0,grain:0,ghost:0,jitter:0,hum:0,roll:0,interf:0}, snd:{sndAmt:0,speaker:0,whine:0,buzz:0,crush:0}};
 ['knee','camLag','comet','burn','reg','shade'].forEach(k=>OFFVAL.cam[k]=0);
 const stash={}; const stageEl={};
-function setStage(st,on){ const keys=Object.keys(OFFVAL[st.id]);
+const ONKEY={ascii:'asciiOn', slit:'slitOn', mat:'matOn'};   // stages that are one switch over their own sliders
+function setStage(st,on){ if(ONKEY[st.id]){ setVal(ONKEY[st.id], on?1:0); remember(); markActive(null); return; }
+  const keys=Object.keys(OFFVAL[st.id]);
   if(on){ const back=stash[st.id] || (st.id==='cam'?PRESETS['Live tube camera (Saticon)']: st.id==='tape'?{tapeFmt:3}:DEF);
     keys.forEach(k=>setVal(k, k in back ? back[k] : DEF[k])); }
   else { stash[st.id]={}; keys.forEach(k=>stash[st.id][k]=S[k]); Object.entries(OFFVAL[st.id]).forEach(([k,v])=>setVal(k,v)); }
   remember(); markActive(null); applyDeck(); }
 function applyGear(st,name){ const p=PRESETS[name]; st.keys.forEach(k=>setVal(k, k in p ? p[k] : DEF[k])); remember(); markActive(null); status(st.name+': '+name+'.'); }
 // WEAR: how old the tape is — generation, dropouts, tracking, edge wave move together
-function wearLevel(){ const c=x=>Math.max(0,Math.min(1,x)); return c(((S.tapeGen-1)/4 + S.dropout/20 + S.tracking/30 + (S.tapeWave-.3)/3)/4); }
+function wearLevel(){ const c=x=>Math.max(0,Math.min(1,x)); return c(((S.tapeGen-1)/4 + (S.dropout-1)/19 + S.tracking/30 + (S.tapeWave-.3)/3)/4); }
 function setWear(w){ if(Math.round(S.tapeFmt)===0) setVal('tapeFmt',3);
   setVal('tapeGen',1+Math.round(w*4)); setVal('dropout',Math.round(1+19*w)); setVal('tracking',Math.round(30*w)); setVal('tapeWave',+(.3+3*w).toFixed(1)); remember(); markActive(null); }
 // DAMAGE: how often things go wrong; the ticks pick which kinds (each kind keeps its own slider under MORE)
@@ -494,14 +562,14 @@ function buildChain(){
     const sum=el2('span','ssum'); const ch=el2('span','schev','▾');
     hd.append(sw, el2('span','sn',st.name), sum, ch);
     const toggle=()=>{ const o=!box.classList.contains('open'); box.classList.toggle('open',o); hd.setAttribute('aria-expanded',o?'true':'false'); ch.textContent=o?'▴':'▾'; };
-    hd.onclick=toggle; hd.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); } };
+    hd.onclick=toggle; hd.onkeydown=e=>{ if(e.target!==hd) return; if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); } };
     const body=el2('div','stbody'); const po=el2('div','physonly','Physical tube only: switch the TV set to Physical.'); po.hidden=true;
     if(st.gear){ const g=el2('div','gearf'); const l=el2('span','lbl','Gear'); const sel=el2('select'); sel.setAttribute('aria-label',st.name+' gear');
       sel.append(new Option('Pick…','')); st.gear.forEach(n=>sel.append(new Option(n.replace(/ \(.*\)$/,''),n)));
       sel.onchange=()=>{ if(sel.value){ applyGear(st,sel.value); sel.value=''; } }; g.append(l,sel); body.append(g); }
     if(st.id==='tape'){
       const f=el2('div','gearf'); const sel=el2('select'); sel.id='tapeFmtSel'; sel.setAttribute('aria-label','Tape format');
-      ENUMS.tapeFmt.forEach((n,i)=>sel.append(new Option(i?n:'Off',i))); sel.onchange=()=>{ setVal('tapeFmt',+sel.value); remember(); markActive(null); };
+      ENUMS.tapeFmt.forEach((n,i)=>sel.append(new Option(i?n:'Off',i))); sel.onchange=()=>{ setVal('tapeFmt',+sel.value); remember(); markActive(null); applyDeck(); };
       f.append(el2('span','lbl','Format'),sel); body.append(f);
       const w=macroRow('Wear','wearR',wearLevel,setWear), d=macroRow('Damage','dmgR',dmgLevel,setDamage); body.append(w,d); box._macros=[w,d];
       const tk=el2('div','ticks'); DMG.forEach(([k,name,wt])=>{ const lab=el2('label'); const c=el2('input'); c.type='checkbox'; c.id='tick_'+k;
@@ -510,8 +578,23 @@ function buildChain(){
         lab.append(c, document.createTextNode(name)); tk.append(lab); }); body.append(tk); box._ticks=tk;
     }
     st.main.forEach(k=>body.append(sliderEl[k]));
+    if(st.id==='ascii'){ const w=el2('div','asciiTxt'); const l=el2('label','lbl','Your text'); l.htmlFor='asciiText';
+      const ta=el2('textarea'); ta.id='asciiText'; ta.placeholder='Words to draw the picture with (Characters › your text)';
+      try{ ta.value=localStorage.getItem('amfm-crt-ascii-text')||''; }catch(e){}
+      ta.oninput=()=>{ try{ localStorage.setItem('amfm-crt-ascii-text',ta.value); }catch(e){} asciiDirty=true;
+        if(ta.value.trim() && Math.round(S.asciiSet)!==2){ setVal('asciiSet',2); remember(); } };
+      w.append(l,ta); body.append(w);
+      const x=el2('div','asciiMore');
+      x.innerHTML='<div class="seg" id="asciiLooks" style="margin:8px 0 4px"><button data-look="teletext" title="40 columns, mosaic blocks, 8 colours">Teletext</button><button data-look="ansi" title="Shade blocks in the 16 DOS colours">ANSI</button><button data-look="petscii" title="Commodore 64 blocks on C64 blue">PETSCII</button><button data-look="braille" title="Braille dots: 8 per character">Braille</button></div>'
+        +'<div class="f"><span class="lbl">Lyrics</span><div class="seg"><button id="lyrPick" title="Subtitles or synced lyrics: each line becomes the characters while it plays">Load .srt / .lrc</button><button id="lyrClear" disabled>Clear</button></div></div>'
+        +'<input type="file" id="lyrFile" accept=".srt,.lrc,.vtt,text/plain" hidden><p class="hint" id="lyrName" hidden></p>'
+        +'<div class="f"><span class="lbl">Motion</span><div class="seg"><button id="asciiReplay" data-hit="type" title="Start the typing or scramble again (Y)">Replay</button></div></div>'
+        +'<div class="f"><span class="lbl">Save as</span><div class="seg" id="asciiSave"><button data-tx="txt" title="Plain text, one line per row">TXT</button><button data-tx="html" title="Coloured text in a web page">HTML</button><button data-tx="svg" title="Vectors for Illustrator: text, dots and blocks">SVG</button></div></div>';
+      body.append(x); }
     if(st.id==='set'){ body.append($('setExtras')); }
-    const rest=st.keys.filter(k=>!st.main.includes(k) && k!=='tapeFmt');
+    if(st.id==='mat'){ const h=el2('p','hint'); h.id='matHint'; body.append(h); }
+    if(st.id==='slit'){ const h=el2('p','hint','Needs movement: a video or the camera. The top (or the start side) is now; the far side is up to 48 slices back (1/30 s each × Slowness). Works at 960 px: set Spread to 0 for full detail.'); body.append(h); }
+    const rest=st.keys.filter(k=>!st.main.includes(k) && k!=='tapeFmt' && k!=='asciiOn');
     if(rest.length){ const mb=el2('button','more','More ('+rest.length+') ▾'); mb.type='button'; mb.setAttribute('aria-expanded','false'); const m=el2('div','mbody');
       rest.forEach(k=>m.append(sliderEl[k])); mb.onclick=()=>{ const o=m.classList.toggle('on'); mb.setAttribute('aria-expanded',o?'true':'false'); mb.textContent='More ('+rest.length+') '+(o?'▴':'▾'); }; body.append(mb,m); }
     box.append(hd,po,body); box._sum=sum; box._po=po; $('chain').append(box);
@@ -519,9 +602,9 @@ function buildChain(){
   ['picX','picY','picS'].forEach(k=>$('posWrap').append(sliderEl[k])); $('powerWrap').append(sliderEl.power);
   $('posBtn').onclick=()=>{ const w=$('posWrap'); w.hidden=!w.hidden; $('posBtn').setAttribute('aria-expanded',w.hidden?'false':'true'); $('posBtn').textContent='Fine position '+(w.hidden?'▾':'▴'); };
   $('mineBtn').onclick=()=>{ const w=$('mineWrap'); w.hidden=!w.hidden; $('mineBtn').setAttribute('aria-expanded',w.hidden?'false':'true'); $('mineBtn').textContent='Mine '+(w.hidden?'▾':'▴'); };
-  document.querySelectorAll('#deckSeg button').forEach(b=>b.onclick=()=>{ const d=+b.dataset.d;
+  document.querySelectorAll('#deckSeg button').forEach(b=>b.onclick=()=>{ if(busyNow()) return; const d=+b.dataset.d;
     if(d>0 && Math.round(S.tapeFmt)===0){ setVal('tapeFmt',3); status('The deck needs a tape: switched the format to VHS SP.'); }
-    setVal('deck',d); remember(); applyDeck(); });
+    setVal('deck',d); remember(); applyDeck(true); });   // a deck press is a transport action: ▶ always plays
 }
 let chainQueued=false;
 function chainDirty(){ if(chainQueued) return; chainQueued=true; requestAnimationFrame(refreshChain); }
@@ -553,7 +636,8 @@ const tapeClock=(now)=> (isVideo && srcEl && srcEl.duration>0) ? srcEl.currentTi
 const deckIdx=()=> (model==='physical' && Math.round(S.tapeFmt)>0) ? (Math.round(S.deck)||0) : 0;   // no tape, no deck
 function videoTimeAt(t,dur){ const dk=DECK[deckIdx()], vt = dk.spd>0 ? t*dk.spd : dk.spd===0 ? 0 : dur - t*9; return Math.min(Math.max(0,vt), Math.max(0,dur-0.05)); }
 function remember(){ try{ localStorage.setItem('amfm-crt-look', JSON.stringify(S)); }catch(e){} }
-function restore(){ try{ const o=JSON.parse(localStorage.getItem('amfm-crt-look')||'null'); if(o) Object.keys(DEF).forEach(k=>{ if(k in o) setVal(k,+o[k]); }); }catch(e){} }
+function safeV(k,v){ v=+v; if(!isFinite(v)) return DEF[k]; if(k==='deck') return Math.max(0,Math.min(DECK.length-1,Math.round(v))); const sl=sliders[k]; return sl ? Math.min(+sl.r.max, Math.max(+sl.r.min, v)) : v; }   // saved or typed-in values: a number, inside the slider
+function restore(){ try{ const o=JSON.parse(localStorage.getItem('amfm-crt-look')||'null'); if(o) Object.keys(DEF).forEach(k=>{ if(k in o) setVal(k,safeV(k,o[k])); }); }catch(e){} }
 function applyPreset(p){ Object.keys(DEF).forEach(k=>setVal(k, k in PRESETS[p] ? PRESETS[p][k] : DEF[k])); remember(); markActive(p); applyDeck(); }
 let activePreset=null;
 function markActive(name){ activePreset=name; document.querySelectorAll('[data-preset]').forEach(b=>b.classList.toggle('on', b.dataset.preset===name)); try{ localStorage.setItem('amfm-crt-active', name||''); }catch(e){} }
@@ -566,7 +650,7 @@ function drawMine(){ const box=$('mypresets'); box.textContent=''; const mine=lo
   if(!Object.keys(mine).length){ const e=document.createElement('div'); e.className='mineEmpty'; e.textContent='No saved presets yet. Save as preset… adds one here.'; box.append(e); }
   Object.keys(mine).forEach(name=>{ const b=document.createElement('button'); b.textContent=name; b.title='Your preset';
     b.dataset.preset='mine:'+name; if(activePreset==='mine:'+name) b.classList.add('on');
-    b.onclick=()=>{ Object.keys(DEF).forEach(k=>setVal(k, k in mine[name] ? mine[name][k] : DEF[k])); remember(); markActive('mine:'+name); applyDeck(); status('Loaded '+name+'.'); };
+    b.onclick=()=>{ Object.keys(DEF).forEach(k=>setVal(k, k in mine[name] ? safeV(k,mine[name][k]) : DEF[k])); remember(); markActive('mine:'+name); applyDeck(); status('Loaded '+name+'.'); };
     const x=document.createElement('button'); x.textContent='×'; x.title='Delete '+name; x.setAttribute('aria-label','Delete '+name);
     x.onclick=()=>{ if(!confirmDelete(name)) return; const m=loadMine(); delete m[name]; saveMine(m); if(activePreset==='mine:'+name) markActive(null); try{ activePreset=localStorage.getItem('amfm-crt-active')||null; }catch(e){}
 drawMine(); markActive(activePreset); status('Deleted '+name+'.'); };
@@ -578,19 +662,24 @@ function confirmDelete(name){ return window.confirm('Delete your preset "'+name+
 try{ activePreset=localStorage.getItem('amfm-crt-active')||null; }catch(e){}
 drawMine(); markActive(activePreset);
 $('reset').onclick=()=>applyPreset('Clean broadcast');
+// AM.FM station (11-12): the look on screen as JSON for station admin › Station › Picture (CRT). Camera/Tape keys stay in but the station ignores them.
+$('copyAmfm').onclick=async()=>{ const txt=JSON.stringify({model, frame:frameMode, settings:{...S}}, null, 1);
+  try{ await navigator.clipboard.writeText(txt); status('Copied for AM.FM: paste it into the station admin › Station › Picture (CRT).'); }
+  catch(e){ const t=document.createElement('textarea'); t.value=txt; document.body.append(t); t.select(); document.execCommand('copy'); t.remove(); status('Copied for AM.FM.'); } };
 
 const LOGOS = ['amfm-clean.png','amfm-logo-dev-1-01.png','amfm-logo-dev-1-02.png','amfm-logo-dev-1-03.png','amfm-logo-dev-1-04.png'];
 LOGOS.forEach(f=>{ const o=document.createElement('option'); o.value='/crt/logos/'+f; o.textContent=f.replace('.png','').replace(/-/g,' '); $('logoSel').append(o); });
-$('logoSel').onchange = e=>loadImage(e.target.value);
+$('logoSel').onchange = e=>{ if(offline||wholeRec){ status('Wait for the export or recording to finish.'); return; } endLive(); loadImage(e.target.value); };
 
 // ---------------- WebGL ----------------
 const cv = $('cv');
-const gl = cv.getContext('webgl2', {preserveDrawingBuffer:true, premultipliedAlpha:false});
+const gl = cv.getContext('webgl2', {preserveDrawingBuffer:true, premultipliedAlpha:false, antialias:false, depth:false, stencil:false});
+cv.addEventListener('webglcontextlost', e=>{ e.preventDefault(); $('status').textContent='The graphics card reset the picture. Reload the page (⌘R) to get it back.'; });
 if(!gl){ $('status').textContent='WebGL2 is not available in this browser.'; throw new Error('no webgl2'); }
 const VS = `#version 300 es
 in vec2 p; out vec2 uv; void main(){ uv=p*.5+.5; gl_Position=vec4(p,0,1); }`;
 const CORE = `#version 300 es
-precision highp float; in vec2 uv; out vec4 o;
+precision highp float; in vec2 uv; out vec4 o; float sq(float x){ return x*x; }
 uniform sampler2D src; uniform vec2 res; uniform float t, frame, rollpos;
 uniform float rasterAR,picX,picY,picS,grain,snow,signal,ghost,bleed,jitter,hum,roll,interf,curve,scan,mask,vignette,corner,sheen,lines,bright,contrast,sat,tint,black,power,srcAR;
 uint pcg(uint v){ uint st=v*747796405u+2891336453u; uint w=((st>>((st>>28u)+4u))^st)*277803737u; return (w>>22u)^w; }
@@ -636,7 +725,7 @@ void main(){
   float m = mod(floor(uv.x*res.x),3.); vec3 g=vec3(1.-mask);
   if(m<.5) g.r=1.; else if(m<1.5) g.g=1.; else g.b=1.; c*=g;
   if(power<1.){
-    float lg = exp(-pow(p.y/(.004+vy*.5),2.))*exp(-pow(p.x/(.01+hx*.6),2.));
+    float lg = exp(-sq(p.y/(.004+vy*.5)))*exp(-sq(p.x/(.01+hx*.6)));
     float boost = smoothstep(.85,.55,power)*smoothstep(0.,.08,power);
     c = c*step(abs(q.y),1.) + lg*boost*vec3(.9,.95,1.);
     c *= smoothstep(0.,.06,power);
@@ -645,7 +734,7 @@ void main(){
   float e = mix(1.0, smoothstep(1.,.985,abs(p.x))*smoothstep(1.,.985,abs(p.y)), corner);
   float inside = step(abs(p.x),1.)*step(abs(p.y),1.);
   c *= vig*e*inside;
-  c += sheen*exp(-(pow(p.x+.45,2.)/.18+pow(p.y+.55,2.)/.08));
+  c += sheen*exp(-(sq(p.x+.45)/.18+sq(p.y+.55)/.08));
   o = vec4(c,1);
 }`;
 const BLUR = `#version 300 es
@@ -727,7 +816,7 @@ void main(){
   o = vec4(c,1);
 }`;
 const TUBE = `#version 300 es
-precision highp float; in vec2 uv; out vec4 o;
+precision highp float; in vec2 uv; out vec4 o; float sq(float x){ return x*x; }
 uniform sampler2D sig, prevT; uniform vec2 res; uniform float lines, curve, scan, beam, mask, vignette, corner, sheen, power, warm;
 uniform float maskKind, pitch, converge, persist, dt, hasPrev, mono;
 vec3 beamAt(vec2 suv, float ch){            // light of one gun (ch 0/1/2) at raster position suv
@@ -784,7 +873,7 @@ void main(){
   // monochrome tube: one continuous P4 phosphor (no mask), a slightly blue white
   if(mono>0.) c = mix(c, vec3(dot(c, vec3(.3,.59,.11)))*vec3(.90,.95,1.04), mono);
   if(power<1.){
-    float lg = exp(-pow(p.y/(.004+vy*.5),2.))*exp(-pow(p.x/(.01+hx*.6),2.));
+    float lg = exp(-sq(p.y/(.004+vy*.5)))*exp(-sq(p.x/(.01+hx*.6)));
     float boost = smoothstep(.85,.55,power)*smoothstep(0.,.08,power);
     c = c + lg*boost*vec3(.8,.9,1.);
     c *= smoothstep(0.,.06,power);
@@ -801,7 +890,7 @@ void main(){
     vec3 prev = pow(texture(prevT, uv).rgb, vec3(2.2));
     c = max(c, prev*keep);
   }
-  float sh = sheen*exp(-(pow(p.x+.45,2.)/.18+pow(p.y+.55,2.)/.08));
+  float sh = sheen*exp(-(sq(p.x+.45)/.18+sq(p.y+.55)/.08));
   c += pow(sh, 2.2)*e*inside;
   o = vec4(pow(clamp(c,0.,1.), vec3(1./2.2)), 1);
 }`;
@@ -980,7 +1069,144 @@ void main(){ vec2 px=gl_FragCoord.xy, uv=px/R; float bs = fmtD>.5 ? 32. : 8.;
       float g=.5+.4*cos(px.x*f.x*2.)*cos(px.y*f.y*2.); c=clamp(toRGB(vec3(g,(h3(b.x,b.y,fr+15.)-.5)*.6,(h3(b.x,b.y,fr+17.)-.5)*.6)),0.,1.); }
   }
   o=vec4(c,1.); }`;
-const P = {core:prog(CORE), blur:prog(BLUR), comp:prog(COMP), sig:prog(SIGNAL), tube:prog(TUBE), blur2:prog(BLUR2), comp2:prog(COMP2), cam:prog(CAMERA), burn:prog(BURN), trec:prog(TAPEREC), tmech:prog(TAPEMECH), digi:prog(DIGI)};
+// PRE (11-16): what happens to the picture before the chain sees it — mirror (live camera) and ASCII.
+// It keeps the source texture's own layout (row 0 = top of the picture), so every later pass samples it exactly as it sampled the source.
+// ASCII: cells of `cols` across, each one glyph from the atlas (one row of nG glyphs). Ramp/blocks pick the glyph by brightness;
+// "your text" reads the text in order across the picture and lights each letter by the brightness under it.
+const PRE = `#version 300 es
+precision highp float; out vec4 o;
+uniform sampler2D src, atlas, txt; uniform vec2 res, pres;
+uniform float mirror, ascii, cols, cellA, nG, aC, aR, set, colMode, inv, bg, gain, txtLen, edge, anim, animT, rate, sdur, idx;
+vec3 S(vec2 uv){ if(mirror>.5) uv.x=1.-uv.x; return texture(src, uv).rgb; }
+float luma(vec3 c){ return dot(c, vec3(.299,.587,.114)); }
+float tone(vec3 c){ float L=clamp((luma(c)-.5)*gain+.5,0.,1.); return inv>.5?1.-L:L; }
+float h21(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+const vec3 ANSI[16]=vec3[16](vec3(0),vec3(.667,0,0),vec3(0,.667,0),vec3(.667,.333,0),vec3(0,0,.667),vec3(.667,0,.667),vec3(0,.667,.667),vec3(.667),
+  vec3(.333),vec3(1,.333,.333),vec3(.333,1,.333),vec3(1,1,.333),vec3(.333,.333,1),vec3(1,.333,1),vec3(.333,1,1),vec3(1));
+const vec3 TTX[8]=vec3[8](vec3(0),vec3(1,0,0),vec3(0,1,0),vec3(1,1,0),vec3(0,0,1),vec3(1,0,1),vec3(0,1,1),vec3(1));
+const vec3 C64[16]=vec3[16](vec3(0),vec3(1),vec3(.533,0,0),vec3(.667,1,.933),vec3(.8,.267,.8),vec3(0,.8,.333),vec3(0,0,.667),vec3(.933,.933,.467),
+  vec3(.867,.533,.333),vec3(.4,.267,0),vec3(1,.467,.467),vec3(.2),vec3(.467),vec3(.667,1,.4),vec3(0,.533,1),vec3(.733));
+const vec3 C64BG=vec3(.251,.192,.553);
+// nearest palette colour to the cell's hue (brightness is carried by how much of the cell is ink); black is never ink
+vec3 pal(vec3 h, int which){ vec3 best=vec3(1); float bd=1e9;
+  for(int i=1;i<16;i++){ vec3 p; if(which==0) p=ANSI[i]; else if(which==1){ if(i>7) break; p=TTX[i]; } else p=C64[i];
+    vec3 d=(p-h)*vec3(.9,1.2,.7); float e=dot(d,d); if(e<bd){ bd=e; best=p; } } return best; }
+void main(){
+  vec2 uv, cs, cell, f;
+  if(idx>.5){ cs=vec2(1./cols, pres.x/cols/cellA/pres.y); cell=floor(gl_FragCoord.xy); f=vec2(.5); }   // export: one pixel per character
+  else { uv=gl_FragCoord.xy/res; if(ascii<.5){ o=vec4(S(uv),1.); return; }
+    cs=vec2(1./cols, res.x/cols/cellA/res.y); cell=floor(uv/cs); f=fract(uv/cs); }
+  vec2 c0=cell*cs, cc=c0+.5*cs;
+  vec3 c=(S(cc)+S(cc+cs*vec2(-.25,-.25))+S(cc+cs*vec2(.25,-.25))+S(cc+cs*vec2(-.25,.25))+S(cc+cs*vec2(.25,.25)))*.2;
+  float L=tone(c), gi=0., lit=1.;
+  if(set>2.5){ // braille 2x4 dots / teletext 2x3 sextants / PETSCII 2x2 quadrants: each part lit against an ordered pattern
+    int ny = set<3.5 ? 4 : set<4.5 ? 3 : 2; float bits=0.;
+    for(int j=0;j<4;j++){ if(j>=ny) break; for(int i=0;i<2;i++){ int n=j*2+i;
+      float l=tone(S(c0+cs*vec2((float(i)+.5)/2., (float(j)+.5)/float(ny)))), thr, b;
+      if(ny==4){ int B[8]=int[8](0,4,6,2,1,5,7,3); int D[8]=int[8](0,3,1,4,2,5,6,7); thr=(float(B[n])+.5)/8.; b=exp2(float(D[n])); }
+      else if(ny==3){ int B[6]=int[6](0,3,4,1,2,5); thr=(float(B[n])+.5)/6.; b=exp2(float(n)); }
+      else { int B[4]=int[4](0,2,3,1); thr=(float(B[n])+.5)/4.; b=exp2(float(n)); }
+      if(l>thr) bits+=b; } }
+    gi=bits; }
+  else if(set>1.5){ float k=cell.y*cols+cell.x, n=max(txtLen,1.); int i=int(mod(k,n)); gi=floor(texelFetch(txt, ivec2(i%4096, i/4096),0).r*255.+.5); lit=smoothstep(.04,.55,L); }
+  else gi=floor(L*(nG-1.)+.5);
+  if(edge>.001 && set<2.5){ // edge-following: where the picture has an outline, draw it with - \ | /
+    float tl=tone(S(cc+cs*vec2(-1,-1))), tt=tone(S(cc+cs*vec2(0,-1))), tr=tone(S(cc+cs*vec2(1,-1))), ll=tone(S(cc-vec2(cs.x,0.))),
+          rr=tone(S(cc+vec2(cs.x,0.))), bl=tone(S(cc+cs*vec2(-1,1))), bb=tone(S(cc+cs*vec2(0,1))), br=tone(S(cc+cs*vec2(1,1)));
+    float gx=(tr+2.*rr+br)-(tl+2.*ll+bl), gy=(bl+2.*bb+br)-(tl+2.*tt+tr);
+    if(length(vec2(gx,gy))>mix(2.2,.25,edge)){ float th=mod(atan(gy,gx)+1.5708,3.14159); gi=nG+mod(floor(th/.785398+.5),4.); lit=1.; } }
+  float k=cell.y*cols+cell.x; bool cursor=false;
+  if(anim>.5 && anim<1.5){ float shown=floor(animT*rate); if(k>shown) gi=0.; if(k==shown) cursor=true; }   // typing, left to right, top down
+  else if(anim>1.5 && h21(cell)*.999>animT/sdur) gi=floor(h21(cell+floor(animT*18.))*nG*.999);         // scramble, settling cell by cell
+  vec3 hue=clamp(c/max(max(c.r,max(c.g,c.b)),.2),0.,1.), bgc=vec3(0), ink;
+  if(colMode<.5) ink=hue; else if(colMode<1.5) ink=vec3(.45,1.,.55); else if(colMode<2.5) ink=vec3(1.,.68,.3); else if(colMode<3.5) ink=vec3(1.);
+  else if(colMode<4.5) ink=pal(hue,0); else if(colMode<5.5) ink=pal(hue,1); else { ink=pal(hue,2); bgc=C64BG; }
+  if(idx>.5){ o=vec4(ink*lit, gi/255.); return; }
+  vec2 st=vec2(cols/res.x, cols*cellA/res.x)/3., a=vec2(mod(gi,aC), floor(gi/aC));   // one output pixel, in cell units, split in three
+  float g=0.; for(int x=-1;x<=1;x++) for(int y=-1;y<=1;y++){ vec2 q=f+vec2(float(x),float(y))*st;
+    g+=texture(atlas, vec2((a.x+clamp(q.x,.02,.98))/aC, (a.y+clamp(q.y,.02,.98))/aR)).r; } g/=9.;
+  if(cursor){ g=step(.08,f.x)*step(f.x,.92)*step(.06,f.y)*step(f.y,.94); lit=1.; }
+  vec3 col=mix(bgc, ink, g*lit);
+  col=max(col, c*bg*.6);
+  o=vec4(col,1.); }`;
+// BLIT: the PRE picture alone on the screen (ASCII › Shown › pure), fitted inside the canvas
+const BLIT = `#version 300 es
+precision highp float; out vec4 o; uniform sampler2D src; uniform vec2 res; uniform float srcAR;
+void main(){ vec2 uv=gl_FragCoord.xy/res; float car=res.x/res.y; vec2 p=uv-.5;
+  if(srcAR>car) p.y*=srcAR/car; else p.x*=car/srcAR; p+=.5;
+  if(p.x<0.||p.y<0.||p.x>1.||p.y>1.){ o=vec4(0,0,0,1); return; }
+  o=vec4(texture(src, vec2(p.x,1.-p.y)).rgb,1.); }`;
+// SLIT-SCAN: COPY writes the newest frame into one layer of a 48-layer history; SLIT reads each row (or column) from further back
+const COPY = `#version 300 es
+precision highp float; out vec4 o; uniform sampler2D src; uniform vec2 res;
+void main(){ o=vec4(texture(src, gl_FragCoord.xy/res).rgb,1.); }`;
+const SLIT = `#version 300 es
+precision highp float; precision highp sampler2DArray; out vec4 o; uniform sampler2DArray hist; uniform vec2 res; uniform float head, filled, N, len, dir;
+void main(){ vec2 uv=gl_FragCoord.xy/res; float ar=res.x/res.y;
+  float p = dir<.5 ? uv.y : dir<1.5 ? 1.-uv.y : dir<2.5 ? uv.x : dir<3.5 ? 1.-uv.x : clamp(length((uv-.5)*vec2(ar,1.))/length(vec2(ar,1.)*.5),0.,1.);
+  float d=p*len*max(filled-1.,0.), a=floor(d), f=fract(d);
+  float l0=mod(head-a+N*4., N), l1=mod(head-a-1.+N*4., N); if(a+1.>filled-1.) l1=l0;
+  o=vec4(mix(texture(hist, vec3(uv,l0)).rgb, texture(hist, vec3(uv,l1)).rgb, f),1.); }`;
+// MATERIAL: one pass, eight materials. px is in 1440-wide units so grain and dots keep their size at 2x / 3x stills.
+const MAT = `#version 300 es
+precision highp float; out vec4 o; uniform sampler2D src; uniform vec2 res; uniform float kind, amt, size, wear, ink, frame;
+float luma(vec3 c){ return dot(c,vec3(.299,.587,.114)); }
+float h(vec2 p){ uvec2 q=uvec2(ivec2(floor(p))+65536); uint v=q.x*1664525u ^ (q.y*1013904223u+0x9E3779B9u);   // integer hash: stays exact however long the page runs
+  v^=v>>16; v*=0x7feb352du; v^=v>>15; v*=0x846ca68bu; v^=v>>16; return float(v)/4294967295.; }
+float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h(i),h(i+vec2(1,0)),f.x), mix(h(i+vec2(0,1)),h(i+1.),f.x), f.y); }
+float bayer8(vec2 p){ ivec2 q=ivec2(mod(p,8.)); int M[64]=int[64](0,32,8,40,2,34,10,42,48,16,56,24,50,18,58,26,12,44,4,36,14,46,6,38,60,28,52,20,62,30,54,22,
+  3,35,11,43,1,33,9,41,51,19,59,27,49,17,57,25,15,47,7,39,13,45,5,37,63,31,55,23,61,29,53,21); return (float(M[q.y*8+q.x])+.5)/64.; }
+vec3 S(vec2 uv){ return texture(src, clamp(uv,0.,1.)).rgb; }
+float con(float L, float lo, float hi){ return clamp((L-.5)*mix(lo,hi,amt)+.5,0.,1.); }
+void main(){ vec2 uv=gl_FragCoord.xy/res, px=gl_FragCoord.xy*(1440./res.x); float ar=res.x/res.y, fr=floor(frame); int k=int(kind+.5);
+  if(k==0){ // XEROX: contrast crushed to toner, speckle that changes every copy, drum streaks, thin toner at the edges, a little skew
+    vec2 u=uv+vec2((vn(vec2(uv.y*2.,fr*.37))-.5)*.006*wear, 0.); vec2 e1=vec2(1.5/res.x,0.), e2=vec2(0.,1.5/res.y);
+    float L=luma(S(u)+S(u+e1)+S(u-e2))/3.; float tn=1.-clamp((L-.52)*mix(2.,10.,amt)+.5,0.,1.);
+    float gs=1.+size*3.; tn=clamp(tn+(h(floor(px/gs)+fr)-.5)*(.25+.5*wear)*tn,0.,1.);
+    tn=max(tn, step(1.-.003*(.3+wear), h(floor(px/(gs+1.))+fr*1.7)));
+    tn=max(tn, smoothstep(.985,1.,vn(vec2(px.x*.12,3.)))*wear*.7);
+    float e=min(min(uv.x,1.-uv.x),min(uv.y,1.-uv.y)); tn*=mix(.6,1.,smoothstep(0.,.1,e)); tn=max(tn,(1.-smoothstep(0.,.012,e))*.8*wear);
+    o=vec4(mix(vec3(.95,.94,.9), vec3(.07,.07,.08), tn),1.); return; }
+  if(k==1||k==2||k==5){ // 1-BIT MAC / GAME BOY / THERMAL RECEIPT: few dots across, ordered dither
+    float vw = k==1 ? mix(640.,160.,size) : k==2 ? mix(320.,96.,size) : mix(576.,192.,size);
+    vec2 vr=vec2(vw, floor(vw/ar)), cell=floor(uv*vr), f=fract(uv*vr); float L=luma(S((cell+.5)/vr)), b=bayer8(cell);
+    if(k==1){ L=con(L,.8,2.4); o=vec4(vec3(step(b,L)),1.); return; }
+    if(k==2){ L=con(L,.8,2.); float q=clamp(floor(L*3.+b),0.,3.);
+      vec3 GB[4]=vec3[4](vec3(.059,.22,.059),vec3(.188,.384,.188),vec3(.545,.675,.059),vec3(.608,.737,.059)); vec3 c=GB[int(q)];
+      c*=mix(1.,.86+.14*step(.12,f.x)*step(.12,f.y),wear); o=vec4(c,1.); return; }
+    L=con(L,.9,2.2); float dot_=1.-step(b,L);                         // thermal: dark where the head heated the paper
+    float band=.75+.25*vn(vec2(cell.y*.08,fr*.05+2.)); float dead=step(h(vec2(cell.x,7.)),.012*wear);
+    float fade=mix(1.,.55,wear*smoothstep(.3,1.,uv.y)); dot_*=band*fade*(1.-dead)*(.85+.15*h(cell+fr));
+    o=vec4(mix(vec3(.95,.95,.94), vec3(.14,.14,.17), dot_),1.); return; }
+  if(k==3){ // HALFTONE: one ink, round dots on a 45° screen, newsprint
+    float cs=mix(4.,22.,size); mat2 r=mat2(.7071,.7071,-.7071,.7071); vec2 q=r*px/cs, c=floor(q)+.5;
+    vec2 cpx=transpose(r)*(c*cs); float d=1.-con(luma(S(cpx/vec2(1440.,1440./ar))),.8,1.8);
+    float rad=sqrt(d)*.74+(vn(q*2.3)-.5)*.14*wear, aa=1.2/cs; float inkA=1.-smoothstep(rad-aa,rad+aa,length(q-c));
+    vec3 paper=vec3(.93,.91,.85)*(.97+.03*vn(px*.3)); o=vec4(mix(paper, vec3(.12,.12,.13), inkA*(.9+.1*h(px))),1.); return; }
+  if(k==4){ // RISOGRAPH: two inks separated from the colour, each printed with grain, the second drum off register
+    int ii=int(ink+.5); vec3 I1=vec3(1,.282,.69), I2=vec3(0,.471,.749);
+    if(ii==1){ I1=vec3(1,.4,.369); I2=vec3(0,.514,.541); } else if(ii==2){ I1=vec3(1,.91,0); I2=vec3(.463,.357,.655); } else if(ii==3){ I1=vec3(1,.424,.184); I2=vec3(0,.663,.361); }
+    vec2 off=vec2(.007,-.005)*wear; vec3 t1=1.-S(uv), t2=1.-S(uv+off), a=1.-I1, b=1.-I2;
+    float aa=dot(a,a), bb=dot(b,b), ab=dot(a,b), det=max(aa*bb-ab*ab,1e-4);
+    float x=clamp((bb*dot(a,t1)-ab*dot(b,t1))/det,0.,1.), y=clamp((aa*dot(b,t2)-ab*dot(a,t2))/det,0.,1.);
+    x=con(x,.8,1.8); y=con(y,.8,1.8); float gs=1.+size*3.; vec2 g=floor(px/gs)+floor(fr/2.)*vec2(7.3,3.1);
+    float d1=step(h(g+3.1),x), d2=step(h(g+9.7),y);
+    vec3 col=vec3(.97,.95,.9)*mix(vec3(1),I1,d1*.95)*mix(vec3(1),I2,d2*.92); o=vec4(col,1.); return; }
+  if(k==6){ // FAX: half the lines, dithered black, rows that slip, lines lost in transmission, yellowed thermal paper
+    float vw=mix(864.,288.,size); vec2 vr=vec2(vw, floor(vw/ar*.5)); float row=floor(uv.y*vr.y);
+    float slip=step(1.-.04*wear, h(vec2(row,floor(fr/6.))))*(h(vec2(row,3.))-.5)*.05;
+    vec2 cell=floor(vec2(uv.x+slip,uv.y)*vr); float L=con(luma(S((cell+.5)/vr)),.9,2.4);
+    float v=1.-step(bayer8(cell),L+(h(cell+fr)-.5)*.15*wear);
+    float lost=step(1.-.012*wear, h(vec2(row,floor(fr/10.)+1.))); v=mix(v, 1., lost*step(.5,h(vec2(row,5.))));
+    o=vec4(mix(vec3(.96,.95,.86), vec3(.1,.1,.12), v),1.); return; }
+  // OSCILLOSCOPE: the picture as horizontal traces pushed up by brightness (Rutt/Etra), green P31 glow
+  float sp=mix(6.,28.,size), amp=mix(.5,4.,amt)*sp, w=mix(.7,2.4,wear), H=1440./ar, n0=floor(px.y/sp), g=0.;
+  for(int i=-2;i<=7;i++){ float n=n0+float(i), base=(n+.5)*sp; if(base<0.||base>H) continue; float yy=base/H;
+    float L=luma(S(vec2(uv.x,yy))), L1=luma(S(vec2(uv.x+2./res.x,yy))), L0=luma(S(vec2(uv.x-2./res.x,yy)));
+    float slope=-(L1-L0)*amp/(4.*1440./res.x), d=abs(px.y-(base-L*amp))/sqrt(1.+slope*slope);
+    g+=(exp(-d*d/(2.*w*w))+.18*exp(-d/(5.*w)))*(.3+.7*L); }
+  o=vec4(vec3(.25,1.,.45)*g + vec3(.6,1.,.7)*max(g-1.,0.)*.4,1.); }`;
+const P = {copy:prog(COPY), slit:prog(SLIT), mat:prog(MAT), core:prog(CORE), blur:prog(BLUR), comp:prog(COMP), sig:prog(SIGNAL), tube:prog(TUBE), blur2:prog(BLUR2), comp2:prog(COMP2), cam:prog(CAMERA), burn:prog(BURN), trec:prog(TAPEREC), tmech:prog(TAPEMECH), digi:prog(DIGI), pre:prog(PRE), blit:prog(BLIT)};
 const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
 gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
 function tex(w,h){ const t=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t);
@@ -1003,7 +1229,7 @@ function sigTarget(lines){ const key=RW+'x'+lines; if(key===sigKey) return SIG;
 let GLOWK=+(new URLSearchParams(location.search).get('gk')||.3), HALOK=+(new URLSearchParams(location.search).get('hk')||.15);
 let model='physical'; try{ model=localStorage.getItem('amfm-crt-model')||'physical'; }catch(e){}
 function setModel(m){ model=m; $('mPhys').classList.toggle('on',m==='physical'); $('mClassic').classList.toggle('on',m==='classic');
-  chainDirty();
+  chainDirty(); try{ applyDeck(); }catch(e){}   // before the deck exists (startup) there is nothing to apply
   try{ localStorage.setItem('amfm-crt-model',m); }catch(e){} }
 $('mPhys').onclick=()=>setModel('physical'); $('mClassic').onclick=()=>setModel('classic'); setModel(model);
 const srcTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, srcTex);
@@ -1019,24 +1245,138 @@ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Ar
 [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(p=>gl.texParameteri(gl.TEXTURE_2D,p,gl.CLAMP_TO_EDGE));
 function uploadUnder(){ if(!underEl) return; gl.bindTexture(gl.TEXTURE_2D, underTex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,underEl); }
 let underUrl=null;
-function loadUnder(f){ if(underUrl) URL.revokeObjectURL(underUrl); const url=URL.createObjectURL(f); underUrl=url;
-  const done=(el,vid)=>{ if(underEl&&underEl.pause) underEl.pause(); underEl=el; underIsVideo=vid; uploadUnder();
+let underSeq=0;
+function loadUnder(f){ const url=URL.createObjectURL(f), my=++underSeq;
+  const done=(el,vid)=>{ if(my!==underSeq || busyNow()){ URL.revokeObjectURL(url); return; } if(underEl&&underEl.pause) underEl.pause(); if(underUrl&&underUrl!==url) URL.revokeObjectURL(underUrl); underUrl=url; underEl=el; underIsVideo=vid; uploadUnder();
     $('underName').hidden=false; $('underName').textContent='Old recording: '+f.name; $('underClear').disabled=false;
     if(Math.round(S.tapeFmt)===0){ setVal('tapeFmt',3); status('An old recording needs a tape: switched the format to VHS SP.'); } else status('Old recording: '+f.name+'. Set how much shows through under Tape › More.'); tlDirty(); };
   if(f.type.startsWith('video')){ const v=document.createElement('video'); v.src=url; v.muted=true; v.loop=true; v.playsInline=true; v.onloadeddata=()=>{ v.play().catch(()=>{}); done(v,true); }; }
   else { const im=new Image(); im.onload=()=>done(im,false); im.src=url; } }
-$('underPick').onclick=()=>$('underFile').click();
-$('underFile').onchange=e=>{ const f=e.target.files[0]; e.target.value=''; if(f) loadUnder(f); };
-$('underClear').onclick=()=>{ if(underEl&&underEl.pause) underEl.pause(); if(underUrl) URL.revokeObjectURL(underUrl); underUrl=null; underEl=null; underIsVideo=false; $('underName').hidden=true; $('underClear').disabled=true; tlDirty(); status('Old recording cleared.'); };
-function upload(){ if(!srcEl) return; gl.bindTexture(gl.TEXTURE_2D, srcTex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,srcEl); }
-function loadImage(url){ const im=new Image(); im.onload=()=>{ if(srcEl&&srcEl.pause) srcEl.pause(); $('vidPanel').hidden=true; isVideo=false; srcEl=im; tlDirty(); srcAR=im.naturalWidth/im.naturalHeight; upload(); status(); }; im.src=url; }
+$('underPick').onclick=()=>{ if(busyNow()) return; $('underFile').click(); };
+$('underFile').onchange=e=>{ const f=e.target.files[0]; e.target.value=''; if(f && !busyNow()) loadUnder(f); };
+$('underClear').onclick=()=>{ if(busyNow()) return; underSeq++; if(underEl&&underEl.pause) underEl.pause(); if(underUrl) URL.revokeObjectURL(underUrl); underUrl=null; underEl=null; underIsVideo=false; $('underName').hidden=true; $('underClear').disabled=true; tlDirty(); status('Old recording cleared.'); };
+function upload(){ if(!srcEl) return; if((isLive||isVideo) && srcEl.readyState<2) return; gl.bindTexture(gl.TEXTURE_2D, srcTex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,srcEl); }
+// ---------------- PRE stage: ASCII atlas, text, target ----------------
+let isLive=false, camMirror=false;
+const RAMP=" .'`^\",:;Il!i~+_-?][}{1)(|tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$", BLOCKS=" ░▒▓█";
+const atlasTex=gl.createTexture(), txtTex=gl.createTexture();
+[atlasTex,txtTex].forEach((t,i)=>{ gl.bindTexture(gl.TEXTURE_2D,t); const f=i?gl.NEAREST:gl.LINEAR;
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,f); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,f);
+  [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(w=>gl.texParameteri(gl.TEXTURE_2D,w,gl.CLAMP_TO_EDGE));
+  gl.texImage2D(gl.TEXTURE_2D,0,i?gl.R8:gl.RGBA,1,1,0,i?gl.RED:gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array(i?1:4)); });
+let asciiDirty=true, atlasN=1, atlasT=1, atlasC=1, atlasR=1, atlasGlyphs=[' '], cellA=.6, txtLen=1, atlasKey='';
+let lyrics=null, lyricT0=0, cueText=null, animStart=0, animKey='';   // lyrics: [{s,e,t}] ; animStart on the draw clock
+const GW=40, GH=64;   // glyph cell in the atlas; cellA (width / height) follows the font's real advance
+function asciiBaseText(){ let t=''; try{ t=(document.getElementById('asciiText')||{}).value||''; }catch(e){} return t.replace(/\s+/g,' ').trim() || 'LIMINAL ENGINE '; }
+function asciiTextNow(){ return (cueText ? cueText.replace(/\s+/g,' ').trim()+' ' : '') || asciiBaseText(); }
+const EDGES=['-','\\','|','/'], QUAD=[' ','▘','▝','▀','▖','▌','▞','▛','▗','▚','▐','▜','▄','▙','▟','█'];
+function buildAscii(){ asciiDirty=false; const set=Math.round(S.asciiSet);
+  const text=asciiTextNow();
+  const chars = set===0 ? RAMP : set===1 ? BLOCKS : set===2 ? [...new Set([...(' '+text)])].slice(0,251).join('') : '';
+  const key=set+'|'+chars+'|'+(set===2?text:''); if(key===atlasKey) return; atlasKey=key;
+  const nBits=[0,0,0,256,64,16][set]||0;
+  const glyphs = nBits ? Array.from({length:nBits},(_,i)=>i) : [...chars, ...EDGES]; atlasN = nBits || [...chars].length; atlasT=glyphs.length; atlasGlyphs=glyphs;
+  const c=document.createElement('canvas'), x=c.getContext('2d'); const font='500 52px "IBM Plex Mono", Menlo, monospace';
+  x.font=font; const adv=Math.max(8, x.measureText('M').width);
+  cellA = set===3 ? .5 : set===4 ? .6 : set===5 ? 1 : adv/GH;          // braille / teletext / PETSCII cells keep their own shape
+  const w=Math.ceil(set>2 ? GH*cellA : adv); atlasC=Math.min(64,atlasT); atlasR=Math.ceil(atlasT/atlasC);
+  c.width=w*atlasC; c.height=GH*atlasR; x.font=font; x.fillStyle='#000'; x.fillRect(0,0,c.width,c.height);
+  x.fillStyle='#fff'; x.textBaseline='middle'; x.textAlign='center';
+  glyphs.forEach((g,i)=>{ const ox=(i%atlasC)*w, oy=Math.floor(i/atlasC)*GH;
+    if(set===1 && i>0 && i<atlasN){ x.globalAlpha=[0,.25,.5,.78,1][i]||1; x.fillRect(ox,oy,w,GH); x.globalAlpha=1; return; }   // shade blocks: even tone, no font gaps
+    if(set===3){ const D=[[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[0,3],[1,3]], r=Math.min(w/2,GH/4)*.34;
+      D.forEach(([dx,dy],b)=>{ if(g&(1<<b)){ x.beginPath(); x.arc(ox+(dx+.5)*w/2, oy+(dy+.5)*GH/4, r, 0, Math.PI*2); x.fill(); } }); return; }
+    if(set===4||set===5){ const ny=set===4?3:2; for(let n=0;n<ny*2;n++) if(g&(1<<n)){ const ix=n%2, iy=Math.floor(n/2);
+      const x0=Math.round(ix*w/2), x1=Math.round((ix+1)*w/2), y0=Math.round(iy*GH/ny), y1=Math.round((iy+1)*GH/ny); x.fillRect(ox+x0, oy+y0, x1-x0, y1-y0); } return; }
+    x.fillText(g, ox+w/2, oy+GH*.54, w*.96); });
+  gl.bindTexture(gl.TEXTURE_2D, atlasTex); gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,c);
+  const idx=set===2 ? [...text].slice(0,4096*64).map(ch=>Math.max(0,glyphs.indexOf(ch))) : [0]; txtLen=idx.length;
+  const tw=Math.min(4096,txtLen), th=Math.ceil(txtLen/4096), buf=new Uint8Array(tw*th); buf.set(idx);
+  gl.bindTexture(gl.TEXTURE_2D, txtTex); gl.texImage2D(gl.TEXTURE_2D,0,gl.R8,tw,th,0,gl.RED,gl.UNSIGNED_BYTE,buf); gl.pixelStorei(gl.UNPACK_ALIGNMENT,4); }
+if(document.fonts && document.fonts.load) document.fonts.load('500 52px "IBM Plex Mono"').then(()=>{ atlasKey=''; asciiDirty=true; }).catch(()=>{});
+let PREt=null, preKey='';
+const MAXT=gl.getParameter(gl.MAX_TEXTURE_SIZE);
+function fitT(){ let w=Math.round(1440*SCALE), h=Math.max(16,Math.round(w/Math.max(.2,srcAR))); if(h>MAXT){ w=Math.max(16,Math.round(w*MAXT/h)); h=MAXT; } return [w,h]; }   // tall sources at 3x: shrink to fit the GPU
+function preTarget(){ const [w,h]=fitT(), key=w+'x'+h;
+  if(key!==preKey){ if(PREt){ gl.deleteTexture(PREt.t); gl.deleteFramebuffer(PREt.fb); } PREt=tex(w,h); preKey=key; } return PREt; }
+// runs the PRE pass when it changes anything; returns the texture the chain should read
+function lyricAt(now){ if(!lyrics) return null; if(now<lyricT0) lyricT0=now;
+  const t = isVideo && srcEl ? srcEl.currentTime : now-lyricT0; const c=lyrics.find(c=>t>=c.s && t<c.e); return c ? c.t : null; }
+function preU(U, now){ const r=+U.asciiRate;
+  return {mirror:camMirror?1:0, ascii:U.asciiOn>0?1:0, cols:Math.round(U.asciiCols), cellA, nG:atlasN, aC:atlasC, aR:atlasR, set:Math.round(U.asciiSet),
+    colMode:Math.round(U.asciiCol), inv:Math.round(U.asciiInv), bg:U.asciiBg, gain:U.asciiGain, txtLen, edge:U.asciiEdge,
+    anim:Math.round(U.asciiAnim), animT:Math.max(0,now-animStart), rate:20*Math.pow(300,r), sdur:.3+3*(1-r), idx:0, pres:[1,1]}; }   // idx always sent: uniforms stick to the program
+// the ASCII bookkeeping that follows time: lyric cues, and what (re)starts the typing / scramble
+function asciiTick(U, now){ const ct=lyricAt(now); if(ct!==cueText){ cueText=ct; asciiDirty=true; animStart=now; }
+  const set=Math.round(U.asciiSet), ak=set+'|'+(set===2?asciiTextNow():'');
+  if(ak!==animKey){ animKey=ak; animStart=now; } if(now<animStart) animStart=now;   // an export runs on its own clock: start from its first frame
+  if(asciiDirty || atlasKey.split('|')[0]!==String(set)) buildAscii(); }
+// runs the PRE pass when it changes anything; returns the texture the chain should read
+function preStage(U, now, inTex){ const asc=U.asciiOn>0; if(!asc){ animKey=''; if(!camMirror) return inTex; }
+  if(asc) asciiTick(U, now);
+  const t=preTarget();
+  run(P.pre, t, {res:[t.w,t.h], ...preU(U, now)}, {src:inTex, atlas:atlasTex, txt:txtTex});
+  return t.t; }
+// SLIT-SCAN history: 48 layers at 960 wide, made only while the stage is on
+const SLIT_N=48, SLIT_W=960; let slit=null, curIn=null, stillDrawing=false;
+function slitReset(){ if(slit){ slit.key=null; slit.filled=0; slit.head=-1; slit.tick=0; } }
+function slitFree(){ if(!slit) return; gl.deleteTexture(slit.t); gl.deleteFramebuffer(slit.fb); gl.deleteTexture(slit.out.t); gl.deleteFramebuffer(slit.out.fb); slit=null; }
+function slitStage(U, now){
+  if(!(U.slitOn>0)){ if(slit) slitFree(); return srcTex; }
+  const ar=Math.max(.2,srcAR), w=ar>=1?SLIT_W:Math.max(16,Math.round(SLIT_W*ar)), h=ar>=1?Math.max(16,Math.round(SLIT_W/ar)):SLIT_W;   // long side 960: portrait stays ~100 MB
+  if(!slit || slit.w!==w || slit.h!==h){ slitFree(); const t=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D_ARRAY,t); gl.texStorage3D(gl.TEXTURE_2D_ARRAY,1,gl.RGBA8,w,h,SLIT_N);
+    [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER].forEach(f=>gl.texParameteri(gl.TEXTURE_2D_ARRAY,f,gl.LINEAR)); [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(f=>gl.texParameteri(gl.TEXTURE_2D_ARRAY,f,gl.CLAMP_TO_EDGE));
+    slit={t, fb:gl.createFramebuffer(), w, h, head:-1, filled:0, tick:0, key:null, el:null, lastNow:now, out:tex(w,h)}; }
+  // a new source, or an export running on its own clock, starts an empty history
+  const cut=isLive && (srcEl===camVidA||srcEl===camVidB) && (slit.el===camVidA||slit.el===camVidB);   // A/B cuts smear into each other
+  if((srcEl!==slit.el && !cut) || now<slit.lastNow-.25){ slit.el=srcEl; slit.head=-1; slit.filled=0; slit.tick=0; slit.key=null; } slit.lastNow=now;
+  slit.el=srcEl; const key = isVideo&&srcEl ? 'V'+Math.floor(srcEl.currentTime*29.97) : isLive ? 'L'+Math.floor(now*29.97) : 'I';   // slices at 29.97 a second, live, playing or exporting
+  if(key!==slit.key && (!stillDrawing || slit.filled===0)){ slit.key=key;   // stills add no slices, except the first one of a new picture (batch)
+    if(slit.filled===0 || (slit.tick++ % Math.max(1,Math.round(U.slitStep)))===0){ slit.head=(slit.head+1)%SLIT_N; slit.filled=Math.min(SLIT_N,slit.filled+1);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, slit.fb); gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, slit.t, 0, slit.head);
+      run(P.copy, {fb:slit.fb, w, h}, {res:[w,h]}, {src:srcTex}); } }
+  let dir=Math.round(U.slitDir); if(camMirror && (dir===2||dir===3)) dir=5-dir;
+  if(U.slitLen<.001) return srcTex;   // nothing spread: keep the full-resolution picture (the history keeps filling)
+  run(P.slit, slit.out, {res:[w,h], head:slit.head, filled:slit.filled, N:SLIT_N, len:U.slitLen, dir}, {hist:{arr:slit.t}});
+  return slit.out.t; }
+// MATERIAL target: the PRE size, so stills at 2x / 3x get real detail
+let MATt=null, matKey='', matHintK=-1;
+const MATHINT=['Photocopy: contrast crushed to toner, speckle, drum streaks. Wear adds streaks, skew and dark edges.',
+  'Classic Mac: black and white dither. Dot size sets how many pixels across.', 'Game Boy: four greens, dithered. Wear shows the LCD grid.',
+  'Newspaper: one black ink in round dots on a 45° screen. Wear roughens the dots.', 'Risograph: two inks (pick below) with grain; Wear knocks the second drum off register.',
+  'Thermal receipt: heat-printed dots, uneven bands. Wear fades the roll and kills a heating element or two.',
+  'Fax: half the lines, dithered. Wear slips rows and loses lines.', 'Oscilloscope: scan lines pushed up by brightness, drawn as green glow. Contrast is the height, Dot size the line spacing, Wear the beam width.'];
+function matStage(U, inTex, field){ const k=Math.round(U.matKind);
+  if(k!==matHintK && $('matHint')){ matHintK=k; $('matHint').textContent=MATHINT[k]||''; }
+  if(!(U.matOn>0)) return inTex;
+  const [w,h]=fitT(), key=w+'x'+h;
+  if(key!==matKey){ if(MATt){ gl.deleteTexture(MATt.t); gl.deleteFramebuffer(MATt.fb); } MATt=tex(w,h); matKey=key; }
+  run(P.mat, MATt, {res:[w,h], kind:k, amt:U.matAmt, size:U.matSize, wear:U.matWear, ink:Math.round(U.matInk), frame:field%36000}, {src:inTex});
+  return MATt.t; }
+let loadSeq=0;
+function fitImg(im){ const w=im.naturalWidth||im.width, h=im.naturalHeight||im.height, M=gl.getParameter(gl.MAX_TEXTURE_SIZE);
+  if(w<=M && h<=M) return im; const k=M/Math.max(w,h), c=document.createElement('canvas'); c.width=Math.max(1,Math.floor(w*k)); c.height=Math.max(1,Math.floor(h*k));
+  c.getContext('2d').drawImage(im,0,0,c.width,c.height); return c; }
+const badSize=(w,h)=>{ if(w>0&&h>0) return false; status('That file has no picture this browser can show (codec or size).'); return true; };
+function loadImage(url){ if(offline && !batchRun) return; const my=++loadSeq, im=new Image(); im.onload=()=>{ if(isLive || my!==loadSeq || offline || badSize(im.naturalWidth,im.naturalHeight)) return;   // a picture that arrives while the camera is live is stale (startup logo vs ?cam=1)
+  if(srcEl&&srcEl.pause) srcEl.pause(); $('vidPanel').hidden=true; isVideo=false; srcEl=im; tlDirty(); srcAR=im.naturalWidth/im.naturalHeight; upload(); status(); }; im.src=url; }
 let srcUrl=null;
-function loadFile(f){ if(srcUrl) URL.revokeObjectURL(srcUrl); const url=URL.createObjectURL(f); srcUrl=url; srcFile=f;
+function loadFile(f){ if(busyNow()){ status('Wait for the export, batch or recording to finish.'); return; }
+  if(!/^(image|video)\//.test(f.type) && !/\.(mp4|mov|m4v|webm|mkv|png|jpe?g|gif|webp|avif|bmp|svg|heic)$/i.test(f.name)){ status(f.name+' isn’t a picture or a video.'); return; }
+  const url=URL.createObjectURL(f), my=++loadSeq;
+  const fail=why=>{ URL.revokeObjectURL(url); if(my===loadSeq) status(f.name+' couldn’t be opened'+(why?' ('+why+')':'')+': this browser can’t decode it. The picture stays as it was.'); };
+  let taken=false; const take=()=>{ taken=true; endLive(); if(srcUrl&&srcUrl!==url) URL.revokeObjectURL(srcUrl); srcUrl=url; srcFile=f; };   // only now does the old picture go
   if(f.type.startsWith('video')){ const v=document.createElement('video'); v.src=url; v.loop=$('vLoop').classList.contains('on'); v.playsInline=true; v.preload='auto';
-    v.onloadeddata=()=>{ if(srcEl&&srcEl.pause) srcEl.pause(); isVideo=true; srcEl=v; srcAR=v.videoWidth/v.videoHeight; vidAudio=null;
+    v.onerror=()=>{ if(taken) return; if(my===loadSeq) fail(v.error&&v.error.message); else URL.revokeObjectURL(url); };   // after it loaded, a playback hiccup is not a failed open
+    v.onloadeddata=()=>{ if(taken) return; if(my!==loadSeq || busyNow()){ v.onerror=null; v.removeAttribute('src'); v.load(); URL.revokeObjectURL(url); return; } if(!(v.videoWidth>0&&v.videoHeight>0)){ fail('no picture track'); return; }
+      take();
+      if(!isFinite(v.duration)){ const fix=()=>{ v.removeEventListener('durationchange',fix); if(isFinite(v.duration)) v.currentTime=0; }; v.addEventListener('durationchange',fix); v.currentTime=1e7; }   // raw WebM recordings: make the browser find the length
+      if(srcEl&&srcEl.pause) srcEl.pause(); isVideo=true; srcEl=v; srcAR=v.videoWidth/v.videoHeight; vidAudio=null;
       $('vidPanel').hidden=false; $('vidName').textContent=f.name.length>28?f.name.slice(0,26)+'…':f.name;
-      startAudio(); hookVideoAudio(); v.play().catch(()=>{}); vidUI(); applyDeck(); tlDirty(); status(f.name+' loaded. Press Record whole video to export it through the CRT.'); }; }
-  else { const im=new Image(); im.onload=()=>{ if(srcEl&&srcEl.pause) srcEl.pause(); isVideo=false; srcEl=im; srcAR=im.naturalWidth/im.naturalHeight; upload(); $('vidPanel').hidden=true; tlDirty(); status(f.name); }; im.src=url; } }
+      startAudio(); hookVideoAudio(); v.play().catch(()=>{}); vidUI(); applyDeck(true); tlDirty(); status(f.name+' loaded. Press Record whole video to export it through the CRT.'); }; }
+  else { const im=new Image(); im.onerror=()=>{ if(my===loadSeq) fail(); };
+    im.onload=()=>{ if(my!==loadSeq || busyNow()){ URL.revokeObjectURL(url); return; } if(!(im.naturalWidth>0&&im.naturalHeight>0)){ fail('no size'); return; } take(); if(srcEl&&srcEl.pause) srcEl.pause(); isVideo=false; srcEl=fitImg(im); srcAR=im.naturalWidth/im.naturalHeight; upload(); $('vidPanel').hidden=true; tlDirty(); status(f.name); }; im.src=url; } }
 let vidAudio=null, vidG=null;
 function hookVideoAudio(){ if(!AC||!isVideo||vidAudio) return;
   try{ vidAudio=AC.createMediaElementSource(srcEl); vidG=AC.createGain(); vidG.gain.value=$('vSound').classList.contains('on')?1:0;
@@ -1045,11 +1385,11 @@ const tfmt=x=>{ x=Math.max(0,x||0); return Math.floor(x/60)+':'+String(Math.floo
 function vidUI(){ if(!isVideo) return; const v=srcEl; $('vPlay').textContent=v.paused?'Play':'Pause';
   $('vTime').textContent=tfmt(v.currentTime)+' / '+tfmt(v.duration); if(!scrubbing) $('vScrub').value=v.duration?v.currentTime/v.duration:0; }
 let scrubbing=false;
-$('vPlay').onclick=()=>{ if(!isVideo) return; startAudio(); hookVideoAudio(); AC.resume(); srcEl.paused?srcEl.play():srcEl.pause(); vidUI(); };
-$('vRestart').onclick=()=>{ if(!isVideo) return; srcEl.currentTime=0; srcEl.play(); vidUI(); };
-$('vLoop').onclick=e=>{ const on=!e.target.classList.contains('on'); e.target.classList.toggle('on',on); e.target.textContent='Loop: '+(on?'on':'off'); if(isVideo) srcEl.loop=on; };
+$('vPlay').onclick=()=>{ if(!isVideo||busyNow()) return; startAudio(); hookVideoAudio(); AC.resume(); srcEl.paused?srcEl.play():srcEl.pause(); vidUI(); };
+$('vRestart').onclick=()=>{ if(!isVideo||busyNow()) return; srcEl.currentTime=0; srcEl.play(); vidUI(); };
+$('vLoop').onclick=e=>{ if(offline) return; const on=!e.target.classList.contains('on'); e.target.classList.toggle('on',on); e.target.textContent='Loop: '+(on?'on':'off'); if(isVideo) srcEl.loop=on; };
 $('vSound').onclick=e=>{ const on=!e.target.classList.contains('on'); e.target.classList.toggle('on',on); e.target.textContent='Sound: '+(on?'on':'off'); if(vidG) vidG.gain.value=on?1:0; };
-$('vScrub').oninput=e=>{ scrubbing=true; if(isVideo&&srcEl.duration) srcEl.currentTime=+e.target.value*srcEl.duration; vidUI(); };
+$('vScrub').oninput=e=>{ if(busyNow()) return; scrubbing=true; if(isVideo&&isFinite(srcEl.duration)) srcEl.currentTime=+e.target.value*srcEl.duration; vidUI(); };
 $('vScrub').onchange=()=>{ scrubbing=false; };
 function autoCenter(){
   if(!srcEl){ return; }  // on a video this measures the frame on screen right now
@@ -1062,7 +1402,7 @@ function autoCenter(){
   // image-space centre offset → screen-space offset inside the 4:3 raster
   const cx=((x0+x1)/2)/w-.5, cy=((y0+y1)/2)/h-.5;
   const ar=srcAR/(RW/RH); const fx = ar>1 ? 1 : ar, fy = ar>1 ? 1/ar : 1;
-  setVal('picX', -cx*fx*S.picS); setVal('picY', cy*fy*S.picS); remember();
+  setVal('picX', (camMirror?cx:-cx)*fx*S.picS); setVal('picY', cy*fy*S.picS); remember();
   status('Centered.');
 }
 $('center').onclick=autoCenter;
@@ -1070,8 +1410,8 @@ $('centerReset').onclick=()=>{ setVal('picX',0); setVal('picY',0); setVal('picS'
 const drop=$('drop'), file=$('file');
 drop.onclick=()=>file.click(); drop.onkeydown=e=>{ if(e.key==='Enter'||e.key===' ') { e.preventDefault(); file.click(); } };
 file.onchange=()=>file.files[0]&&loadFile(file.files[0]);
-['dragover','dragenter'].forEach(ev=>document.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.add('hover'); }));
-['dragleave','drop'].forEach(ev=>document.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.remove('hover'); }));
+['dragover','dragenter'].forEach(ev=>document.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.add('over'); }));
+['dragleave','drop'].forEach(ev=>document.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.remove('over'); }));
 document.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f) loadFile(f); });
 
 let wide=false;
@@ -1080,6 +1420,7 @@ function setAR(mode){ frameMode=mode;
   $('ar43').classList.toggle('on',mode==='tube43'); $('ar169w').classList.toggle('on',mode==='wide'); $('ar169').classList.toggle('on',mode==='pillar');
   cv.width = mode==='tube43' ? 1440 : 1920; cv.height=1080; cv.style.setProperty('--ar', mode==='tube43' ? '4/3' : '16/9');
   const want = mode==='wide' ? 1920 : 1440; if(want!==RW){ RW=want; buildTargets(); }
+  [...$('ssize').options].forEach(o=>{ const k=+o.value; o.textContent=k+'× · '+cv.width*k+' × '+1080*k+(k===2?' (print)':''); });
   try{ localStorage.setItem('amfm-crt-frame', mode); }catch(e){} }
 $('ar43').onclick=()=>setAR('tube43'); $('ar169w').onclick=()=>setAR('wide'); $('ar169').onclick=()=>setAR('pillar');
 { let m='tube43'; try{ m=localStorage.getItem('amfm-crt-frame')||'tube43'; }catch(e){} setAR(['tube43','wide','pillar'].includes(m)?m:'tube43'); }
@@ -1087,8 +1428,9 @@ $('ar43').onclick=()=>setAR('tube43'); $('ar169w').onclick=()=>setAR('wide'); $(
 function run(p, target, u, texs){
   gl.useProgram(p); gl.bindFramebuffer(gl.FRAMEBUFFER, target?target.fb:null);
   gl.viewport(0,0, target?target.w:cv.width, target?target.h:cv.height);
-  let unit=0; for(const [name,t] of Object.entries(texs)){ gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D,t); gl.uniform1i(gl.getUniformLocation(p,name),unit); unit++; }
-  for(const [k,v] of Object.entries(u)){ const l=gl.getUniformLocation(p,k); if(l===null) continue; Array.isArray(v)? gl['uniform'+v.length+'fv'](l,v) : gl.uniform1f(l,v); }
+  const L=p._loc||(p._loc=new Map()), loc=k=>{ let l=L.get(k); if(l===undefined){ l=gl.getUniformLocation(p,k); L.set(k,l); } return l; };
+  let unit=0; for(const [name,t] of Object.entries(texs)){ gl.activeTexture(gl.TEXTURE0+unit); if(t && t.arr) gl.bindTexture(gl.TEXTURE_2D_ARRAY,t.arr); else gl.bindTexture(gl.TEXTURE_2D,t); gl.uniform1i(loc(name),unit); unit++; }
+  for(const [k,v] of Object.entries(u)){ const l=loc(k); if(l===null) continue; Array.isArray(v)? gl['uniform'+v.length+'fv'](l,v) : gl.uniform1f(l,v); }
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 }
 
@@ -1115,12 +1457,14 @@ $('holdSecs').oninput=e=>{ $('holdOut').textContent=(+e.target.value).toFixed(1)
 function playIdent(p){ startAudio(); plan=p||seqPlan(); identDur=seqLen(plan); identStart=performance.now()/1000; }
 $('previewSeq').onclick=()=>playIdent();
 $('loopIdent').onclick=e=>{ loop=!loop; e.target.textContent='Loop: '+(loop?'on':'off'); e.target.classList.toggle('on',loop); };
-document.addEventListener('keydown',e=>{ if(e.code==='Space' && e.target.tagName!=='INPUT' && e.target.tagName!=='SELECT'){ e.preventDefault(); playIdent(); } });
+document.addEventListener('keydown',e=>{ if(e.code!=='Space' || !perfCfg.keys) return; const t=e.target, g=t&&t.tagName;
+  if(typing(t) || /^(INPUT|SELECT|TEXTAREA)$/.test(g||'') || ((g==='BUTTON'||g==='A'||(t.getAttribute&&t.getAttribute('role')==='button')) && t.matches(':focus-visible'))) return;   // Space types, or presses the focused button
+  e.preventDefault(); if(e.repeat || offline || wholeRec || recSeqRun) return; playIdent(); });
 
 // ---------------- sound (11-05): crt_sound.js, the picture chain's twin ----------------
 // Live: video sound → sndNode → speakers + recorder, params sent every frame. Export: the same processor in an
 // OfflineAudioContext with the switch-on / tune-in / switch-off timeline as a per-field schedule (renderSound).
-let AC=null, dest=null, sndNode=null;
+let AC=null, dest=null, sndNode=null, spk=null, sndReady=null, micG=null;   // spk: speakers (muted while live so the mic can't feed back)
 const SND_LAT=.008;          // crt_sound.js LAT: the offline render is trimmed by this so sound and picture line up
 function soundParams(U, now){ return {amt:S.sndAmt, speaker:S.speaker, whine:S.whine, buzz:S.buzz, crush:S.crush, vol:S.vol,
   snow:U.snow, signal:U.signal, ghost:U.ghost, jitter:U.jitter, hum:U.hum, roll:U.roll, interf:U.interf, power:S.power, warm:U.warm, off:U.off, tone:U.tone,
@@ -1128,11 +1472,12 @@ function soundParams(U, now){ return {amt:S.sndAmt, speaker:S.speaker, whine:S.w
 // what the sound hears of the tape damage: bursts mute and crackle, bad stretches throw more dropouts, search / pause go quiet
 function soundDamage(t,U){ if(model!=='physical'||Math.round(U.tapeFmt)<1) return {burst:0, dropMul:1, deckMute:0, crease:0};
   const st=tapeState(t,U), d=Math.round(U.deck)||0; return {burst:st.burst, dropMul:st.dropMul, deckMute:d===0?0:1, crease:st.crease[2]}; }
-function startAudio(){ if(AC) return; AC=new AudioContext(); dest=AC.createMediaStreamDestination();
-  AC.audioWorklet.addModule('/crt/crt_sound.js').then(()=>{
+function startAudio(){ if(AC) return; AC=new AudioContext(); dest=AC.createMediaStreamDestination(); spk=AC.createGain(); spk.connect(AC.destination);
+  sndReady=AC.audioWorklet.addModule('/crt/crt_sound.js').then(()=>{
     sndNode=new AudioWorkletNode(AC,'crt-sound',{numberOfInputs:1, numberOfOutputs:1, outputChannelCount:[2], processorOptions:{p:soundParams(uAt(null), performance.now()/1000)}});
-    sndNode.connect(AC.destination); sndNode.connect(dest);
+    sndNode.connect(spk); sndNode.connect(dest);
     if(vidG){ try{ vidG.disconnect(); }catch(e){} vidG.connect(sndNode); }
+    if(micG){ try{ micG.disconnect(); }catch(e){} micG.connect(sndNode); }
   }).catch(e=>{ status('Sound engine did not load ('+e.message+'): playing the plain sound.'); });
   hookVideoAudio(); }
 // the switch-on / tune-in / switch-off timeline sampled once per field, for the offline render
@@ -1159,44 +1504,393 @@ function wav16(ab, from, len){ len=Math.min(len, ab.length-from); const ch=ab.nu
   return new Blob([dv],{type:'audio/wav'}); }
 
 // ---------------- record / still / export ----------------
-let rec=null, chunks=[], recT0=0;
+let rec=null, chunks=[], recT0=0, recSeqRun=false; var batchRun=false;   // var: read by busyNow() from code that can run earlier
+function busyNow(){ return offline || batchRun || liveRecPending || wholeRec; }
+function lockUI(on){ document.body.classList.toggle('locked', !!on); }   // the controls are see-only while a render owns the picture
+window.addEventListener('beforeunload', e=>{ if(rec || offline || batchRun || liveRecPending){ e.preventDefault(); e.returnValue=''; } });
 function startRec(seconds, withSeq, planOverride, onDone){
-  if(rec) return; startAudio();
+  if(rec) return; if(offline||batchRun){ status('Wait for the export or batch to finish.'); return; } startAudio(); if(AC&&AC.resume) AC.resume().catch(()=>{});
   ['ar43','ar169','ar169w','recSeq'].forEach(id=>$(id).disabled=true);
-  const vs=cv.captureStream(30); const st=new MediaStream([...vs.getVideoTracks(), ...dest.stream.getAudioTracks()]);
-  const mt=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(m=>MediaRecorder.isTypeSupported(m));
-  rec=new MediaRecorder(st,{mimeType:mt, videoBitsPerSecond: seconds>60?12e6:24e6}); chunks=[];
+  let vs=null;
+  try{ vs=cv.captureStream(30); const st=new MediaStream([...vs.getVideoTracks(), ...dest.stream.getAudioTracks()]);
+    const mt=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4'].find(m=>MediaRecorder.isTypeSupported(m));
+    rec=new MediaRecorder(st,mt?{mimeType:mt, videoBitsPerSecond: seconds>60?12e6:24e6}:{}); }
+  catch(e){ if(vs) vs.getTracks().forEach(t=>t.stop()); rec=null; ['ar43','ar169','ar169w','recSeq'].forEach(id=>$(id).disabled=false);
+    status('Recording couldn’t start ('+(e.message||e.name)+').'); if(onDone) onDone(); camUI(); return; }
+  chunks=[]; const me=rec; recSeqRun=!!withSeq;
   rec.ondataavailable=e=>chunks.push(e.data);
-  rec.onstop=()=>{ const b=new Blob(chunks,{type:'video/webm'}); rec=null;
-    ['ar43','ar169','ar169w','recSeq'].forEach(id=>$(id).disabled=false); $('recFree').textContent='Start free recording'; $('recFree').classList.remove('on');
-    if(onDone) onDone(); exportFile(b,'video',$('vfmt').value); };
-  rec.start(); recT0=performance.now()/1000;
+  rec.onstop=()=>{ const b=new Blob(chunks,{type:me.mimeType||'video/webm'}); rec=null; motRec=false; recSeqRun=false; vs.getTracks().forEach(t=>t.stop());
+    ['ar43','ar169','ar169w','recSeq'].forEach(id=>$(id).disabled=false); $('recFree').textContent='Start free recording'; $('recFree').classList.remove('on'); camUI();
+    if(onDone) onDone(); camUI(); exportFile(b,'video',$('vfmt').value); };   // camUI after onDone: whole-video recording has let go by then
+  try{ rec.start(1000); }catch(e){ vs.getTracks().forEach(t=>t.stop()); rec=null; recSeqRun=false; ['ar43','ar169','ar169w','recSeq'].forEach(id=>$(id).disabled=false);
+    status('Recording couldn’t start ('+(e.message||e.name)+').'); if(onDone) onDone(); camUI(); return; }
+  recT0=performance.now()/1000; camUI();
   if(withSeq){ loop=false; $('loopIdent').textContent='Loop: off'; $('loopIdent').classList.remove('on'); playIdent(planOverride); }
-  if(seconds) setTimeout(()=>rec&&rec.stop(), seconds*1000);
+  if(seconds) setTimeout(()=>{ if(rec===me) rec.stop(); }, seconds*1000);   // an older timer never stops a newer recording
 }
 $('recSeq').onclick=()=>{ const p=seqPlan(); startRec(seqLen(p)+.35, true); };
 $('recVideo').onclick=()=>{ if(offline){ cancelFast=true; return; } exportFast(); };
+var liveRecPending=false;
 $('recVideoLive').onclick=async ()=>{
-  if(!isVideo){ status('Drop a video first.'); return; } if(rec) return;
-  const v=srcEl, p=seqPlan(); startAudio(); hookVideoAudio(); await AC.resume();
+  if(!isVideo){ status('Drop a video first.'); return; } if(rec || liveRecPending || offline || batchRun) return;
+  const v=srcEl; if(!isFinite(v.duration)){ status('This video doesn’t say how long it is, so it can’t be recorded through. Try Export whole video, or re-save it as MP4.'); return; }
+  liveRecPending=true; try{
+  const p=seqPlan(); startAudio(); hookVideoAudio(); await AC.resume();
   const lead=(p.on?ON:0)+(p.tune?TUNE:0);
   p.hold=Math.max(.5, v.duration - lead - (p.off?OFF:0));   // switch-off lands as the video ends
-  const wasLoop=v.loop; v.loop=false; v.pause(); v.currentTime=0;
-  await new Promise(r=>{ v.onseeked=()=>{ v.onseeked=null; r(); }; });
-  startRec(seqLen(p)+.35, true, p, ()=>{ v.loop=wasLoop; });
-  v.play();
+  const wasLoop=v.loop; v.loop=false; v.pause(); await seekTo(v,0);
+  if(srcEl!==v || rec || offline || batchRun){ v.loop=wasLoop; return; }
+  wholeRec=true; startRec(seqLen(p)+.35, true, p, ()=>{ v.loop=wasLoop; wholeRec=false; });
+  if(rec) v.play();
+  } finally { liveRecPending=false; }
 };
-$('recFree').onclick=e=>{ if(rec){ rec.stop(); } else { startRec(0,false); e.target.textContent='Stop recording'; e.target.classList.add('on'); } };
+$('recFree').onclick=e=>{ if(rec){ rec.stop(); } else { startRec(0,false); if(rec){ e.target.textContent='Stop recording'; e.target.classList.add('on'); } } };
+// ---------------- LIVE CAMERA (11-16) ----------------
+// A camera is a source like a playing video, minus the parts that need a length (scrubber, deck, export whole video).
+// Its frames go up every draw; mirror happens in the PRE pass. The mic goes through the TV sound into the recording;
+// the speakers stay muted while live unless Hear is on (otherwise the mic feeds back).
+let camStream=null, micStream=null, micSrc=null, hearOn=false, camGen=0, camPending=false, micPending=false, wholeRec=false, wantMirror=false;
+let camVidA=null, camVidB=null, camStreamB=null, camOnB=false, cutFlip=false, camBPending=false, camBGen=0;   // two-camera switcher
+function camUI(){ $('camPanel').hidden=!isLive; $('camStop').disabled=!(isLive||camPending); $('camGo').classList.toggle('on',isLive);
+  [['camMirror',camMirror],['camMic',!!micStream],['camHear',hearOn]].forEach(([id,on])=>{ $(id).classList.toggle('on',on); $(id).setAttribute('aria-pressed',on?'true':'false'); });
+  $('camRec').textContent= rec ? 'Stop recording' : 'Record'; $('camRec').classList.toggle('on',!!rec);
+  $('recFree').textContent= rec ? 'Stop recording' : 'Start free recording'; $('recFree').classList.toggle('on',!!rec);
+  $('camGo').disabled=camPending; $('camMic').disabled=micPending; $('camStill').disabled=!!rec||busyNow(); $('still').disabled=!!rec||busyNow(); $('batch').disabled=!!rec||busyNow();
+  $('motGo').textContent='Record on motion: '+(motOn?'on':'off'); $('motGo').classList.toggle('on',motOn);
+  $('cutRow').hidden=!camVidB; $('cutA').classList.toggle('on',isLive&&!camOnB); $('cutB').classList.toggle('on',isLive&&camOnB); $('camDevB').disabled=camBPending;
+  $('cutFlip').textContent='Flip cut: '+(cutFlip?'on':'off'); $('cutFlip').classList.toggle('on',cutFlip); $('cutFlip').setAttribute('aria-pressed',cutFlip?'true':'false');
+  if(spk) spk.gain.value = (isLive && !hearOn) ? 0 : 1; }
+function camBlocked(why){ $('camBlocked').hidden=false; $('camWhy').textContent=why; status(why); }
+async function listCams(cur){ try{ const d=(await navigator.mediaDevices.enumerateDevices()).filter(x=>x.kind==='videoinput'); const sel=$('camDev'); sel.textContent='';
+  d.forEach((x,i)=>sel.append(new Option(x.label||('Camera '+(i+1)), x.deviceId))); if(cur) sel.value=cur;
+  const sb=$('camDevB'), keepB=sb.value; sb.textContent=''; sb.append(new Option('None',''));
+  d.forEach((x,i)=>sb.append(new Option(x.label||('Camera '+(i+1)), x.deviceId))); sb.value=[...sb.options].some(o=>o.value===keepB)?keepB:''; }catch(e){} }
+async function startCam(devId){
+  if(busyNow()){ status('The camera can’t start during an export, batch or whole-video recording.'); return; }
+  loadSeq++;   // a file still loading must not replace the camera
+  if(camPending) return;
+  $('camBlocked').hidden=true;
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ camBlocked('This window can’t reach a camera. Open the CRT in your browser instead.'); return; }
+  const gen=++camGen; camPending=true; camUI(); let st;
+  try{ st=await navigator.mediaDevices.getUserMedia({video: devId ? {deviceId:{exact:devId}, width:{ideal:1920}, height:{ideal:1080}} : {width:{ideal:1920}, height:{ideal:1080}}, audio:false}); }
+  catch(e){ if(gen===camGen) camPending=false; camUI(); if(gen===camGen) camBlocked(e.name==='NotAllowedError' ? 'Camera access was refused. Allow it in System Settings › Privacy & Security › Camera, or open the CRT in your browser.' : 'No camera found ('+(e.message||e.name)+').'); return; }
+  if(gen!==camGen){ st.getTracks().forEach(t=>t.stop()); camUI(); return; }   // stopped (or restarted) while asking: the newer request owns camPending
+  const v=document.createElement('video'); v.muted=true; v.playsInline=true; v.srcObject=st;
+  try{ await v.play(); }catch(e){}
+  if(gen!==camGen){ st.getTracks().forEach(t=>t.stop()); camUI(); return; }
+  if(camStream && camStream!==st) camStream.getTracks().forEach(t=>t.stop());
+  camStream=st; camPending=false;
+  if(srcEl && srcEl.pause && srcEl!==v) srcEl.pause();
+  isVideo=false; isLive=true; srcEl=v; camVidA=v; camOnB=false; srcFile=null; $('vidPanel').hidden=true; tlDirty();
+  if(wantMirror){ camMirror=true; wantMirror=false; }
+  const setAR=()=>{ if(srcEl===v && v.videoWidth) srcAR=v.videoWidth/v.videoHeight; }; setAR(); v.addEventListener('resize',setAR);
+  const tr=st.getVideoTracks()[0]; const id=tr && tr.getSettings ? tr.getSettings().deviceId : '';
+  if(camStreamB){ const bT=camStreamB.getVideoTracks()[0]; if(bT && bT.getSettings && bT.getSettings().deviceId===id){ stopCamB(); status('Camera A is now the camera B was using, so B was closed.'); } }
+  await listCams(id);
+  startAudio(); camUI(); status('Live: '+(tr?tr.label:'camera')+'. Everything in the chain works live; Record saves what you see.'); }
+function stopMic(){ if(micStream) micStream.getTracks().forEach(t=>t.stop()); micStream=null;
+  if(micSrc){ try{ micSrc.disconnect(); }catch(e){} micSrc=null; } if(micG){ try{ micG.disconnect(); }catch(e){} micG=null; } }
+// endLive: leave camera mode completely (stream, mic, motion, mirror, speakers) without touching the picture slot
+function endLive(){ camGen++; camPending=false; if(!isLive && !camStream && !micStream && !camStreamB){ camUI(); return; }
+  if(motRec && rec) rec.stop(); motOn=false; motRec=false; $('motState').hidden=true; stopMic();
+  if(camStream) camStream.getTracks().forEach(t=>t.stop()); camStream=null; stopCamB(); camVidA=null; isLive=false; camMirror=false; camUI(); }
+function stopCam(){ const was=isLive||!!camStream; if(rec) rec.stop(); endLive();
+  if(was){ srcEl=null; loadImage($('logoSel').value||('/crt/logos/'+LOGOS[0])); }
+  status('Camera off.'); }
+async function startMic(){ if(micPending || micStream || !isLive) return; startAudio(); const gen=camGen; micPending=true; camUI(); let ms;
+  try{ ms=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}, video:false}); }
+  catch(e){ micPending=false; status('Microphone access was refused ('+(e.name||'')+').'); camUI(); return; }
+  const stale=()=>gen!==camGen || !isLive;
+  if(stale()){ ms.getTracks().forEach(t=>t.stop()); micPending=false; camUI(); return; }   // the camera stopped while asking: never leave a mic on the speakers
+  try{ await AC.resume(); if(sndReady) await sndReady.catch(()=>{}); }catch(e){}
+  if(stale()){ ms.getTracks().forEach(t=>t.stop()); micPending=false; camUI(); return; }
+  micStream=ms; micSrc=AC.createMediaStreamSource(ms); micG=AC.createGain(); micSrc.connect(micG); micPending=false;
+  if(sndNode) micG.connect(sndNode); else micG.connect(dest);
+  camUI(); status('Mic on: it goes through the TV sound into the recording. Hear stays off unless you wear headphones.'); }
+$('camGo').onclick=()=>startCam($('camDev').value||undefined);
+$('camStop').onclick=stopCam;
+$('camDev').onchange=()=>{ $('camDev').blur(); if(isLive) startCam($('camDev').value); };
+$('camMirror').onclick=()=>{ camMirror=!camMirror; camUI(); };
+$('camMic').onclick=()=>{ if(micStream){ stopMic(); camUI(); status('Mic off.'); } else startMic(); };
+$('camHear').onclick=()=>{ hearOn=!hearOn; camUI(); };
+$('camRec').onclick=()=>{ if(rec){ motRec=false; rec.stop(); } else { if(AC) AC.resume(); startRec(0,false); } camUI(); };
+$('camStill').onclick=()=>$('still').click();
+$('camBrowser').onclick=()=>fetch('/api/open_browser',{method:'POST'}).then(r=>r.json()).then(j=>status(j.ok?'Opened the CRT in your browser.':'Could not open the browser.')).catch(()=>status('Could not open the browser.'));
+// MOTION: small greyscale frames ten times a second; enough change starts a recording, stillness for "Keep going" seconds ends it
+let motOn=false, motPrev=null, motLast=0, motRec=false;
+const mC=document.createElement('canvas'); mC.width=64; mC.height=36; const mX=mC.getContext('2d',{willReadFrequently:true});
+(()=>{ let c={}; try{ c=JSON.parse(localStorage.getItem('amfm-crt-motion')||'{}'); }catch(e){}
+  if(c.s!=null) $('motSens').value=c.s; if(c.k!=null) $('motKeep').value=c.k;
+  const show=()=>{ $('motSensO').textContent=(+$('motSens').value).toFixed(2); $('motKeepO').textContent=$('motKeep').value+' s';
+    try{ localStorage.setItem('amfm-crt-motion', JSON.stringify({s:+$('motSens').value, k:+$('motKeep').value})); }catch(e){} };
+  $('motSens').oninput=show; $('motKeep').oninput=show; show(); })();
+$('motGo').onclick=()=>{ motOn=!motOn; motPrev=null; if(!motOn && motRec && rec){ rec.stop(); } motRec=false;
+  $('motState').hidden=!motOn; $('motState').textContent=motOn?'Watching for movement…':''; camUI(); };
+setInterval(()=>{ if(!motOn || !isLive || !srcEl || srcEl.readyState<2 || offline) return;
+  mX.drawImage(srcEl,0,0,64,36); const d=mX.getImageData(0,0,64,36).data, n=64*36, cur=new Float32Array(n);
+  for(let i=0;i<n;i++) cur[i]=(d[i*4]*.299+d[i*4+1]*.587+d[i*4+2]*.114)/255;
+  let changed=0; const had=!!motPrev; if(had) for(let i=0;i<n;i++) if(Math.abs(cur[i]-motPrev[i])>.08) changed++;
+  motPrev=cur; const frac=changed/n, need=.002+(1-(+$('motSens').value))*.12, now=performance.now()/1000;
+  if(had && frac>need){ motLast=now; if(!rec){ if(AC) AC.resume(); startRec(0,false); if(!rec) return; motRec=true; $('motState').textContent='Movement: recording…'; camUI(); } }
+  else if(motRec && rec && now-motLast > +$('motKeep').value){ rec.stop(); motRec=false; $('motState').textContent='Still again: clip saved. Watching for movement…'; }
+}, 100);
+
+
+// ---------------- ASCII+ (11-16): looks, lyrics, text / HTML / SVG ----------------
+const ASCII_LOOKS={teletext:{asciiSet:4, asciiCol:5, asciiCols:40, asciiGain:1.3, asciiInv:0, asciiBg:0, asciiEdge:0},
+  ansi:{asciiSet:1, asciiCol:4, asciiCols:80, asciiGain:1.2, asciiInv:0, asciiBg:0, asciiEdge:0},
+  petscii:{asciiSet:5, asciiCol:6, asciiCols:40, asciiGain:1.2, asciiInv:0, asciiBg:0, asciiEdge:0},
+  braille:{asciiSet:3, asciiCol:0, asciiCols:120, asciiGain:1.1, asciiInv:0, asciiBg:0, asciiEdge:0}};
+document.querySelectorAll('#asciiLooks [data-look]').forEach(b=>b.onclick=()=>{ const L=ASCII_LOOKS[b.dataset.look];
+  Object.entries(L).forEach(([k,v])=>setVal(k,v)); setVal('asciiOn',1); remember(); markActive(null); status('ASCII look: '+b.textContent+'.'); });
+function parseLyrics(txt){ const cues=[], tm=x=>{ const m=String(x||'').trim().replace(',','.').match(/^(?:(\d+):)?(\d+):(\d+(?:\.\d+)?)/); return m ? (+(m[1]||0))*3600+(+m[2])*60+(+m[3]) : NaN; };
+  txt=txt.replace(/^\uFEFF/,'').replace(/\r/g,'');
+  if(txt.includes('-->')){ txt.split(/\n\s*\n/).forEach(b=>{ const ls=b.split('\n'), i=ls.findIndex(l=>l.includes('-->')); if(i<0) return;
+      const [a,z]=ls[i].split('-->'), t=ls.slice(i+1).join(' ').replace(/<[^>]+>/g,'').replace(/\{[^}]*\}/g,'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').trim(), s0=tm(a), e0=tm(z.trim().split(/\s+/)[0]);
+      if(t && isFinite(s0)) cues.push({s:s0, e:isFinite(e0)&&e0>s0?e0:s0+3, t}); }); }
+  else { const L=[]; txt.split('\n').forEach(l=>{ const tags=[...l.matchAll(/\[(\d+):(\d+(?:[.:]\d+)?)\]/g)], t=l.replace(/\[[^\]]*\]/g,'').replace(/<[^>]*>/g,'').trim();
+      tags.forEach(m=>L.push({s:+m[1]*60 + +m[2].replace(':','.'), t})); });
+    L.sort((a,b)=>a.s-b.s); L.forEach((c,i)=>{ if(c.t) cues.push({s:c.s, e:L[i+1]?L[i+1].s:c.s+5, t:c.t}); }); }
+  return cues.sort((a,b)=>a.s-b.s); }
+$('lyrPick').onclick=()=>$('lyrFile').click();
+$('lyrFile').onchange=async e=>{ const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  let cues=[]; try{ cues=parseLyrics(await f.text()); }catch(err){}
+  if(!cues.length){ status('No timed lines found in '+f.name+' (it needs .srt / .vtt times or .lrc [mm:ss] tags).'); return; }
+  lyrics=cues; lyricT0=performance.now()/1000; cueText=null; asciiDirty=true;
+  if(Math.round(S.asciiSet)!==2) setVal('asciiSet',2); if(!(S.asciiOn>0)) setVal('asciiOn',1); remember(); markActive(null);
+  $('lyrName').hidden=false; $('lyrName').textContent=f.name+' · '+cues.length+' lines'+(isVideo?' · follows the video':' · from now (Replay restarts)'); $('lyrClear').disabled=false;
+  status('Lyrics: each line becomes the characters while it plays.'); };
+$('lyrClear').onclick=()=>{ lyrics=null; cueText=null; asciiDirty=true; $('lyrName').hidden=true; $('lyrClear').disabled=true; };
+// EXPORT: the PRE shader writes one pixel per character (colour + glyph number), so the files match the screen exactly
+function asciiGrid(){ if(!(S.asciiOn>0) || offline) return null;
+  const now=performance.now()/1000, U=uAt(null); asciiTick(U, now); const t=preTarget(), cols=Math.round(U.asciiCols), rows=Math.ceil(t.h/(t.w/cols/cellA));
+  const g=tex(cols,rows); run(P.pre, g, {...preU(U, now), idx:1, pres:[t.w,t.h], res:[cols,rows]}, {src:curIn||srcTex, atlas:atlasTex, txt:txtTex});
+  const px=new Uint8Array(cols*rows*4); gl.readPixels(0,0,cols,rows,gl.RGBA,gl.UNSIGNED_BYTE,px); gl.deleteTexture(g.t); gl.deleteFramebuffer(g.fb);
+  return {cols, rows, px, set:Math.round(U.asciiSet), nG:atlasN, glyphs:atlasGlyphs, cellA, bg: Math.round(U.asciiCol)===6 ? '#40318d' : '#000000'}; }
+function cellChar(G, gi, dark){ const s=G.set;
+  if(s===3) return String.fromCodePoint(0x2800+gi);
+  if(s===4){ const p=gi&63; return p===0?' ':p===21?'▌':p===42?'▐':p===63?'█':String.fromCodePoint(0x1FB00+p-1-(p>21?1:0)-(p>42?1:0)); }
+  if(s===5) return QUAD[gi&15];
+  if(gi>=G.nG) return EDGES[gi-G.nG]||' ';
+  if(s===2 && dark) return ' ';
+  return String(G.glyphs[gi]??' '); }
+function gridCells(G){ const out=[]; for(let r=0;r<G.rows;r++){ const row=[]; for(let c=0;c<G.cols;c++){ const i=(r*G.cols+c)*4, p=G.px;
+  const hex='#'+[p[i],p[i+1],p[i+2]].map(v=>(Math.round(v/17)*17).toString(16).padStart(2,'0')).join(''), dark=p[i]+p[i+1]+p[i+2]<30;
+  row.push({gi:p[i+3], hex, dark, ch:cellChar(G,p[i+3],dark)}); } out.push(row); } return out; }
+const esc=x=>x.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function gridTxt(G){ return gridCells(G).map(r=>r.map(x=>x.ch).join('').replace(/\s+$/,'')).join('\n')+'\n'; }
+function runs(row){ const out=[]; row.forEach((x,c)=>{ const l=out[out.length-1]; if(l && l.hex===x.hex) l.cells.push(x); else out.push({hex:x.hex, c, cells:[x]}); }); return out; }
+function gridHtml(G){ const lh=(1/G.cellA*.6).toFixed(4), box=G.set>=3;   // braille / sextants / quadrants come from a fallback font: pin each one to its cell
+  const body=gridCells(G).map(r=>runs(r).map(u=>{ const t=box ? u.cells.map(x=>x.ch===' '?' ':'<i>'+esc(x.ch)+'</i>').join('') : esc(u.cells.map(x=>x.ch).join('')); return /^\s*$/.test(t)?t:'<span style="color:'+u.hex+'">'+t+'</span>'; }).join('')).join('\n');
+  return '<!doctype html><html><head><meta charset="utf-8"><title>ASCII</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Noto+Sans+Symbols+2&display=swap">'
+    +'<style>html,body{margin:0;background:'+G.bg+'}pre{margin:0;padding:24px;font:500 12px/'+lh+' "IBM Plex Mono","Noto Sans Symbols 2",Menlo,monospace;letter-spacing:0;white-space:pre}'+(box?'i{display:inline-block;width:.6em;height:1.25em;line-height:1.25em;margin-bottom:'+(lh-1.25).toFixed(4)+'em;font-style:normal;text-align:center;vertical-align:top;transform:scaleY('+(lh/1.25).toFixed(4)+');transform-origin:50% 0}':'')+'</style></head><body><pre>'+body+'</pre></body></html>\n'; }
+function gridSvg(G){ const cw=10, ch=cw/G.cellA, W=G.cols*cw, H=G.rows*ch, f=n=>+n.toFixed(2), o=[], cells=gridCells(G);
+  o.push('<svg xmlns="http://www.w3.org/2000/svg" width="'+f(W)+'" height="'+f(H)+'" viewBox="0 0 '+f(W)+' '+f(H)+'">','<rect width="100%" height="100%" fill="'+G.bg+'"/>');
+  if(G.set===3){ const r=Math.min(cw/2,ch/4)*.34, D=[[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[0,3],[1,3]];
+    cells.forEach((row,y)=>row.forEach((x,c)=>{ if(!x.gi) return; let s=''; D.forEach(([dx,dy],b)=>{ if(x.gi&(1<<b)) s+='<circle cx="'+f(c*cw+(dx+.5)*cw/2)+'" cy="'+f(y*ch+(dy+.5)*ch/4)+'" r="'+f(r)+'"/>'; });
+      o.push('<g fill="'+x.hex+'">'+s+'</g>'); })); }
+  else if(G.set===4||G.set===5){ const ny=G.set===4?3:2;
+    cells.forEach((row,y)=>row.forEach((x,c)=>{ if(!x.gi) return; let s='';
+      for(let n=0;n<ny*2;n++) if(x.gi&(1<<n)) s+='<rect x="'+f(c*cw+(n%2)*cw/2)+'" y="'+f(y*ch+Math.floor(n/2)*ch/ny)+'" width="'+f(cw/2)+'" height="'+f(ch/ny)+'"/>';
+      o.push('<g fill="'+x.hex+'" shape-rendering="crispEdges">'+s+'</g>'); })); }
+  else { const fs=f(ch*52/GH);
+    o.push('<g font-family="IBM Plex Mono, Menlo, monospace" font-weight="500" font-size="'+fs+'" text-anchor="start" dominant-baseline="central" xml:space="preserve">');
+    cells.forEach((row,y)=>runs(row).forEach(u=>{ const yy=f(y*ch+ch*.54);
+      if(G.set===1){ let c=u.c; u.cells.forEach(x=>{ if(x.gi>0 && x.gi<G.nG) o.push('<rect x="'+f(c*cw)+'" y="'+f(y*ch)+'" width="'+cw+'" height="'+f(ch)+'" fill="'+u.hex+'" fill-opacity="'+([0,.25,.5,.78,1][x.gi])+'"/>');
+          else if(x.gi>=G.nG) o.push('<text x="'+f(c*cw)+'" y="'+yy+'" fill="'+u.hex+'">'+esc(x.ch)+'</text>'); c++; }); return; }
+      const t=u.cells.map(x=>x.ch).join(''); if(/^\s*$/.test(t)) return;
+      o.push('<text x="'+f(u.c*cw)+'" y="'+yy+'" fill="'+u.hex+'" textLength="'+f(u.cells.length*cw)+'" lengthAdjust="spacing">'+esc(t)+'</text>'); }));
+    o.push('</g>'); }
+  o.push('</svg>'); return o.join('\n')+'\n'; }
+document.querySelectorAll('#asciiSave [data-tx]').forEach(b=>b.onclick=async()=>{ const fmt=b.dataset.tx, G=asciiGrid();
+  if(!G){ status(offline?'Wait for the export to finish.':'Turn ASCII on first: the file is the characters on screen.'); return; }
+  const body=fmt==='txt'?gridTxt(G):fmt==='html'?gridHtml(G):gridSvg(G);
+  await exportFile(new Blob([body],{type:fmt==='svg'?'image/svg+xml':fmt==='html'?'text/html':'text/plain'}), 'text', fmt); });
+// ---------------- PERFORM (11-16): hits, hotkeys, MIDI, sound-reactive, output, camera B ----------------
+// Hits are momentary changes laid over the sliders inside draw() (perfMods), so nothing they do is saved or exported.
+const HIT={flip:-9, track:0, trackHeld:false, glitch:0, glitchHeld:false, pw:1, pwOn:true, react:0, beat:-9};
+let perfCfg={amt:.6, sens:.5, beat:false, keys:true, cutFlip:false}; try{ Object.assign(perfCfg, JSON.parse(localStorage.getItem('amfm-crt-perform')||'{}')); }catch(e){}
+function perfSave(){ try{ localStorage.setItem('amfm-crt-perform', JSON.stringify(perfCfg)); }catch(e){} perfSum(); }
+function perfSum(){ const n=Object.keys(midiMap).length;
+  $('sumPerf').textContent=[perfCfg.keys?'hotkeys on':'hotkeys off', midi?('MIDI'+(n?' · '+n+' mapped':'')):'', reactMode?'reacting':'', (outWin&&!outWin.closed)||document.body.classList.contains('present')?'output':''].filter(Boolean).join(' · '); }
+function hitDown(h){ if(offline) return; const now=performance.now()/1000;
+  if(h==='flip') HIT.flip=now; else if(h==='track') HIT.trackHeld=true; else if(h==='glitch') HIT.glitchHeld=true;
+  else if(h==='power') HIT.pwOn=!HIT.pwOn; else if(h==='camA'||h==='camB') cutTo(h==='camB'?'B':'A');
+  else if(h==='type'){ animStart=now; lyricT0=now; }
+  hitUI(); }
+function hitUp(h){ if(h==='track') HIT.trackHeld=false; if(h==='glitch') HIT.glitchHeld=false; hitUI(); }
+function hitUI(){ document.querySelectorAll('#hitSeg [data-hit]').forEach(b=>{ const h=b.dataset.hit;
+    b.classList.toggle('on', h==='track'?HIT.trackHeld : h==='glitch'?HIT.glitchHeld : h==='power'?!HIT.pwOn : false); });
+  $('hitPower').textContent=HIT.pwOn?'TV off':'TV on'; }
+function perfMods(U, now, dt){
+  dt=Math.min(Math.max(dt,0),.1);
+  HIT.track  += ((HIT.trackHeld?1:0)-HIT.track) *Math.min(1, dt/(HIT.trackHeld?.08:.4));
+  HIT.glitch += ((HIT.glitchHeld?1:0)-HIT.glitch)*Math.min(1, dt/(HIT.glitchHeld?.05:.35));
+  HIT.pw     += ((HIT.pwOn?1:0)-HIT.pw)*Math.min(1, dt/(HIT.pwOn?.6:.2)); if(HIT.pwOn && HIT.pw>.998) HIT.pw=1;
+  reactStep(now, dt);
+  const amt=reactMode?perfCfg.amt:0, tape=model==='physical' && Math.round(U.tapeFmt)>0;
+  const fl=Math.max(0, 1-(now-HIT.flip)/.45), tr=Math.max(HIT.track, HIT.react*amt), gl=Math.max(HIT.glitch, HIT.react*amt*.8);
+  if(fl>0){ U.snow=Math.max(U.snow,fl); U.signal*=1-.85*fl; U.roll=Math.max(U.roll,.7*fl); U.jitter+=3*fl; }
+  if(tr>.001){ U.jitter+=2.2*tr; U.hum=Math.max(U.hum,.3*tr);
+    if(tape){ U.tracking=Math.max(U.tracking,75*tr); U.mistrack=Math.max(U.mistrack,tr); U.skew=Math.max(U.skew,.8*tr); }
+    else { U.ghost=Math.max(U.ghost,.3*tr); U.interf=Math.max(U.interf,.4*tr); } }
+  if(gl>.001){ U.interf=Math.max(U.interf,.8*gl); U.snow=Math.max(U.snow,.3*gl); U.signal*=1-.35*gl;
+    if(tape){ U.cond=Math.max(U.cond,gl); U.clog=Math.max(U.clog,.8*gl); U.ckill=Math.max(U.ckill,gl); U.dropout=Math.max(U.dropout,40*gl); } }
+  if(HIT.pw<1){ U.off*=HIT.pw; U.power*=HIT.pw; U.powerP*=HIT.pw; U.warm=Math.min(U.warm,HIT.pw); } }
+// SOUND-REACTIVE: an analyser on what goes into the TV sound (video / mic), or on a room mic that is only listened to
+let reactGen=0, anl=null, anlBuf=null, reactMode=0, roomStream=null, roomSrc=null, roomPending=false, reactEnv=0, reactSlow=0, reactFeed=0;
+function reactStep(now, dt){
+  if(!reactMode || !anl){ HIT.react=0; return; }
+  if(reactMode===1 && now-reactFeed>.5){ reactFeed=now; [vidG,micG].forEach(g=>{ if(g) try{ g.connect(anl); }catch(e){} }); }   // a repeat connect is ignored
+  anl.getFloatTimeDomainData(anlBuf); let s=0; for(let i=0;i<anlBuf.length;i++) s+=anlBuf[i]*anlBuf[i];
+  const db=20*Math.log10(Math.sqrt(s/anlBuf.length)+1e-7), floor=-48-perfCfg.sens*24, lvl=Math.max(0,Math.min(1,(db-floor)/36));
+  reactEnv += (lvl-reactEnv)*Math.min(1, dt/(lvl>reactEnv?.02:.25));
+  if(perfCfg.beat && lvl-reactSlow>.28 && now-HIT.beat>.2){ HIT.beat=now; HIT.flip=now; }
+  reactSlow += (lvl-reactSlow)*Math.min(1, dt/.5);
+  HIT.react=reactEnv; $('reactLvl').style.width=(reactEnv*100).toFixed(1)+'%'; }
+function stopRoom(){ if(roomStream) roomStream.getTracks().forEach(t=>t.stop()); roomStream=null; if(roomSrc){ try{ roomSrc.disconnect(); }catch(e){} roomSrc=null; } }
+async function setReact(m){
+  if(m===reactMode && !roomPending && !(m===2 && !roomStream)) return;   // a pending room mic can always be cancelled
+  if(roomPending && m===2) return;
+  const gen=++reactGen; roomPending=false;
+  stopRoom(); if(anl){ [vidG,micG].forEach(g=>{ if(g) try{ g.disconnect(anl); }catch(e){} }); }
+  reactMode=0; HIT.react=0; reactEnv=0; $('reactLvl').style.width='0';
+  if(m){ startAudio(); AC.resume(); if(!anl){ anl=AC.createAnalyser(); anl.fftSize=1024; anlBuf=new Float32Array(anl.fftSize); } }
+  if(m===2){ roomPending=true; reactUI(); let ms;
+    try{ ms=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}, video:false}); }
+    catch(e){ if(gen===reactGen){ roomPending=false; $('reactState').textContent='Microphone access was refused ('+(e.name||'')+').'; reactUI(); } return; }
+    if(gen!==reactGen){ ms.getTracks().forEach(t=>t.stop()); return; }   // turned off while asking
+    roomPending=false; roomStream=ms; roomSrc=AC.createMediaStreamSource(ms); roomSrc.connect(anl); }   // analyser only: never the speakers or the recording
+  reactMode=m; reactFeed=0;
+  $('reactState').textContent= m===1 ? (vidG||micG ? 'Listening to the picture sound.' : 'Nothing goes into the TV sound yet: play a video with sound, or turn on Mic.')
+    : m===2 ? 'Listening to the room. It only listens: nothing plays out or records.' : 'Sound: the video or your mic. Room: listens only. Loud stretches lose tracking and damage the tape.';
+  reactUI(); }
+function reactUI(){ document.querySelectorAll('#reactSeg button').forEach(b=>b.classList.toggle('on', +b.dataset.r===(roomPending?2:reactMode)));
+  $('reactBeat').textContent='Beats flip: '+(perfCfg.beat?'on':'off'); $('reactBeat').classList.toggle('on',perfCfg.beat); $('reactBeat').setAttribute('aria-pressed',perfCfg.beat?'true':'false');
+  $('keysOn').textContent='Hotkeys: '+(perfCfg.keys?'on':'off'); $('keysOn').classList.toggle('on',perfCfg.keys); $('keysOn').setAttribute('aria-pressed',perfCfg.keys?'true':'false');
+  perfSum(); }
+document.querySelectorAll('#reactSeg button').forEach(b=>b.onclick=()=>setReact(+b.dataset.r));
+[['reactAmt','amt'],['reactSens','sens']].forEach(([id,k])=>{ $(id).value=perfCfg[k]; $(id+'O').textContent=(+perfCfg[k]).toFixed(2);
+  $(id).addEventListener('input',()=>{ perfCfg[k]=+$(id).value; $(id+'O').textContent=perfCfg[k].toFixed(2); perfSave(); }); });
+$('reactBeat').onclick=()=>{ perfCfg.beat=!perfCfg.beat; perfSave(); reactUI(); };
+$('keysOn').onclick=()=>{ perfCfg.keys=!perfCfg.keys; perfSave(); reactUI(); };
+// HITS on screen: press and hold like a key
+document.querySelectorAll('[data-hit]').forEach(b=>{ const h=b.dataset.hit;
+  b.addEventListener('pointerdown',e=>{ if(e.button!==0) return; b.setPointerCapture&&b.setPointerCapture(e.pointerId); hitDown(h); });
+  b.addEventListener('pointerup',()=>hitUp(h)); b.addEventListener('pointercancel',()=>hitUp(h));
+  b.addEventListener('click',e=>{ if(e.detail===0){ hitDown(h); hitUp(h); } }); });   // keyboard Enter / Space on the button
+// HOTKEYS
+const KEYHIT={KeyF:'flip', KeyT:'track', KeyG:'glitch', KeyP:'power', Digit1:'camA', Digit2:'camB', KeyY:'type'};
+function typing(t){ const g=t&&t.tagName; return !!t&&(t.isContentEditable || g==='TEXTAREA' || (g==='INPUT' && /^(text|search|number|email|url|password|tel)$/.test(t.type))); }
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape' && document.body.classList.contains('present')){ present(false); return; }
+  if(!perfCfg.keys || e.metaKey || e.ctrlKey || e.altKey || typing(e.target)) return;
+  const h=KEYHIT[e.code], other=['KeyA','KeyM','KeyR','KeyO'].includes(e.code);
+  if(h||other) e.preventDefault();          // also stops a focused menu's type-ahead
+  if(offline) return;                        // an export or still is drawing: nothing live may change it
+  if(h){ if(!e.repeat) hitDown(h); return; }
+  if(e.repeat) return;
+  if(e.code==='KeyA'){ setStage(STAGES.find(x=>x.id==='ascii'), !(S.asciiOn>0)); status('ASCII '+(S.asciiOn>0?'on':'off')+'.'); }
+  else if(e.code==='KeyM'){ if(isLive) $('camMirror').click(); }
+  else if(e.code==='KeyR'){ if(isLive) $('camRec').click(); else $('recFree').click(); }
+  else if(e.code==='KeyO'){ openOut(); } });
+document.addEventListener('keyup',e=>{ const h=KEYHIT[e.code]; if(h) hitUp(h); });
+window.addEventListener('blur',()=>{ hitUp('track'); hitUp('glitch'); });   // a key held while switching windows never sticks
+// MIDI: Learn, touch a control (any slider, or a hit button), move a knob or hit a pad
+let midi=null, learnOn=false, learnT=null, learnEl=null, midiMap={}, midiLast={};
+try{ midiMap=JSON.parse(localStorage.getItem('amfm-crt-midi')||'{}'); }catch(e){}
+const HITNAME={flip:'Flip', track:'Tracking', glitch:'Damage', power:'Power', camA:'Camera A', camB:'Camera B', type:'Replay text'};
+function midiName(t){ if(t.kind==='hit') return HITNAME[t.h]||t.h; const r=$(t.id), sp=r&&r.closest('label')&&r.closest('label').querySelector('span'); return sp?sp.textContent:t.id; }
+function midiSave(){ try{ localStorage.setItem('amfm-crt-midi', JSON.stringify(midiMap)); }catch(e){} drawMidiMap(); }
+function drawMidiMap(){ const box=$('midiMap'); box.textContent='';
+  Object.entries(midiMap).forEach(([key,t])=>{ const [ty,,n]=key.split(':'), row=el2('div','mm');
+    const x=el2('button','mmx','×'); x.type='button'; x.title='Remove'; x.setAttribute('aria-label','Remove this mapping'); x.onclick=()=>{ delete midiMap[key]; midiSave(); };
+    row.append(el2('span','',(ty==='cc'?'Knob ':'Pad ')+n+' → '+midiName(t)), x); box.append(row); });
+  $('midiClear').disabled=!Object.keys(midiMap).length; perfSum(); }
+function setLearn(t, el){ if(learnEl) learnEl.classList.remove('learn-t'); learnT=t; learnEl=el; if(el) el.classList.add('learn-t');
+  if(t) $('midiState').textContent='Now move a knob or hit a pad for '+midiName(t)+'.'; }
+function learnUI(){ $('midiLearn').textContent=learnOn?'Done':'Learn'; $('midiLearn').classList.toggle('on',learnOn); $('midiLearn').setAttribute('aria-pressed',learnOn?'true':'false'); }
+$('midiLearn').onclick=()=>{ learnOn=!learnOn; if(!learnOn) setLearn(null,null);
+  $('midiState').textContent=learnOn?'Touch a slider or a hit button.':'Mapped controls work now.'; learnUI(); };
+$('midiClear').onclick=()=>{ midiMap={}; midiSave(); };
+document.addEventListener('pointerdown',e=>{ if(!learnOn) return; const r=e.target.closest&&e.target.closest('input[type=range]'), h=e.target.closest&&e.target.closest('[data-hit]');
+  if(r && r.id) setLearn({kind:'range', id:r.id}, r.closest('label')||r);
+  else if(h){ e.preventDefault(); e.stopPropagation(); setLearn({kind:'hit', h:h.dataset.hit}, h); } }, true);
+function onMidi(m){ const [st,a,b]=m.data, ty=st&0xF0, ch=st&15; let key, val, on;
+  if(ty===0xB0){ key='cc:'+ch+':'+a; val=b/127; on=b>63; }
+  else if(ty===0x90 && b>0){ key='n:'+ch+':'+a; val=1; on=true; }
+  else if(ty===0x80 || (ty===0x90 && b===0)){ key='n:'+ch+':'+a; val=0; on=false; }
+  else return;
+  if(learnOn && learnT){ if(offline) return; if(ty===0xB0 || on){ midiMap[key]=learnT; const nm=midiName(learnT); setLearn(null,null); midiSave(); $('midiState').textContent='Mapped to '+nm+'. Touch another control, or press Done.'; } return; }
+  const t=midiMap[key]; if(!t) return;
+  if(offline && !(ty!==0xB0 && on===false && t.kind==='hit')) return;   // an export is drawing: only a pad's release gets through (lets go of held hits)
+  if(t.kind==='range'){ const r=$(t.id); if(r){ r.value=+r.min+val*(r.max-r.min); r.dispatchEvent(new Event('input',{bubbles:true})); } return; }
+  const was=!!midiLast[key]; midiLast[key]=on;
+  if(t.h==='track'||t.h==='glitch'){ on?hitDown(t.h):hitUp(t.h); } else if(on && !was) hitDown(t.h); }
+$('midiGo').onclick=async()=>{
+  if(!navigator.requestMIDIAccess){ $('midiState').textContent='This window has no MIDI. Open the CRT in Chrome to use a controller.'; $('camBlocked').hidden=false; $('camWhy').textContent='MIDI and the output window need your browser.'; return; }
+  try{ midi=await navigator.requestMIDIAccess(); }catch(e){ $('midiState').textContent='MIDI access was refused.'; return; }
+  const hook=()=>{ const ins=[...midi.inputs.values()]; ins.forEach(i=>i.onmidimessage=onMidi);
+    $('midiState').textContent=ins.length?'Listening to '+ins.map(i=>i.name).join(', ')+'.':'No controller found. Plug one in: it connects by itself.'; };
+  midi.onstatechange=hook; hook(); $('midiGo').textContent='Connected'; $('midiGo').disabled=true; $('midiLearn').disabled=false; perfSum(); };
+// OUTPUT: a clean window for the projector (Chrome), or the picture alone, full screen
+let outWin=null, outStream=null, outPoll=0;
+function outClosed(){ if(outStream) outStream.getTracks().forEach(t=>t.stop()); outStream=null; outWin=null; clearInterval(outPoll); $('outWin').classList.remove('on'); perfSum(); }
+function openOut(){ if(outWin && !outWin.closed){ outWin.focus(); return; }
+  let w=null; try{ w=window.open('', 'crt-output', 'popup,width=960,height=720'); }catch(e){}
+  if(!w){ $('outState').hidden=false; $('outState').textContent='This window can’t open a second window. Use Fullscreen, or open the CRT in your browser for a projector window.'; return; }
+  outStream=cv.captureStream(60); const d=w.document; d.title='CRT output';
+  d.body.textContent=''; d.body.style.cssText='margin:0;background:#000;overflow:hidden;cursor:none';
+  const v=d.createElement('video'); v.muted=true; v.autoplay=true; v.playsInline=true; v.style.cssText='display:block;width:100vw;height:100vh;object-fit:contain;background:#000';
+  d.body.append(v); v.srcObject=outStream; v.play().catch(()=>{});
+  v.ondblclick=()=>{ if(d.fullscreenElement) d.exitFullscreen(); else d.documentElement.requestFullscreen().catch(()=>{}); };
+  // the performer can keep the output window focused: its keys play the CRT
+  w.addEventListener('keydown',e=>{ if(e.metaKey||e.ctrlKey) return; e.preventDefault(); document.dispatchEvent(new KeyboardEvent('keydown',{code:e.code,key:e.key,repeat:e.repeat})); });
+  w.addEventListener('keyup',e=>document.dispatchEvent(new KeyboardEvent('keyup',{code:e.code,key:e.key})));
+  w.addEventListener('blur',()=>{ hitUp('track'); hitUp('glitch'); });
+  outWin=w; clearInterval(outPoll); outPoll=setInterval(()=>{ if(!outWin||outWin.closed) outClosed(); },1000);
+  $('outWin').classList.add('on'); $('outState').hidden=false; $('outState').textContent='Drag the output window to the projector, then double-click it for fullscreen. Its keys still play the CRT.'; perfSum(); }
+window.addEventListener('pagehide',()=>{ if(outWin && !outWin.closed) outWin.close(); });
+function present(on){ document.body.classList.toggle('present',on); if(on) status('Fullscreen: Esc (or double-click) to leave.'); perfSum(); }
+$('outWin').onclick=openOut;
+$('outFull').onclick=async()=>{ try{ if(cv.requestFullscreen){ await cv.requestFullscreen(); return; } }catch(e){} present(true); };
+cv.addEventListener('dblclick',()=>{ if(document.fullscreenElement) document.exitFullscreen(); else if(document.body.classList.contains('present')) present(false); });
+// CAMERA B: a second live camera; cuts swap the picture slot between the two
+function stopCamB(){ camBGen++; camBPending=false; if(camStreamB) camStreamB.getTracks().forEach(t=>t.stop()); camStreamB=null;
+  if(camOnB && camVidA && isLive){ srcEl=camVidA; if(camVidA.paused) camVidA.play().catch(()=>{}); if(camVidA.videoWidth) srcAR=camVidA.videoWidth/camVidA.videoHeight; }
+  camVidB=null; camOnB=false; $('camDevB').value=''; }
+async function startCamB(devId){ if(!isLive) return; stopCamB();
+  if(!devId){ camUI(); return; }
+  const aT=camStream&&camStream.getVideoTracks()[0], aId=aT&&aT.getSettings?aT.getSettings().deviceId:'';
+  if(devId===aId){ status('Camera B is the same as camera A: pick another one.'); camUI(); return; }
+  const bg=camBGen; camBPending=true; $('camDevB').value=devId; camUI(); let st;
+  try{ st=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:devId}, width:{ideal:1920}, height:{ideal:1080}}, audio:false}); }
+  catch(e){ if(bg===camBGen){ camBPending=false; $('camDevB').value=''; camUI(); status('Camera B didn’t open ('+(e.message||e.name)+').'); } return; }
+  const v=document.createElement('video'); v.muted=true; v.playsInline=true; v.srcObject=st; try{ await v.play(); }catch(e){}
+  if(bg!==camBGen || !isLive){ st.getTracks().forEach(t=>t.stop()); if(bg===camBGen){ camBPending=false; camUI(); } return; }
+  camStreamB=st; camVidB=v; camBPending=false; $('camDevB').value=devId;
+  v.addEventListener('resize',()=>{ if(srcEl===v && v.videoWidth) srcAR=v.videoWidth/v.videoHeight; });
+  camUI(); status('Camera B ready: press 2 to cut to it, 1 for A.'); }
+function cutTo(w){ if(!isLive || offline) return; const v=w==='B'?camVidB:camVidA; if(!v){ if(w==='B') status('Pick a Camera B first.'); return; }
+  if((w==='B')===camOnB) return; camOnB=w==='B'; if(v.paused) v.play().catch(()=>{}); srcEl=v; if(v.videoWidth) srcAR=v.videoWidth/v.videoHeight; motPrev=null;
+  if(cutFlip) HIT.flip=performance.now()/1000; camUI(); }
+$('camDevB').onchange=()=>{ $('camDevB').blur(); startCamB($('camDevB').value); };
+cutFlip=!!perfCfg.cutFlip; $('cutFlip').onclick=()=>{ cutFlip=!cutFlip; perfCfg.cutFlip=cutFlip; perfSave(); camUI(); };
+hitUI(); reactUI(); drawMidiMap(); learnUI();
 // STILLS (11-01): any size, optionally averaged over several fields like a long exposure of a real screen.
 // The live loop pauses (offline), the canvas and every target are rebuilt at SCALE×, frames are drawn at
 // successive field times and summed, then everything is put back exactly as it was.
-async function renderStill(scale, frames){ if(offline) return null;   // an export is drawing
+const STILL_LOCK=['ar43','ar169','ar169w','recSeq','recVideo','recVideoLive','recFree','camRec','camStop','camGo','still','batch','camStill'];
+async function renderStill(scale, frames){ if(offline || liveRecPending) return null; lockUI(true); const was=STILL_LOCK.map(id=>$(id)&&$(id).disabled); STILL_LOCK.forEach(id=>{ if($(id)) $(id).disabled=true; });
+  stillDrawing=true; try{ return await renderStill0(scale, frames); } finally{ stillDrawing=false; STILL_LOCK.forEach((id,i)=>{ if($(id)) $(id).disabled=was[i]; }); if(!batchRun) lockUI(false); } }
+async function renderStill0(scale, frames){ if(offline) return null;   // an export is drawing
   const keep={w:cv.width, h:cv.height, RW, RH};
   offline=true; await new Promise(r=>requestAnimationFrame(r));
   try{
     cv.width=keep.w*scale; cv.height=keep.h*scale; RW=keep.RW*scale; RH=keep.RH*scale; SCALE=scale; buildTargets();
     const W=cv.width, H=cv.height, t0=performance.now()/1000;
-    if(isVideo) upload();
+    if(isVideo||isLive) upload();
+    for(let i=3;i>0;i--) draw(t0-i/59.94, 1/59.94, null);   // a few warm-up fields so lag, comet and persistence look as they do on screen
     if(frames<=1){ draw(t0, 1/59.94, null); return await new Promise(r=>cv.toBlob(r,'image/png')); }
     const px=new Uint8Array(W*H*4), acc=new Uint16Array(W*H*4);
     for(let i=0;i<frames;i++){ draw(t0+i/59.94, 1/59.94, null); gl.readPixels(0,0,W,H,gl.RGBA,gl.UNSIGNED_BYTE,px);
@@ -1212,47 +1906,53 @@ async function renderStill(scale, frames){ if(offline) return null;   // an expo
     cv.width=keep.w; cv.height=keep.h; RW=keep.RW; RH=keep.RH; SCALE=1; buildTargets(); offline=false;
   }
 }
-$('still').onclick=async()=>{ const sc=+$('ssize').value, n=+$('sexp').value;
+$('still').onclick=async()=>{ if(rec){ status('Stop the recording first: a still would land in the clip.'); return; } const sc=+$('ssize').value, n=+$('sexp').value;
   status('Rendering still '+sc+'×…'); const b=await renderStill(sc,n); if(b) exportFile(b,'still',$('sfmt').value); };
 // BATCH: each picked image goes through the tube with the current look, size and exposure, saved under its own
 // name into one dated folder. The picture that was loaded before comes back at the end.
 $('batch').onclick=()=>$('batchFiles').click();
 function loadImageFile(f){ return new Promise((res,rej)=>{ const url=URL.createObjectURL(f), im=new Image();
-  im.onload=()=>{ if(srcEl&&srcEl.pause) srcEl.pause(); isVideo=false; srcEl=im; srcFile=f; srcAR=im.naturalWidth/im.naturalHeight; upload(); res(); };
-  im.onerror=()=>rej(new Error('could not read '+f.name)); im.src=url; }); }
+  im.onload=()=>{ URL.revokeObjectURL(url); if(!(im.naturalWidth>0&&im.naturalHeight>0)){ rej(new Error('no picture in '+f.name)); return; }
+    if(srcEl&&srcEl.pause) srcEl.pause(); isVideo=false; srcEl=fitImg(im); srcFile=f; srcAR=im.naturalWidth/im.naturalHeight; upload(); res(); };
+  im.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('could not read '+f.name)); }; im.src=url; }); }
 $('batchFiles').onchange=async e=>{
   const files=[...e.target.files].sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true})); e.target.value='';
   if(!files.length) return;
+  if(isLive || rec){ status(isLive ? 'Stop the camera before a batch: it needs the picture slot.' : 'Stop the recording before a batch.'); return; }
+  if(busyNow()){ status('Wait for the export or still to finish.'); return; }
   const sc=+$('ssize').value, n=+$('sexp').value, fmt=$('sfmt').value;
   const d0=new Date(), z=n=>String(n).padStart(2,'0'); const folder='batch-'+d0.getFullYear()+'-'+z(d0.getMonth()+1)+'-'+z(d0.getDate())+'-'+z(d0.getHours())+z(d0.getMinutes())+z(d0.getSeconds());
-  const before={el:srcEl, file:srcFile, ar:srcAR, vid:isVideo};
-  $('batch').disabled=true; $('still').disabled=true; let last=null, failed=0;
+  const before={el:srcEl, file:srcFile, ar:srcAR, vid:isVideo, playing:isVideo&&srcEl&&!srcEl.paused};
+  batchRun=true; lockUI(true); $('batch').disabled=true; $('still').disabled=true; let last=null; const failed=[];
   try{
     for(let i=0;i<files.length;i++){
       status('Batch '+(i+1)+' / '+files.length+' · '+files[i].name);
-      try{ await loadImageFile(files[i]); const b=await renderStill(sc,n);
+      try{ await loadImageFile(files[i]); const b=await renderStill(sc,n); if(!b) throw new Error('the still did not render');
         const name=files[i].name.replace(/\.[^.]+$/,'');
         const r=await fetch('/api/crt_export?kind=still&fmt='+fmt+'&name='+encodeURIComponent(name)+'&folder='+folder,{method:'POST',body:b});
         const j=await r.json(); if(!r.ok||j.error) throw new Error(j.error||r.status); last=j.path;
-      }catch(err){ failed++; console.error(err); }
+      }catch(err){ failed.push(files[i].name); console.warn('batch: '+files[i].name+': '+(err&&err.message||err)); }
     }
   } finally {
-    srcEl=before.el; srcFile=before.file; srcAR=before.ar; isVideo=before.vid; if(srcEl) upload();
-    $('batch').disabled=false; $('still').disabled=false;
+    srcEl=before.el; srcFile=before.file; srcAR=before.ar; isVideo=before.vid; if(srcEl) upload(); if(before.playing) srcEl.play().catch(()=>{});
+    batchRun=false; lockUI(false); $('batch').disabled=false; $('still').disabled=false; camUI();
   }
-  if(last){ saved(last.replace(/\/[^/]+$/,'')); status('Batch done · '+(files.length-failed)+' of '+files.length+' saved to '+folder+(failed?' · '+failed+' failed':'')); }
-  else status('Batch failed: nothing was saved.');
+  const nf=failed.length, fl=nf? ' · couldn’t do: '+failed.slice(0,4).join(', ')+(nf>4?' and '+(nf-4)+' more':'') : '';
+  if(last){ saved(last.replace(/\/[^/]+$/,'')); status('Batch done · '+(files.length-nf)+' of '+files.length+' saved to '+folder+fl); }
+  else status('Batch failed: nothing was saved'+fl+'.');
 };
 
 async function exportFile(blob, kind, fmt){
-  status(kind==='video' ? 'Converting to '+fmt.toUpperCase()+'…' : 'Saving still…');
+  status(kind==='video' ? 'Converting to '+fmt.toUpperCase()+'…' : kind==='text' ? 'Saving '+fmt.toUpperCase()+'…' : 'Saving still…');
   try{
     const r = await fetch('/api/crt_export?kind='+kind+'&fmt='+fmt, {method:'POST', body:blob});
-    const j = await r.json(); if(!r.ok || j.error) throw new Error(j.error||r.status);
+    let j={}; try{ j=await r.json(); }catch(e){}
+    if(!r.ok || j.error || !j.path){ status('Save failed: '+(j.error||('engine error '+r.status))); return; }
     saved(j.path);
-  }catch(e){ // engine not reachable: fall back to a browser download of the raw file
-    const ext = kind==='video' ? 'webm' : 'png';
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='amfm-crt-'+stamp()+'.'+ext; document.body.append(a); a.click(); a.remove();
+  }catch(e){ // engine not reachable: fall back to a browser download of the raw file (not inside the app window, which can't download)
+    const ext = kind==='video' ? (/mp4/.test(blob.type)?'mp4':'webm') : kind==='text' ? fmt : 'png';
+    if(window.pywebview){ status('Engine not reachable ('+e.message+'): nothing saved. Restart the app and try again.'); return; }
+    const u=URL.createObjectURL(blob), a=document.createElement('a'); a.href=u; a.download='amfm-crt-'+stamp()+'.'+ext; document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u), 60000);
     status('Engine not reachable ('+e.message+'): saved a raw .'+ext+' to Downloads instead.');
   }
 }
@@ -1284,21 +1984,23 @@ async function h264Encoder(w,h){
   enc.configure(cfg);
   return { add: async (i)=>{ if(err) throw err; while(enc.encodeQueueSize>6) await new Promise(r=>setTimeout(r,4));
              const fr=new VideoFrame(cv,{timestamp:Math.round(i*1e6/FPS), duration:Math.round(1e6/FPS)}); enc.encode(fr,{keyFrame:i%60===0}); fr.close(); },
-           done: async ()=>{ await enc.flush(); enc.close(); if(err) throw err; return new Blob(parts,{type:'video/h264'}); } };
+           done: async ()=>{ await enc.flush(); enc.close(); if(err) throw err; return new Blob(parts,{type:'video/h264'}); },
+           close: ()=>{ try{ if(enc.state!=='closed') enc.close(); }catch(e){} } };
 }
 async function exportFast(){
-  if(!isVideo){ status('Drop a video first.'); return; } if(rec||offline) return;
-  const v=srcEl, p=seqPlan(); const lead=(p.on?ON:0)+(p.tune?TUNE:0);
+  if(!isVideo){ status('Drop a video first.'); return; } if(offline||batchRun) return; if(rec||liveRecPending){ status('Stop the recording first.'); return; }
+  const v=srcEl; if(!isFinite(v.duration)){ status('This video doesn’t say how long it is, so it can’t be exported. Re-save it as MP4 first.'); return; }
+  const p=seqPlan(); const lead=(p.on?ON:0)+(p.tune?TUNE:0);
   p.hold=Math.max(.5, v.duration - lead - (p.off?OFF:0));   // switch-off lands as the video ends, as when recording
   const total=seqLen(p)+.35, n=Math.ceil(total*FPS), fmt=$('vfmt').value, sound=$('vSound').classList.contains('on');
   const job=(Date.now().toString(36)+Math.random().toString(36).slice(2,6)).toLowerCase();
   const was={loop:v.loop, t:v.currentTime, paused:v.paused};
-  offline=true; cancelFast=false; identStart=null; v.pause(); v.loop=false; rollpos=0;
+  offline=true; lockUI(true); cancelFast=false; identStart=null; v.pause(); v.loop=false; rollpos=0; hasPrev=0; hasCam=0; hasDig=0; slitReset();
   ['ar43','ar169','ar169w','recSeq','recVideoLive','recFree','still','batch'].forEach(id=>$(id).disabled=true);
   $('recVideo').textContent='Stop export';
-  const t0=performance.now();
+  const t0=performance.now(); let enc=null;
   try{
-    const enc=await h264Encoder(cv.width, cv.height);
+    enc=await h264Encoder(cv.width, cv.height);
     for(let i=0;i<n;i++){
       if(cancelFast) throw new Error('stopped');
       const t=i/FPS;
@@ -1315,7 +2017,10 @@ async function exportFast(){
       let input=null;
       if(srcFile){ await post('/api/crt_part?job='+job+'&name=source', srcFile);
         $('status').textContent='Reading the video\'s sound…';
-        const r=await fetch('/api/crt_audio?job='+job,{method:'POST'}); if(r.status===200) input=await r.arrayBuffer(); }
+        const r=await fetch('/api/crt_audio?job='+job,{method:'POST'});
+        if(r.status===200) input=await r.arrayBuffer();
+        else if(r.status===204) status('This video has no sound track: the export gets the TV sound only.');
+        else { let j={}; try{ j=await r.json(); }catch(e){} throw new Error(j.error||('reading the sound failed ('+r.status+')')); } }
       $('status').textContent='Running the sound through the set…';
       await post('/api/crt_part?job='+job+'&name=sound', await renderSound(input, total, p));
     }
@@ -1324,12 +2029,13 @@ async function exportFast(){
     saved(j.path);
   }catch(e){ status(e.message==='stopped' ? 'Export stopped.' : 'Export failed: '+e.message); }
   finally{
-    offline=false; v.loop=was.loop; try{ v.currentTime=was.t; }catch(e){} if(!was.paused) v.play().catch(()=>{}); applyDeck();
+    if(enc&&enc.close) enc.close(); slitReset(); offline=false; lockUI(false); v.loop=was.loop; try{ v.currentTime=was.t; }catch(e){} if(!was.paused) v.play().catch(()=>{}); applyDeck();
     ['ar43','ar169','ar169w','recSeq','recVideoLive','recFree','still','batch'].forEach(id=>$(id).disabled=false);
     $('recVideo').textContent='Export whole video';
   }
 }
-function status(msg){ $('status').textContent = msg || 'Ready. Drag sliders, or press Space to preview the sequence.'; }
+var statusHold=0;   // a real message stays up 4 s before the recording timer takes the line back
+function status(msg){ $('status').textContent = msg || 'Ready. Drag sliders, or press Space to preview the sequence.'; if(msg) statusHold=performance.now()/1000+4; }
 
 // ---------------- loop ----------------
 let frame=0, rollpos=0, last=performance.now()/1000;
@@ -1388,23 +2094,26 @@ function uAt(it){
     U.snow=Math.max(S.snow,m.snow); U.signal=S.signal*m.sig; U.roll=Math.max(S.roll,m.roll); U.jitter=S.jitter+m.jit; U.power=S.power*m.power; U.tone=m.tone; }
   return U; }
 function draw(now, dt, it){
-  const U=uAt(it);
+  const U=uAt(it); if(!offline && !wholeRec) perfMods(U, now, dt);   // live hits, MIDI, sound-reactive: the screen and recordings only, never exports
   if(U.roll>0.001){ rollpos=(rollpos+U.roll*dt*1.6)%1; }
   else if(rollpos!==0){ // vertical hold catches the frame and locks it back in place
     const target = rollpos>.5 ? 1 : 0; rollpos += (target-rollpos)*Math.min(1, dt*7);
     if(Math.abs(target-rollpos)<.0005) rollpos=0; rollpos%=1; }
   if(sndNode && !offline) sndNode.port.postMessage({p:soundParams(U, now)});
-  if(isVideo) upload();
+  if(isVideo||isLive) upload();
   if(underIsVideo && underEl){
-    if(isVideo && !offline && underEl.duration){ const want=videoTimeAt(srcEl.currentTime, srcEl.duration) % underEl.duration;
+    if(isVideo && !offline && underEl.duration){ const want=srcEl.currentTime % underEl.duration; if(underEl.playbackRate!==srcEl.playbackRate) underEl.playbackRate=srcEl.playbackRate;
       if(Math.abs(underEl.currentTime-want)>.25) underEl.currentTime=want; if(srcEl.paused!==underEl.paused) srcEl.paused?underEl.pause():underEl.play().catch(()=>{}); }
     uploadUnder(); }
   const res=[RW,RH];
   const field = Math.floor(now*59.94);            // noise and jitter advance per NTSC field, not per screen refresh
   const fit = frameMode==='pillar' ? [1440/1920,1] : [1,1];
   const g=U.glowSize, h=g*2.2;
+  curIn=slitStage(U, now);
+  const srcIn=matStage(U, preStage(U, now, curIn), field);
+  if((U.asciiOn>0 && U.asciiPure>0) || (U.matOn>0 && U.matPure>0)){ run(P.blit, null, {res:[cv.width,cv.height], srcAR}, {src:srcIn}); hasCam=0; hasPrev=0; hasDig=0; return; }   // pure ASCII: the TV is off
   if(model==='classic'){
-    run(P.core, T.base, {...U, res:[RW/SCALE,RH/SCALE], t:now, frame:field, rollpos, srcAR, rasterAR: RW/RH}, {src:srcTex});
+    run(P.core, T.base, {...U, res:[RW/SCALE,RH/SCALE], t:now, frame:field, rollpos, srcAR, rasterAR: RW/RH}, {src:srcIn});
     run(P.blur, T.g1, {dir:[g*SCALE/(RW/4),0], thresh:U.glowThresh}, {src:T.base.t});
     run(P.blur, T.g2, {dir:[0,g*SCALE/(RH/4)], thresh:-1}, {src:T.g1.t});
     run(P.blur, T.h1, {dir:[h*SCALE/(RW/8),0], thresh:U.glowThresh*.6}, {src:T.base.t});
@@ -1415,7 +2124,7 @@ function draw(now, dt, it){
     const DT = Math.max(dt,1/240);
     // CAMERA: frames the picture onto the raster and does what the tubes did (ping-pong for lag/comet, slow burn accumulator)
     let pc=T.cam1; T.cam1=T.cam2; T.cam2=pc;
-    run(P.cam, T.cam1, {srcAR, rasterAR:RW/RH, picX:U.picX, picY:U.picY, picS:U.picS, knee:U.knee, camLag:U.camLag, comet:U.comet, burn:U.burn, reg:U.reg, shade:U.shade, dt:DT, hasCam}, {src:srcTex, prevC:T.cam2.t, burnT:T.burn2.t});
+    run(P.cam, T.cam1, {srcAR, rasterAR:RW/RH, picX:U.picX, picY:U.picY, picS:U.picS, knee:U.knee, camLag:U.camLag, comet:U.comet, burn:U.burn, reg:U.reg, shade:U.shade, dt:DT, hasCam}, {src:srcIn, prevC:T.cam2.t, burnT:T.burn2.t});
     run(P.burn, T.burn1, {dt:DT, hasCam}, {cam:T.cam1.t, burnT:T.burn2.t});   // burn2 = latest accumulator → burn1 = updated
     let pb=T.burn1; T.burn1=T.burn2; T.burn2=pb;          // keep the newest accumulator in burn2 for the next camera pass
     hasCam=1;
@@ -1451,8 +2160,9 @@ function draw(now, dt, it){
   }
 }
 // DECK (11-06): pause holds the frame, search plays it fast, rewind runs it backwards (the bars come from tapeState)
-function applyDeck(){ if(!isVideo||offline) return; const d=DECK[deckIdx()], v=srcEl;
-  if(d.spd===0||d.spd<0){ v.pause(); } else { v.playbackRate=Math.min(16,d.spd); if(v.paused) v.play().catch(()=>{}); } vidUI(); }
+var deckOn=-1;   // the deck setting last applied: only a change of deck starts playback (a look change never un-pauses you)
+function applyDeck(force){ if(!isVideo||offline) return; const i=deckIdx(), d=DECK[i], v=srcEl, changed=force===true||i!==deckOn; deckOn=i;
+  if(d.spd===0||d.spd<0){ v.pause(); } else { v.playbackRate=Math.min(16,d.spd); if(v.paused && changed) v.play().catch(()=>{}); } vidUI(); }
 function tick(){
   const now=performance.now()/1000, dt=now-last; last=now;
   if(isVideo && !offline && DECK[deckIdx()].spd<0){ srcEl.currentTime=Math.max(0, srcEl.currentTime-dt*9); }
@@ -1461,12 +2171,17 @@ function tick(){
   let it=null;
   if(identStart!==null){ it=now-identStart; $('identT').textContent=it.toFixed(1)+'s';
     if(it>identDur+.4){ if(loop) identStart=now; else { identStart=null; $('identT').textContent=''; } } }
-  if(rec) $('status').textContent='Recording… '+(now-recT0).toFixed(1)+'s';
+  if(rec && now>statusHold) $('status').textContent='Recording… '+(now-recT0).toFixed(1)+'s';
   draw(now, dt, it);
   if(isVideo && frame%6===0){ vidUI(); tlHead(); }
   requestAnimationFrame(tick);
 }
 restore(); loadImage('/crt/logos/'+LOGOS[0]); status(); requestAnimationFrame(tick);
+// URL switches (11-16): ?cam=1 starts the camera, ?ascii=1 / ?pure=1 / ?set=0|1|2 / ?mirror=1. Useful for OBS and for testing.
+(()=>{ const q=new URLSearchParams(location.search);
+  if(q.get('ascii')==='1') setVal('asciiOn',1); if(q.get('pure')==='1') setVal('asciiPure',1); if(q.has('set')) setVal('asciiSet',safeV('asciiSet',q.get('set')));
+  if(q.has('mat')){ setVal('matOn',1); setVal('matKind',safeV('matKind',q.get('mat'))); } if(q.get('slit')==='1') setVal('slitOn',1);
+  if(q.get('cam')==='1'){ if(q.get('mirror')==='1') wantMirror=true; startCam(); } })();
 </script>
 
 <script>
