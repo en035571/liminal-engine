@@ -72,15 +72,15 @@ input[type=text]:focus,input[type=number]:focus,textarea:focus{border-color:var(
 .chip .x{margin-left:6px;opacity:.7}
 
 /* pickers: chip clouds become ledger rows */
-.recent,#cLanes,#lanes,#droppedList{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);margin-top:8px}
-.recent .chip,#cLanes .chip,#lanes .chip,#droppedList .chip{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;max-width:none;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:7px 0;text-align:left;text-transform:none;letter-spacing:.02em;font-size:11px;background:none;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.recent .chip:last-child,#cLanes .chip:last-child,#lanes .chip:last-child,#droppedList .chip:last-child{border-bottom:0}
-.recent .chip::before,#cLanes .chip::before,#lanes .chip::before,#droppedList .chip::before{content:"";width:12px;height:12px;border-radius:50%;border:1px solid var(--line2);display:inline-block}
-.recent .chip.on,#cLanes .chip.on,#lanes .chip.on,#droppedList .chip.on{background:none;color:var(--ink)}
-.recent .chip.on::before,#cLanes .chip.on::before,#lanes .chip.on::before,#droppedList .chip.on::before{background:var(--acc);border-color:var(--acc)}
-.recent .chip .dur{color:var(--dim);font-size:10px;font-variant-numeric:tabular-nums}.recent .chip .nm,#cLanes .chip .nm,#lanes .chip .nm,#droppedList .chip .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent,#lanes,#droppedList{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);margin-top:8px}
+.recent .chip,#lanes .chip,#droppedList .chip{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;max-width:none;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:7px 0;text-align:left;text-transform:none;letter-spacing:.02em;font-size:11px;background:none;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recent .chip:last-child,#lanes .chip:last-child,#droppedList .chip:last-child{border-bottom:0}
+.recent .chip::before,#lanes .chip::before,#droppedList .chip::before{content:"";width:12px;height:12px;border-radius:50%;border:1px solid var(--line2);display:inline-block}
+.recent .chip.on,#lanes .chip.on,#droppedList .chip.on{background:none;color:var(--ink)}
+.recent .chip.on::before,#lanes .chip.on::before,#droppedList .chip.on::before{background:var(--acc);border-color:var(--acc)}
+.recent .chip .dur{color:var(--dim);font-size:10px;font-variant-numeric:tabular-nums}.recent .chip .nm,#lanes .chip .nm,#droppedList .chip .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #droppedList .chip .x{color:var(--dim);justify-self:end}#droppedList .chip:hover .x{color:var(--bad)}
-.recent:empty,#cLanes:empty,#lanes:empty,#droppedList:empty{display:none}
+.recent:empty,#lanes:empty,#droppedList:empty{display:none}
 .recent{max-height:224px;overflow:auto}
 .drop{border:1px dashed var(--line2);border-radius:var(--r);padding:10px;display:flex;gap:12px;align-items:center;cursor:pointer;min-height:64px;background:var(--panel);transition:border-color .12s}
 .drop:hover,.drop.over{border-color:var(--acc)}
@@ -110,9 +110,10 @@ input[type=text]:focus,input[type=number]:focus,textarea:focus{border-color:var(
 .slh{display:contents}.slh span{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--mute);grid-column:1;grid-row:1}.slh b{font-weight:400;color:var(--ink);grid-column:3;grid-row:1;text-align:right;font-variant-numeric:tabular-nums}
 .sl input[type=range]{grid-column:2;grid-row:1;width:100%;accent-color:var(--acc);margin:0}
 .slr{grid-column:2;grid-row:2;display:none;justify-content:space-between;font-size:8.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-top:-4px}.slr i{font-style:normal}
-.sl{position:relative}.sl.holdrow .seg{grid-column:2/4;grid-row:1;margin-top:0}.holdrow .hint{display:none!important}.sl .hint{display:none;position:absolute;left:108px;right:0;top:calc(100% - 2px);z-index:4;margin:0;background:var(--panel2);border:1px solid var(--line2);border-radius:var(--r);padding:6px 8px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.sl{position:relative}.sl.wv{grid-template-columns:96px minmax(0,1fr) 124px}.sl.wv .slh b{white-space:nowrap}.sl.holdrow .seg{grid-column:2/4;grid-row:1;margin-top:0}.holdrow .hint{display:none!important}.sl .hint{display:none;position:absolute;left:108px;right:0;top:calc(100% - 2px);z-index:4;margin:0;background:var(--panel2);border:1px solid var(--line2);border-radius:var(--r);padding:6px 8px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
 .sl .seg{grid-column:2/4;grid-row:2;margin-top:2px}
 .sl:hover .hint,.sl:focus-within .hint{display:block}
+.ud{grid-column:1/-1;grid-row:2;display:flex;flex-direction:column;gap:1px;font:11px/1.4 var(--sans);color:var(--mute);margin-top:-2px}.ud i{font-style:normal}.ud .dep{color:var(--acc)}
 .map{display:grid;grid-template-columns:96px 1fr;gap:6px 12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:10px}
 .mapsrc b{display:block;font-weight:400;letter-spacing:.14em}.mapsrc small{display:none}
 .mapto{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;align-content:center}.mapto span{border:1px solid var(--line);border-radius:10px;padding:3px 7px;font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -124,9 +125,28 @@ summary::before{content:"advanced · "}details[open] summary::before{content:"ad
 .adv label{display:flex;flex-direction:column;gap:3px;font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--mute)}
 .adv input[type=number],.adv input[type=text]{font-size:12px}
 .adv label input[type=checkbox]{accent-color:var(--acc)}
-#fx{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line2);border-radius:var(--r);overflow:hidden}
-#fx .chip{border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:0;padding:8px 6px;text-align:center;color:var(--dim);background:none}
-#fx .chip.on{color:var(--ink)}#fx .chip.on::before{content:"● ";color:var(--acc);font-size:8px;vertical-align:1px}
+#moves{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line2);border-radius:var(--r);overflow:hidden}
+#moves .chip{border:0;border-right:1px solid var(--line);border-radius:0;padding:8px 6px;text-align:center;color:var(--dim);background:none}
+#moves .chip:last-child{border-right:0}
+#moves .chip.on{color:var(--ink)}#moves .chip.on::before{content:"● ";color:var(--acc);font-size:8px;vertical-align:1px}
+/* × on list rows (songs, inbox, dropped clips) */
+.recent .row1,#droppedList .row1,#inboxList .row1{display:grid;grid-template-columns:minmax(0,1fr) 26px;align-items:center;border-bottom:1px solid var(--line)}
+.recent .row1:last-child,#droppedList .row1:last-child,#inboxList .row1:last-child{border-bottom:0}
+.recent .row1 .chip,#droppedList .row1 .chip{border-bottom:0}
+.xbtn{border:0;background:none;color:var(--dim);font-size:13px;line-height:1;padding:4px 6px;border-radius:3px}.xbtn:hover{color:var(--bad);background:var(--panel2)}
+#droppedList .chip.off{color:var(--dim);text-decoration:line-through}#droppedList .chip.off::before{background:none;border-color:var(--line2)}
+#inboxList{border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);margin-top:8px;max-height:260px;overflow:auto}
+#inboxList .row1{font-size:11px;padding:4px 0}#inboxList .nm{color:var(--mute);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#inboxList .sz{color:var(--dim);font-size:10px;margin-left:8px}
+#inboxList .row1{grid-template-columns:minmax(0,1fr) auto 26px}
+.more{display:block;margin:10px auto 0}
+.f.wide{grid-template-columns:1fr;gap:6px}
+#inboxBox summary::before{content:""}#inboxBox{margin-top:8px}
+/* shortcut sheet */
+.keys{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.55);display:grid;place-items:center}
+.keys>div{background:var(--panel2);border:1px solid var(--line2);border-radius:var(--r);padding:16px 20px;min-width:320px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.keys h3{margin:0 0 10px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:400}
+.keys table{border-collapse:collapse;font-size:11px}.keys td{padding:3px 14px 3px 0;color:var(--mute)}.keys td:first-child{color:var(--ink);white-space:nowrap}
+.keys kbd{font:inherit;border:1px solid var(--line2);border-radius:3px;padding:0 5px;background:var(--bg)}
 /* go */
 .go{height:40px;border:0;border-radius:var(--r);background:var(--ink);color:var(--bg);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;padding:0 22px}
 .go:disabled{background:var(--panel2);color:var(--dim);cursor:default}.go.stop{background:transparent;border:1px solid var(--bad);color:var(--bad)}
@@ -180,20 +200,102 @@ body:not(.running):not(.hasjob) .bar,body:not(.running):not(.hasjob) .nums{displ
 .lib.sel .card .ck{display:grid}.lib.sel .card .rm,.lib.sel .card .arm{display:none}.lib.sel .card.picked{border-color:var(--acc)}.lib.sel .card.picked .ck{background:var(--acc);border-color:var(--acc)}
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:99;background:var(--panel2);color:var(--ink);border:1px solid var(--line2);border-radius:var(--r);padding:10px 16px;font:12px/1.4 var(--mono);box-shadow:0 6px 24px rgba(0,0,0,.5)}
 .mix{display:flex;align-items:center;gap:10px}.mix input{flex:1}.mix b{font-weight:400;min-width:34px;text-align:right}
-.coh{display:none}
 @media (max-width:860px){.app{height:auto}.wrap{grid-template-columns:1fr}.left{border-right:0;border-bottom:1px solid var(--line)}.top{grid-template-columns:auto minmax(0,1fr);padding-inline:12px;gap:10px}.top .st{display:none}.mode{overflow:auto;max-width:100%;justify-self:end}.mode button,.mode a{padding:6px 9px}.steps{padding-left:40px}}
+
+/* ---- Granular look settings, 3 layouts (11-25): a = in the left column, b = across the middle, c = preview + Effect Controls ---- */
+#gSet{display:flex;flex-direction:column;gap:12px}
+.gtop{display:flex;flex-direction:column;gap:10px}
+.glay{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center}.glay .seg button{padding:6px 4px}
+#gLook{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line2)}
+#gLook button{border:0;background:var(--bg);padding:9px 6px;overflow:visible;text-overflow:clip;font-size:10.5px;letter-spacing:.1em}
+#gLook button.on{background:var(--panel2);color:var(--ink);box-shadow:inset 0 -2px 0 var(--acc)}
+.gstrict{display:flex;gap:10px;align-items:center;cursor:pointer;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.gstrict:has(input:disabled){color:var(--dim);cursor:default}
+input.tog{appearance:none;-webkit-appearance:none;flex:none;width:34px;height:18px;border-radius:10px;background:var(--line2);position:relative;margin:0;cursor:pointer;transition:background .12s}
+input.tog::after{content:"";position:absolute;left:2px;top:2px;width:14px;height:14px;border-radius:50%;background:var(--mute);transition:left .12s}
+input.tog:checked{background:var(--acc)}input.tog:checked::after{left:18px;background:#fff}input.tog:disabled{opacity:.45;cursor:default}
+.gstricth{margin:-4px 0 0 44px}.gstricth:empty{display:none}
+.gera{font:12px/1.45 var(--sans);letter-spacing:0;color:var(--mute)}
+#gSet .gpre{grid-template-columns:1fr;gap:6px}
+.gcards{display:flex;flex-direction:column;gap:14px}
+.gaway{font:12px/1.45 var(--sans);letter-spacing:0;color:var(--acc)}
+/* groups fold; a slider's ↑/↓ notes show only while you're on it (a "no effect" note always shows) */
+#gSet .grph{cursor:pointer;display:flex;align-items:baseline;gap:8px;user-select:none}
+#gSet .grph::before{content:"▾";color:var(--dim);font-size:9px;width:9px}
+#gSet .grp.shut>.grph::before{content:"▸"}
+#gSet .grp.shut>:not(.grph){display:none!important}
+#gSet .grph .gsum{margin-left:auto;color:var(--dim);letter-spacing:.04em;text-transform:none;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;display:none}
+#gSet .grp.shut .gsum{display:block}
+#gSet .sl .ud i:not(.dep){display:none}
+#gSet .sl:focus-within .ud i:not(.dep):not([hidden]){display:block}
+#gSet .sl:focus-within:not(:hover) .hint{display:none}   /* the notes show while you're on it; the longer popup only on pointing */
+#mGranular .step>.hd .sum{white-space:normal;line-height:1.45}   /* the whole summary, on two lines if need be */
+.sl.sel select{grid-column:2/4;grid-row:1;width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:var(--r);padding:6px 8px;color:var(--ink);font-size:11.5px}
+.sl.sel select:focus{border-color:var(--acc);outline:none}
+/* render files (11-25): stacks per clip, keep, Remake, projects */
+.stackh{grid-column:1/-1;display:flex;align-items:baseline;gap:12px;padding:10px 2px 2px;border-top:1px solid var(--line);margin-top:4px}
+.stackh:first-child{border-top:0;margin-top:0;padding-top:0}.stackh b{font-weight:400;color:var(--ink);letter-spacing:.04em}.stackh span{color:var(--dim);font-size:10.5px}.stackh .pj{color:var(--mute);border:1px solid var(--line2);border-radius:3px;padding:0 6px}.stackh .btn{margin-left:auto}
+.card .sr,.card .rk{position:absolute;top:6px;width:22px;height:22px;border:0;border-radius:3px;background:rgba(0,0,0,.7);color:var(--ink);font-size:12px;line-height:22px;text-align:center;padding:0;opacity:0}
+.card .sr{right:58px}.card .rk{right:84px}.card:hover .sr,.card:hover .rk,.card .sr.on{opacity:1}.card .sr.on{color:#ffd166}.lib.sel .card .sr,.lib.sel .card .rk{display:none}
+#libProj{background:var(--bg);border:1px solid var(--line2);border-radius:var(--r);padding:4px 8px;font-size:11px;color:var(--ink);max-width:200px}
+.dest{color:var(--dim);font-size:10.5px;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* friends beta (11-25): presets + 4 main settings per look, the rest under a closed Fine-tune */
+.gfine{display:none}[id^=gBox].fineopen .gfine{display:contents}
+.gfinetog{display:flex;align-items:baseline;gap:10px;width:100%;background:none;border:0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);padding:9px 0;color:var(--ink);font-size:10px;letter-spacing:.14em;text-transform:uppercase;text-align:left}
+.gfinetog::before{content:"▸";color:var(--dim);font-size:9px;width:9px}[id^=gBox].fineopen .gfinetog::before{content:"▾"}
+.gfinetog small{color:var(--dim);letter-spacing:.04em;text-transform:none;font-size:10px}.gfinetog:hover{color:var(--acc)}
+body.gl-b #gSet .gfinetog,body.gl-b #gSet .gfine>*:not(.grp){grid-column:1/-1}
+/* b: the settings sheet in the middle, in cards */
+body.gl-b .wrap{grid-template-columns:300px minmax(0,1fr)}
+.gmid{flex:none}
+body.gl-b #gSet .gtop{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 24px;align-items:center}
+body.gl-b #gLook{grid-template-columns:repeat(4,minmax(0,1fr));grid-column:1}
+body.gl-b .glay{grid-column:2;grid-row:1}body.gl-b .glay .seg button{flex:none;padding:6px 12px}
+body.gl-b .gstrict{grid-column:1}body.gl-b .gstricth{grid-column:1/-1;margin:-4px 0 0 44px}
+body.gl-b #gSet .gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;align-items:start}
+body.gl-b #gSet .gcards .grp{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:8px 12px 4px}
+body.gl-b #gSet .gcards>*:not(.grp),body.gl-b #gSet .gcards>[style*=contents]>*:not(.grp){grid-column:1/-1}
+body.gl-b #gSet .sl.wv,body.gl-c #gSet .sl.wv{grid-template-columns:96px minmax(0,1fr) 84px}
+body.gl-b .view{max-height:36vh}
+/* c: still preview in the middle, settings in a panel on the right, help for what you're on in one bar */
+body.gl-c .wrap{grid-template-columns:270px minmax(0,1fr) 384px}
+body.gl-c .steps{padding-left:40px}body.gl-b .est,body.gl-c .est{white-space:normal}
+.gside{border-left:1px solid var(--line);background:var(--rail);display:grid;grid-template-rows:minmax(0,1fr) auto;min-height:0}
+.gsidein{overflow:auto;padding:14px 14px 18px}
+body.gl-c #gLook{grid-template-columns:repeat(4,minmax(0,1fr))}
+body.gl-c #gSide .sl .hint{display:none!important}
+body.gl-c #gSide .sl .ud i:not(.dep){display:none!important}
+#gSide .sl.cur{background:rgba(95,141,255,.08);margin:0 -14px;padding-left:14px;padding-right:14px}#gSide .sl.cur .slh span{color:var(--acc)}
+.hintbar{border-top:1px solid var(--line);padding:10px 14px;font:12px/1.45 var(--sans);letter-spacing:0;color:#cfccc7;background:var(--panel);min-height:76px;max-height:30vh;overflow:auto}
+.hintbar b{display:block;font:500 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin-bottom:3px}
+.hintbar i{display:block;font-style:normal;color:var(--mute)}.hintbar .dep{color:var(--acc)}
+.gstill{display:flex;flex-direction:column;gap:10px}
+.gsv{position:relative;background:#000;border:1px solid var(--line);border-radius:var(--r);height:58vh;min-height:240px;overflow:hidden;cursor:ew-resize;touch-action:none;--split:35%}
+.gsv img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.gsv #gSvB{clip-path:inset(0 calc(100% - var(--split)) 0 0)}
+.gsvl{position:absolute;top:0;bottom:0;left:var(--split);width:2px;margin-left:-1px;background:#fff;pointer-events:none}
+.gsvl b{position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:#fff;color:#111;font:11px/26px var(--mono);text-align:center}
+.gsv .tag{position:absolute;left:10px;top:8px;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink);background:rgba(0,0,0,.6);padding:3px 6px;border-radius:3px;pointer-events:none}.gsv .gtr{left:auto;right:10px}
+.gsv .empty{position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;color:var(--mute);font:12px/1.45 var(--sans);letter-spacing:0}
+.gsv:not(.has) img,.gsv:not(.has) .gsvl,.gsv:not(.has) .tag{display:none}.gsv.has .empty{display:none}
+.gsv.busy::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);background-size:40% 100%;background-repeat:no-repeat;animation:gsvb 1s linear infinite}
+@keyframes gsvb{from{background-position:-40% 0}to{background-position:140% 0}}
+@media (prefers-reduced-motion:reduce){.gsv.busy::after{animation:none;background:var(--acc)}}
+#gStill .tp input[type=range]{flex:1;accent-color:var(--acc);margin:0}
+@media (max-width:860px){body.gl-b .wrap,body.gl-c .wrap{grid-template-columns:1fr}.gside{border-left:0;border-top:1px solid var(--line)}}
 
 .view:has(> .empty)::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 55%,rgba(95,141,255,.14),transparent 70%),radial-gradient(ellipse 40% 30% at 60% 40%,rgba(127,209,138,.08),transparent 70%);filter:blur(18px);pointer-events:none}
 </style></head><body>
 <div class="app">
 <div class="top"><h1>LIMINAL ENGINE</h1>
-  <div class="mode" id="mode"><button data-v="latent" class="on">Latent dream</button><button data-v="collage">Collage</button><button data-v="bank">Cut bank</button><button data-v="crt">CRT</button></div>
+  <div class="mode" id="mode"><button data-v="latent" class="on">Latent dream</button><button data-v="bank">Cut bank</button><button data-v="granular">Granular</button><button data-v="crt">CRT</button></div>
   <span class="st" id="topst">idle</span></div>
 <div class="wrap">
 <div class="left">
 <div class="steps" id="steps">
   <div id="nover" class="warn" hidden>Engine not found next to this app.</div>
-  <div id="noai" class="warn" hidden>Latent dream needs the AI part (torch). Run Set Up.command again and answer yes.</div>
+  <div id="noai" class="warn" hidden>Latent dream needs the AI part (torch), which isn't installed in this copy. Cut bank, Granular and CRT work without it.</div>
+  <div id="nogran" class="warn" hidden>Granular needs OpenCV, which isn't installed in this copy. Run Set Up again (it adds it), then reopen the app.</div>
 
   <!-- ===== LATENT DREAM ===== -->
   <div id="mLatent" class="arm" style="display:contents">
@@ -217,7 +319,7 @@ body:not(.running):not(.hasjob) .bar,body:not(.running):not(.hasjob) .nums{displ
     <div class="drop" id="lDropAud"><div class="ph">♪</div><div class="t"><div class="n" id="lAudN">Drop a song, or click</div><div class="m" id="lAudM">Harmony drifts the picture, drums pulse it.</div></div></div>
     <input type="file" id="lFileAud" accept="audio/*,video/mp4" hidden>
     <div><div class="lbl">Recent <b id="lAudName"></b></div><div class="recent" id="lRecentAud"></div></div>
-    <div class="f"><span class="lbl">Length</span><div class="seg" id="lLen"><button data-v="test" class="on">15-sec test</button><button data-v="full">Whole song</button></div></div>
+    <div class="sl wv lenrow"><div class="slh"><span>Length</span><b id="lLenV">15 s</b></div><input type="range" id="lLenS" min="0" max="9" step="1" value="2" data-whole="whole song"><div class="ud"><i>→ longer: 5 s up to 2 minutes; all the way right = the song</i><i>← shorter, quicker tests</i></div></div>
     <div class="fieldrow" id="lStartRow"><label class="flab" for="lStart">Start at</label><div class="cell"><input type="number" id="lStart" value="30" min="0" step="1"><span class="flab">sec</span></div></div>
     </div>
   </section>
@@ -233,7 +335,7 @@ body:not(.running):not(.hasjob) .bar,body:not(.running):not(.hasjob) .nums{displ
     <div class="grp"><div class="grph">The walk <small>how it moves through the model</small></div>
       <div class="sl" id="row_l_speed_fpm"><div class="slh"><span>New forms</span><b id="l_speed_fpmV">12</b></div>
         <input type="range" id="l_speed_fpm" min="2" max="40" step="1" value="12">
-        <div class="slr"><i>lingers</i><i>restless</i></div><div class="hint">How often it heads for a completely new form. Lands on beats.</div></div>
+        <div class="slr"><i>lingers</i><i>restless</i></div><div class="hint">How often it heads for a completely new form. <span id="beatsHint">Lands on beats.</span></div></div>
       <div class="sl" id="row_l_motion_react"><div class="slh"><span>Drift</span><b id="l_motion_reactV">0.5</b></div>
         <input type="range" id="l_motion_react" min="0" max="1.5" step="0.05" value="0.5">
         <div class="slr"><i>still</i><i>wandering</i></div><div class="hint">The harmony pushes the form to slowly shift while it's on screen.</div></div>
@@ -257,9 +359,6 @@ body:not(.running):not(.hasjob) .bar,body:not(.running):not(.hasjob) .nums{displ
       <div class="sl" id="row_l_decay_shape" data-needs="lDecay"><div class="slh"><span>Decay timing</span><b id="l_decay_shapeV">1.6</b></div>
         <input type="range" id="l_decay_shape" min="0.5" max="4" step="0.1" value="1.6">
         <div class="slr"><i>from the start</i><i>late collapse</i></div><div class="hint"><span id="decayWhen"></span></div></div>
-      <div class="sl" id="row_l_flash"><div class="slh"><span>Flash</span><b id="l_flashV">0.2</b></div>
-        <input type="range" id="l_flash" min="0" max="1" step="0.05" value="0.2">
-        <div class="slr"><i>off</i><i>strobe</i></div><div class="hint">Brightness kick on drum hits.</div></div>
     </div>
     <div class="note" id="lNotes"></div>
     <p class="help" style="margin:0">Hover a row for what it does. Harmony moves the form, drums hit it, decay forgets it over the song.</p>
@@ -278,51 +377,6 @@ body:not(.running):not(.hasjob) .bar,body:not(.running):not(.hasjob) .nums{displ
         <label style="flex-direction:row;align-items:center;gap:6px;grid-column:1/-1"><input type="checkbox" id="l_classic" title="Classic Lucid Sonic Dreams, the 2021 math">classic math (2021)</label>
       </div>
     </details>
-    </div>
-  </section>
-  </div>
-
-  <!-- ===== COLLAGE ===== -->
-  <div id="mCollage" class="arm" style="display:contents" hidden>
-  <section class="step" data-step="source">
-    <button class="hd" type="button"><span class="n"><span>1</span></span><span><span class="t">Source</span><span class="sum">Pick folders of pictures</span></span><span class="chev">▾</span></button>
-    <div class="bd">
-    <div><div class="lbl">Pictures <b id="cLaneCount"></b></div><div class="chips" id="cLanes"></div></div>
-    <div class="pathrow"><input type="text" id="cLanePath" placeholder="…or paste a folder of stills or clips"><button class="chip" id="cLanePathGo">add</button></div>
-    <p class="help" style="margin:0">Stills are used as they are. Clips are sampled into stills.</p>
-    </div>
-  </section>
-  <section class="step" data-step="sound">
-    <button class="hd" type="button"><span class="n"><span>2</span></span><span><span class="t">Sound</span><span class="sum">Drop a song</span></span><span class="chev">▾</span></button>
-    <div class="bd">
-    <div class="drop" id="cDropAud"><div class="ph">♪</div><div class="t"><div class="n" id="cAudN">Drop a song, or click</div><div class="m" id="cAudM">Sets the length. Auto hold follows its loudness.</div></div></div>
-    <input type="file" id="cFileAud" accept="audio/*,video/mp4" hidden>
-    <div><div class="lbl">Recent <b id="cAudName"></b></div><div class="recent" id="cRecentAud"></div></div>
-    <div class="f"><span class="lbl">Length</span><div class="seg" id="cLen"><button data-v="test" class="on">15-sec test</button><button data-v="full">Whole song</button></div></div>
-    <div class="fieldrow" id="cStartRow"><label class="flab" for="cStart">Start at</label><div class="cell"><input type="number" id="cStart" value="30" min="0" step="1"><span class="flab">sec</span></div></div>
-    </div>
-  </section>
-  <section class="step" data-step="look">
-    <button class="hd" type="button"><span class="n"><span>3</span></span><span><span class="t">Look</span><span class="sum">—</span></span><span class="chev">▾</span></button>
-    <div class="bd">
-    <div class="f"><span class="lbl">Technique</span><div class="seg" id="cTech"><button data-v="colour" class="on">Colour</button><button data-v="stepin">Step in</button><button data-v="archive">Archive</button></div></div>
-    <div class="hint" id="cTechHint" style="margin:0"></div>
-    <div class="grp">
-    <div class="sl holdrow" title="Frames per picture at 24 fps. 2 is &quot;on twos&quot;, the stop-motion feel. Auto is faster when the song is loud."><div class="slh"><span>Hold each</span><b id="cHoldV" hidden>on twos</b></div>
-      <div class="seg" id="cHold"><button data-v="1">1</button><button data-v="2" class="on">2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="auto">auto</button></div>
-      <div class="hint">Frames per picture at 24 fps. 2 is "on twos", the stop-motion feel. Auto is faster when the song is loud.</div></div>
-    <div class="sl" id="cStepsRow" hidden><div class="slh"><span>Steps in</span><b id="cStepsV">4</b></div><input type="range" id="cSteps" min="2" max="8" step="1" value="4"><div class="slr"><i>a nudge</i><i>a long walk</i></div><div class="hint">How many steps it takes toward the detail before jumping.</div></div>
-    <div class="sl" id="cLensRow"><div class="slh"><span>Lens</span><b id="cLensV">0.50</b></div><input type="range" id="cLens" min="0" max="1" step="0.05" value="0.5"><div class="slr"><i>flat</i><i>swirled</i></div><div class="hint">Soft swirl lens and dark corners.</div></div>
-    </div>
-    <label class="f" style="cursor:pointer" title="Paper grain, slight tilt, scanner light"><span class="lbl">Print + scan</span><span style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="cPrint" style="accent-color:var(--acc)"></span></label>
-    </div>
-  </section>
-  <section class="step" data-step="output">
-    <button class="hd" type="button"><span class="n"><span>4</span></span><span><span class="t">Output</span><span class="sum">16:9</span></span><span class="chev">▾</span></button>
-    <div class="bd">
-    <div class="f"><span class="lbl">Frame</span><div class="seg" id="cFrame"><button data-v="16:9" class="on">16:9</button><button data-v="16:9 hd" title="16:9 HD">HD</button><button data-v="4:3">4:3</button><button data-v="square">1:1</button><button data-v="vertical">9:16</button></div></div>
-    <div class="fieldrow"><label class="flab" for="cLabel">Label</label><input type="text" id="cLabel" placeholder="e.g. GARDEN STATE NETWORK" title="Burned-in label (optional)"></div>
-    <div class="fieldrow"><label class="flab" for="cName">Name</label><input type="text" id="cName" placeholder="collage_colour_1018_2100"></div>
     </div>
   </section>
   </div>
@@ -353,14 +407,29 @@ body:not(.running):not(.hasjob) .bar,body:not(.running):not(.hasjob) .nums{displ
   <section class="step" data-step="look">
     <button class="hd" type="button"><span class="n"><span>3</span></span><span><span class="t">Look</span><span class="sum">—</span></span><span class="chev">▾</span></button>
     <div class="bd">
-    <div><div class="lbl">Treatments <b id="fxCount"></b></div><div class="chips" id="fx" style="margin-top:8px"></div></div>
-    <details><summary>shot length, strobe, seed</summary>
+    <div><div class="lbl">Editing moves <b id="movesCount"></b></div><div class="chips" id="moves" style="margin-top:8px"><button class="chip on" data-m="fast" title="The shot plays 2–4× faster">fast</button><button class="chip on" data-m="slow" title="The shot plays at 1/2 or 1/3 speed">slow</button><button class="chip on" data-m="reverse" title="The shot plays backwards">reverse</button></div></div>
+    <div class="grp">
+    <div class="sl" id="row_bMoveChance"><div class="slh"><span>Moved shots</span><b id="bMoveChanceV">30%</b></div><input type="range" id="bMoveChance" min="0" max="1" step="0.05" value="0.3"><div class="slr"><i>none</i><i>every shot</i></div><div class="hint">How many shots get one of the moves above. Picture only: the song is never sped up or reversed.</div></div>
+    </div>
+    <div class="grp"><div class="grph">Tape <small>the finished edit, recorded onto a modelled tape</small></div></div>
+    <div class="f wide"><span class="lbl">Format</span><div class="seg" id="bTape"><button data-v="off" class="on">Off</button><button data-v="vhs-sp" title="VHS SP: ~3 MHz luma (≈240 lines), ~0.5 MHz colour-under, ~43 dB">VHS SP</button><button data-v="vhs-ep" title="VHS EP (6 h): ~2.5 MHz luma, ~0.4 MHz colour, ~38 dB">VHS EP</button><button data-v="umatic" title="U-matic (low band): ~3.1 MHz luma, ~0.5 MHz colour, ~46 dB, steadier transport">U-matic</button><button data-v="betacam-sp" title="Betacam SP: component, 4.5 MHz luma, 1.5 MHz colour, 51 dB, played through a TBC">Beta SP</button></div></div>
+    <div id="bTapeBox" hidden style="display:contents">
+    <div class="f"><span class="lbl">Generation</span><div class="seg" id="bGen"><button data-v="1" class="on" title="The original recording">1st</button><button data-v="2" title="A copy of it">2nd</button><button data-v="3">3rd</button><button data-v="4">4th</button><button data-v="5">5th</button></div></div>
+    <div class="grp"><div class="sl"><div class="slh"><span>Damage</span><b id="bDamageV">0.30</b></div><input type="range" id="bDamage" min="0" max="1" step="0.05" value="0.3"><div class="slr"><i>fresh tape</i><i>wrecked</i></div><div class="hint">How many faults and how big. Each one is a real tape failure, below.</div></div></div>
+    <div><div class="lbl">Faults <b id="faultsCount"></b></div><div class="chips" id="faults" style="margin-top:8px">
+      <button class="chip on" data-k="dropout" title="Oxide missing for a few µs; the deck's dropout compensator repeats the line above">dropouts</button>
+      <button class="chip on" data-k="tracking" title="The heads drift off the track: noise bars, torn lines">tracking</button>
+      <button class="chip on" data-k="clog" title="A clogged head: its field (every other line) is lost to snow">head clog</button>
+      <button class="chip on" data-k="skew" title="Tape tension changes: the top lines hook sideways">skew</button>
+      <button class="chip on" data-k="wobble" title="A jump in the time-base wobble: the whole frame bends">wobble</button>
+      <button class="chip on" data-k="ckill" title="Colour burst too weak: the TV's colour killer drops the colour">colour loss</button></div></div>
+    <label class="f" style="cursor:pointer" title="On: the song's hits trigger the faults, louder hit = bigger fault. Off: they fall at random, like a worn tape."><span class="lbl">On the beat</span><span style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="bReact" checked style="accent-color:var(--acc)"><span class="hint" style="margin:0">faults hit with the music</span></span></label>
+    <div class="hint" style="margin:0">One continuous pass over the finished edit, like a real tape: measured bandwidths and noise per format, the head-switching tear at the bottom, time-base wobble; every dub loses a little more. Adds a few minutes.</div>
+    </div>
+    <details><summary>shot length, seed</summary>
       <div class="adv">
         <label>shortest shot (sec)<input type="number" id="min_shot" step="0.025" placeholder="0.125"></label>
         <label>longest shot (sec)<input type="number" id="max_shot" step="0.1" placeholder="0.8"></label>
-        <label>treatments per shot<input type="text" id="effects_per_shot" placeholder="1-2"></label>
-        <label>untouched shots (0–1)<input type="number" id="plain_chance" step="0.05" placeholder="0.15"></label>
-        <label>strobe cap (flashes/sec)<input type="number" id="strobe_hz" step="0.5" placeholder="3"></label>
         <label>max clips to scan<input type="number" id="max_clips" step="50" placeholder="600"></label>
         <label>seed<input type="number" id="bSeed" step="1" placeholder="random"></label>
       </div>
@@ -376,37 +445,204 @@ body:not(.running):not(.hasjob) .bar,body:not(.running):not(.hasjob) .nums{displ
     </div>
   </section>
   </div>
+
+  <!-- ===== GRANULAR (11-23): one clip through the Takagi looks (app/granular.py) ===== -->
+  <div id="mGranular" class="arm" style="display:contents" hidden>
+  <section class="step" data-step="source">
+    <button class="hd" type="button"><span class="n"><span>1</span></span><span><span class="t">Source</span><span class="sum">Drop a clip</span></span><span class="chev">▾</span></button>
+    <div class="bd">
+    <div class="drop" id="gDrop"><div class="ph">▶</div><div class="t"><div class="n" id="gClipN">Drop a clip, or click</div><div class="m" id="gClipM">One handheld clip. Scaled to 960 wide at most.</div></div></div>
+    <input type="file" id="gFile" accept="video/*,.mov,.mp4,.m4v,.mts,.avi,.mkv,.webm" hidden>
+    <div><div class="lbl">Clips <b id="gClipCount"></b></div><div class="recent" id="gClips"></div></div>
+    <div class="pathrow"><input type="text" id="gPath" placeholder="…or paste a clip path"><button class="chip" id="gPathGo">use</button></div>
+    <p class="help" style="margin:0">Dropped clips land in the app's dropped folder (the Cut bank sees them too).</p>
+    </div>
+  </section>
+  <section class="step" data-step="sound">
+    <button class="hd" type="button"><span class="n"><span>2</span></span><span><span class="t">Sound</span><span class="sum">Clip's own sound</span></span><span class="chev">▾</span></button>
+    <div class="bd">
+    <div class="seg" id="gSnd"><button data-v="clip" class="on">Clip's own sound</button><button data-v="song">A song</button></div>
+    <div id="gSongBox" style="display:contents" hidden>
+      <div class="drop" id="gDropAud"><div class="ph">♪</div><div class="t"><div class="n" id="gAudN">Drop a song, or click</div><div class="m" id="gAudM">Replaces the clip's sound. Its loudness can drive the grains.</div></div></div>
+      <input type="file" id="gFileAud" accept="audio/*,video/mp4" hidden>
+      <div><div class="lbl">Recent <b id="gAudName"></b></div><div class="recent" id="gRecentAud"></div></div>
+      <div class="fieldrow"><label class="flab" for="gSongStart">Song from</label><div class="cell"><input type="number" id="gSongStart" value="0" min="0" step="1"><span class="flab">sec</span></div></div>
+    </div>
+    <div class="sl wv lenrow"><div class="slh"><span>Length</span><b id="gLenV">15 s</b></div><input type="range" id="gLenS" min="0" max="9" step="1" value="2" data-whole="whole clip"><div class="ud"><i>→ longer: 5 s up to 2 minutes; all the way right = the clip</i><i>← shorter, quicker tests</i></div></div>
+    <div class="fieldrow" id="gStartRow"><label class="flab" for="gStart">Start at</label><div class="cell"><input type="number" id="gStart" value="0" min="0" step="0.5"><span class="flab">sec into the clip</span></div></div>
+    <div class="hint" style="margin:0">The song (if any) plays from its own start point for the same length, padded with silence if it runs out.</div>
+    </div>
+  </section>
+  <section class="step" data-step="look">
+    <button class="hd" type="button"><span class="n"><span>3</span></span><span><span class="t">Look</span><span class="sum">—</span></span><span class="chev">▾</span></button>
+    <div class="bd">
+    <div class="gaway" id="gAway" hidden></div>
+    <div id="gHome"><div id="gSet">
+    <div class="gtop">
+    <div class="glay"><span class="lbl">Layout</span><div class="seg" id="gLay"><button data-v="a" title="Settings here in the left column">Column</button><button data-v="b" title="Settings spread across the middle">Middle</button><button data-v="c" title="A still of your clip in this look in the middle, settings on the right">Preview</button></div></div>
+    <div class="seg" id="gLook"><button data-v="granular" class="on" title="Takagi's Girls method as a granular synth: grains sample colour from a frame buffer">Granular</button><button data-v="paint" title="Girls (2003): vivid painted base, dots where it's dark, brush smudge">Paint</button><button data-v="outline" title="Rama (2002): Find Edges lines over a Colorama hue wheel / Takagi's palettes">Outline</button><button data-v="light" title="NIHITI (2008): people cut out and burning in a dark, smeared landscape, through After Effects' Colorama 'Fire'">Light</button></div>
+    <label class="gstrict" title="Match what frame-by-frame measurement of his videos showed, instead of your picks"><input type="checkbox" id="gStrict" class="tog" autocomplete="off" disabled><span>Takagi strict</span></label>
+    <div class="hint gstricth" id="gStrictHint"></div>
+    </div>
+    <div class="gcards">
+    <div id="gBoxGranular" style="display:contents">
+    <div class="gera">Girls, 2003, as a granular synth: grains sample colour from a frame buffer.</div>
+    <div class="f gpre"><span class="lbl">Preset</span><div class="chips" id="gPresets"><button class="chip on" data-p="default">default</button><button class="chip" data-p="paper">paper</button><button class="chip" data-p="long tail">long tail</button><button class="chip" data-p="freeze">freeze</button><button class="chip" data-p="reset">reset</button></div></div>
+    <div class="grp"><div class="grph">Bands <small>the filter bank</small></div>
+      <div class="sl"><div class="slh"><span>Light bands</span><b id="g_l_bandsV">6</b></div><input type="range" id="g_l_bands" data-k="l_bands" min="2" max="10" step="1" value="6"><div class="slr"><i>few</i><i>many</i></div><div class="ud"><i>↑ smoother colour, closer to the footage</i><i>↓ posterized: big flat patches of one colour</i><i class="dep" hidden></i></div><div class="hint">Brightness bands. Takagi split each frame into ~30 images: 6 brightness × 5 colour, then rebuilt it from dots.</div></div>
+      <div class="sl"><div class="slh"><span>Colour bands</span><b id="g_s_bandsV">5</b></div><input type="range" id="g_s_bands" data-k="s_bands" min="1" max="8" step="1" value="5"><div class="slr"><i>one</i><i>many</i></div><div class="ud"><i>↑ keeps more of the footage's colour variety</i><i>↓ muddier: dull and vivid areas averaged together</i><i class="dep" hidden></i></div><div class="hint">Saturation bands. Light × colour bands = how many images the frame is split into.</div></div>
+      <div class="sl"><div class="slh"><span>Rebuild</span><b id="g_rebuildV">0.50</b></div><input type="range" id="g_rebuild" data-k="rebuild" min="0" max="1" step="0.05" value="0.5"><div class="slr"><i>exact pixel</i><i>band colour</i></div><div class="ud"><i>↑ flatter, printed colour from the bands above</i><i>↓ each grain carries the footage's own colour: more detail, more noise</i></div><div class="hint">A grain's colour: the exact pixel it samples, or the average colour of its band (flatter, more like print).</div></div>
+    </div>
+    <div class="grp"><div class="grph">Grains <small>the voice</small></div>
+      <div class="sl"><div class="slh"><span>Density</span><b id="g_densityV">2500</b></div><input type="range" id="g_density" data-k="density" min="200" max="12000" step="100" value="2500"><div class="slr"><i>sparse</i><i>dense</i></div><div class="ud"><i>↑ more grains: they merge into solid colour and cover the bed</i><i>↓ scattered dots, more of the bed or paper shows</i></div><div class="hint">Grains tried each processed frame; ones landing on white paper are dropped (about 70–80% survive). Render time barely changes with it.</div></div>
+      <div class="sl"><div class="slh"><span>Size dark</span><b id="g_size_darkV">5.5</b></div><input type="range" id="g_size_dark" data-k="size_dark" min="1" max="12" step="0.5" value="5.5"><div class="slr"><i>fine</i><i>big</i></div><div class="ud"><i>↑ big, blotchy dots in the shadows</i><i>↓ fine stipple in the shadows</i></div><div class="hint">Grain radius in the darkest band, in pixels at 640 wide (a wider render scales it up, so the look holds). Darker = bigger, like Takagi's dots.</div></div>
+      <div class="sl"><div class="slh"><span>Size light</span><b id="g_size_lightV">1.2</b></div><input type="range" id="g_size_light" data-k="size_light" min="0.5" max="6" step="0.1" value="1.2"><div class="slr"><i>speck</i><i>blob</i></div><div class="ud"><i>↑ bigger dots in the light tones</i><i>↓ tiny specks in the light tones</i><i class="dep" hidden></i></div><div class="hint">Grain radius in the lightest band that still gets grains (brighter than that is white paper).</div></div>
+      <div class="sl"><div class="slh"><span>Envelope</span><b id="g_envelopeV">0.30</b></div><input type="range" id="g_envelope" data-k="envelope" min="0" max="1" step="0.05" value="0.3"><div class="slr"><i>hard</i><i>soft</i></div><div class="ud"><i>↑ soft puffs that blend together: hazier</i><i>↓ hard-edged discs: a crisp print</i></div><div class="hint">The grain's edge: a hard disc or a soft gaussian puff. (How long it fades is Decay.)</div></div>
+      <div class="sl"><div class="slh"><span>Ink</span><b id="g_inkV">0.30</b></div><input type="range" id="g_ink" data-k="ink" min="0" max="1" step="0.01" value="0.3"><div class="slr"><i>black ink</i><i>true colour</i></div><div class="ud"><i>↑ dark grains keep their colour: lighter, more colourful</i><i>↓ dark grains print near-black: more contrast (strict uses 0.12)</i></div><div class="hint">How dark the darkest grains print. Lighter grains shade back toward their colour.</div></div>
+    </div>
+    <div class="grp"><div class="grph">Spray <small>position + time randomness</small></div>
+      <div class="sl"><div class="slh"><span>Position</span><b id="g_sprayV">1.5</b></div><input type="range" id="g_spray" data-k="spray" min="0" max="10" step="0.5" value="1.5"><div class="slr"><i>on the spot</i><i>scattered</i></div><div class="ud"><i>↑ colour lands away from where it came from: edges dissolve, colours bleed</i><i>↓ dots match what's under them: a sharper picture</i></div><div class="hint">Pixels at 640 wide (scaled with the render width): a grain takes its colour from this far away from where it lands.</div></div>
+      <div class="sl"><div class="slh"><span>Time</span><b id="g_time_sprayV">3.0</b></div><input type="range" id="g_time_spray" data-k="time_spray" min="0" max="20" step="0.5" value="3"><div class="slr"><i>now</i><i>smeared back</i></div><div class="ud"><i>↑ dots show where things were a moment ago: ghosts behind movement (still shots barely change)</i><i>↓ 0 = every dot from the current frame</i></div><div class="hint">Video frames (30 a second): typical spread back in time; some reach about twice as far, never past the 24-frame buffer.</div></div>
+    </div>
+    <div class="grp"><div class="grph">Tail <small>how long grains live</small></div>
+      <div class="sl"><div class="slh"><span>Decay</span><b id="g_decayV">3</b></div><input type="range" id="g_decay" data-k="decay" min="1" max="20" step="1" value="3"><div class="slr"><i>dry</i><i>long tail</i></div><div class="ud"><i>↑ grains linger and pile up: denser, with trails behind movement</i><i>↓ 1 = a fresh dot pattern every picture: more sparkle</i></div><div class="hint">Pictures a grain lasts while it fades (each held for the step, 2 by default), so 3 ≈ a fifth of a second.</div></div>
+      <div class="sl"><div class="slh"><span>Follow</span><b id="g_followV">0.80</b></div><input type="range" id="g_follow" data-k="follow" min="0" max="1.5" step="0.05" value="0.8"><div class="slr"><i>stays put</i><i>rides motion</i></div><div class="ud"><i>↑ living grains drift with the motion: streaks (above 1 they overshoot)</i><i>↓ 0 = grains stay put · renders ~30% faster</i><i class="dep" hidden></i></div><div class="hint">Living grains ride the picture's motion (optical flow), so dots trail moving things.</div></div>
+    </div>
+    <div class="grp"><div class="grph">Freeze <small>hold the buffer</small></div>
+      <label class="f" style="cursor:pointer" title="Stop recording into the buffer and keep granulating the frames it holds (Takagi's el viento move)"><span class="lbl">Freeze</span><span style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="gFreeze" style="accent-color:var(--acc)"><span class="hint" style="margin:0">stop recording, granulate what's held</span></span></label>
+      <div class="fieldrow" id="gFreezeRow" hidden><label class="flab" for="gFreezeAt">At</label><div class="cell"><input type="number" id="gFreezeAt" value="0.7" min="0" step="0.1"><span class="flab">sec into the render</span></div></div>
+      <div id="gFreezeLenGrp" hidden>
+        <div class="sl"><div class="slh"><span>Hold</span><b id="g_freeze_lenV">3</b></div><input type="range" id="g_freeze_len" data-k="freeze_len" min="1" max="24" step="1" value="3"><div class="slr"><i>a blink</i><i>almost a second</i></div><div class="ud"><i>↑ the frozen moment keeps flickering between more frames</i><i>↓ 1 = one still instant: only the dots move</i></div><div class="hint">Video frames kept when it freezes. 3 = a tenth of a second, granulated for the rest of the video.</div></div>
+      </div>
+    </div>
+    <div class="grp"><div class="grph">Bed <small>dry / wet</small></div>
+      <div class="sl"><div class="slh"><span>Bed</span><b id="g_dryV">0.80</b></div><input type="range" id="g_dry" data-k="dry" min="0" max="1" step="0.05" value="0.8"><div class="slr"><i>grains on paper</i><i>painted bed</i></div><div class="ud"><i>↑ a vivid painted picture under the grains</i><i>↓ 0 = grains alone on white paper</i></div><div class="hint">The painted picture under the grains (dry), or bare white paper with only grains (wet).</div></div>
+    </div>
+    <div class="grp"><div class="grph">Time</div>
+      <div class="sl wv"><div class="slh"><span>Frame rate</span><b id="g_stepV">15 fps</b></div><input type="range" id="g_step" data-k="step" min="1" max="3" step="0.5" value="2"><div class="slr"><i>30 fps</i><i>10 fps</i></div><div class="ud"><i>→ fewer new pictures a second: each is held longer, steadier and choppier</i><i>← 1 = a new picture every frame (30 fps)</i></div><div class="hint">Each processed picture is held this many video frames. Girls holds 2,3,2,3: 12 new pictures a second (Takagi strict sets that).</div></div>
+    </div>
+    <div class="grp" id="gModGrp"><div class="grph">Audio mod <small>the song's loudness moves these</small></div>
+      <div class="sl"><div class="slh"><span>Density</span><b id="g_mod_densityV">0.00</b></div><input type="range" id="g_mod_density" data-k="mod_density" min="0" max="1" step="0.05" value="0"><div class="slr"><i>off</i><i>full</i></div><div class="ud"><i>↑ loud parts get up to 2× the grains, quiet parts down to none</i><i>↓ 0 = the song leaves density alone</i></div><div class="hint">Loud = more grains, quiet = fewer.</div></div>
+      <div class="sl"><div class="slh"><span>Size</span><b id="g_mod_sizeV">0.00</b></div><input type="range" id="g_mod_size" data-k="mod_size" min="0" max="1" step="0.05" value="0"><div class="slr"><i>off</i><i>full</i></div><div class="ud"><i>↑ loud parts swell the grains, up to 2× at full</i><i>↓ 0 = the song leaves size alone</i></div><div class="hint">Loud = bigger grains.</div></div>
+      <div class="sl"><div class="slh"><span>Spray</span><b id="g_mod_sprayV">0.00</b></div><input type="range" id="g_mod_spray" data-k="mod_spray" min="0" max="1" step="0.05" value="0"><div class="slr"><i>off</i><i>full</i></div><div class="ud"><i>↑ loud parts scatter the colour, up to 4× Position at full</i><i>↓ 0 = the song leaves spray alone</i><i class="dep" hidden></i></div><div class="hint">Loud = grains scatter further.</div></div>
+    </div>
+    <div class="note" id="gModNote"></div>
+    <details><summary>exposure, saturation, paper</summary>
+      <div class="adv">
+        <label title="Gamma lift before anything. ↑ sunnier, more white paper, fewer grains · ↓ as shot, more grains">exposure<input type="number" id="g_exposure" data-k="exposure" step="0.05" min="0" max="0.9" placeholder="0.35"></label>
+        <label title="Grain colour saturation. ↑ louder colour · ↓ 0 = grey grains">saturation<input type="number" id="g_sat" data-k="sat" step="0.1" min="0" max="4" placeholder="2.2"></label>
+        <label title="Brightness above which no grains spawn. ↑ grains reach into brighter areas, less white paper · ↓ more of the picture turns to white paper">paper<input type="number" id="g_paper" data-k="paper" step="0.05" min="0.05" max="1" placeholder="0.6"></label>
+      </div>
+    </details>
+    </div>
+
+    <div id="gBoxPaint" style="display:contents" hidden>
+    <div class="gera">Girls, 2003: a vivid painted base, dots where it's dark, brush smudge.</div>
+    <div class="grp"><div class="grph">Paint <small>Girls, 2003</small></div>
+      <div class="sl"><div class="slh"><span>Exposure</span><b id="p_exposureV">0.30</b></div><input type="range" id="p_exposure" data-k="exposure" min="0" max="0.8" step="0.05" value="0.3"><div class="slr"><i>as shot</i><i>high-key</i></div><div class="ud"><i>↑ high-key: more melts to white paper, fewer dots</i><i>↓ as shot: darker, more dots</i></div><div class="hint">Lifts the brightness first: higher = sunnier, more of it melts to white paper.</div></div>
+      <div class="sl"><div class="slh"><span>Ink</span><b id="p_ink_amountV">1.00</b></div><input type="range" id="p_ink_amount" data-k="ink_amount" min="0" max="1.5" step="0.05" value="1"><div class="slr"><i>clean paint</i><i>all dots</i></div><div class="ud"><i>↑ more dot texture, toward full pointillism (above 1 denser still)</i><i>↓ 0 = the clean painted picture, no dots</i></div><div class="hint">How much dot texture: 0 = the painted picture alone, 1 = full pointillism.</div></div>
+      <div class="sl"><div class="slh"><span>Ink starts</span><b id="p_ink_startV">0.22</b></div><input type="range" id="p_ink_start" data-k="ink_start" min="0" max="0.6" step="0.02" value="0.22"><div class="slr"><i>everywhere</i><i>darks only</i></div><div class="ud"><i>↑ dots only in the darkest parts; the lights stay clean paint</i><i>↓ dots spread into the mid-tones and lights</i></div><div class="hint">How dark a place has to be before dots appear.</div></div>
+      <div class="sl"><div class="slh"><span>Brush</span><b id="p_brushV">5</b></div><input type="range" id="p_brush" data-k="brush" min="0" max="10" step="1" value="5"><div class="slr"><i>off</i><i>heavy</i></div><div class="ud"><i>↑ heavier smudge streaks along the picture's grain: more painterly</i><i>↓ 0 = crisp, no smudge</i></div><div class="hint">Brush-stroke smudge along the picture's own grain, under the dots.</div></div>
+    </div>
+    <div class="grp"><div class="grph">Time</div>
+      <div class="sl wv"><div class="slh"><span>Frame rate</span><b id="p_stepV">15 fps</b></div><input type="range" id="p_step" data-k="step" min="1" max="3" step="0.5" value="2"><div class="slr"><i>30 fps</i><i>10 fps</i></div><div class="ud"><i>→ fewer new pictures a second: each is held longer, steadier and choppier</i><i>← 1 = a new picture every frame (30 fps)</i></div><div class="hint">Each picture is held this many video frames. Girls holds 2,3,2,3: 12 new pictures a second (Takagi strict sets that).</div></div>
+    </div>
+    </div>
+
+    <div id="gBoxLight" style="display:contents" hidden>
+    <div class="gera">NIHITI, 2008: people as heat, glowing in a dark, streaked landscape. Your clip is only read for where people are and where the light is; every pixel is made new.</div>
+    <div class="f gpre"><span class="lbl">Preset</span><div class="chips" id="lightPre"><button class="chip on" data-p="flat">flat</button><button class="chip" data-p="shaded">shaded</button><button class="chip" data-p="flat close">flat, close glow</button><button class="chip" data-p="shaded close">shaded, close glow</button></div></div>
+    <div class="grp"><div class="grph">Colour</div>
+      <div class="sl sel"><div class="slh"><span>Colorama</span></div><select id="l_colorama" data-k="colorama" data-def="6" data-zero="None · the heat picture in grey" data-blue="1"></select><div class="ud"><i>a preset: After Effects' own Colorama palette, pixel-exact (Fire = his red scenes)</i><i>rightmost: NIHITI blue, his pale-blue scenes' own two palettes</i><i>None: no palette, the heat picture in grey</i></div><div class="hint">After Effects' Colorama "Use Preset Palette" menu, matched to AE 2027 with zero error. Everything is built in brightness first, so the palette decides the colours: Fire runs black → red → orange → yellow → cream. NIHITI blue isn't a preset: it's two palettes he made himself, measured from his frames, one for the people and their halo (bluer), one for the ground (greener).</div></div>
+    </div>
+    <div class="grp"><div class="grph">People</div>
+      <div class="sl"><div class="slh"><span>Figures</span><b id="l_bodyV">0.62</b></div><input type="range" id="l_body" data-k="body" min="0.3" max="1.2" step="0.01" value="0.62"><div class="slr"><i>dim</i><i>burning</i></div><div class="ud"><i>↑ hotter bodies: yellow, then cream</i><i>↓ cooler bodies, toward orange and red</i><i class="dep" hidden></i></div><div class="hint">How much heat each person gives off. 0.62 lands his yellow (fitted to his frames).</div></div>
+      <div class="sl"><div class="slh"><span>Shading</span><b id="l_shadeV">0.35</b></div><input type="range" id="l_shade" data-k="shade" min="0" max="1" step="0.05" value="0.35"><div class="slr"><i>even</i><i>shaded</i></div><div class="ud"><i>↑ broad shading inside the bodies: around 0.8 faces start to show</i><i>↓ an even glow, like his flat yellow figures</i><i class="dep" hidden></i></div><div class="hint">How much of each body's own light and shade survives, blurred so no fabric or detail comes through. Relative to that body, so clothing colour doesn't change the heat.</div></div>
+      <div class="sl wv"><div class="slh"><span>Cut-out</span><b id="l_cutoutV">accurate</b></div><input type="range" id="l_cutout" data-k="cutout" min="0" max="2" step="1" value="2"><div class="slr"><i>fast</i><i>accurate</i></div><div class="ud"><i>accurate: cleaner edges around people, about twice the time</i><i>fast: rougher edges, quicker test renders</i></div><div class="hint">How carefully people are cut out (Apple Vision, on this Mac, nothing uploaded). It can grab things people sit in or hold; Takagi fixed his masks by hand.</div></div>
+      <div class="sl"><div class="slh"><span>Steady</span><b id="l_steadyV">0.70</b></div><input type="range" id="l_steady" data-k="steady" min="0" max="0.9" step="0.05" value="0.7"><div class="slr"><i>raw</i><i>calm</i></div><div class="ud"><i>↑ calmer cut-out edges and halo, but a fast-moving person leaves a faint trail</i><i>↓ 0 = the raw cut-out: its edge shimmers every frame</i></div><div class="hint">Apple Vision redraws each person's outline every frame, so the edge and the halo shimmer. This blends each new cut-out with the last one; 0.7 brings the flicker down to the footage's own.</div></div>
+    </div>
+    <div class="grp"><div class="grph">Ground</div>
+      <div class="sl"><div class="slh"><span>Ground</span><b id="l_groundV">0.095</b></div><input type="range" id="l_ground" data-k="ground" min="0.02" max="0.3" step="0.005" value="0.095"><div class="slr"><i>dark</i><i>glowing</i></div><div class="ud"><i>↑ the landscape glows brighter: more orange</i><i>↓ a darker ground, the bodies stand out more</i><i class="dep" hidden></i></div><div class="hint">The landscape's own light, auto-exposed like a camera so a bright or dark clip lands the same.</div></div>
+      <div class="sl"><div class="slh"><span>Contrast</span><b id="l_contrastV">1.39</b></div><input type="range" id="l_contrast" data-k="contrast" min="0.6" max="2.5" step="0.01" value="1.39"><div class="slr"><i>flat</i><i>punchy</i></div><div class="ud"><i>↑ brighter streaks against darker ground</i><i>↓ a flatter, more even ground</i><i class="dep" hidden></i></div><div class="hint">How strongly the ground's bright and dark parts separate.</div></div>
+      <div class="sl"><div class="slh"><span>Streaks</span><b id="l_streaksV">1.00</b></div><input type="range" id="l_streaks" data-k="streaks" min="0" max="1" step="0.05" value="1"><div class="slr"><i>soft</i><i>streaked</i></div><div class="ud"><i>↑ the ground keeps fine sideways streaks, like his</i><i>↓ softened all round, smoother</i><i class="dep" hidden></i></div><div class="hint">1: the ground is only softened sideways, so its streaks survive (his ground changes about 1.75x more up-down than sideways).</div></div>
+      <div class="sl"><div class="slh"><span>Smear length</span><b id="l_smear_lenV">45</b></div><input type="range" id="l_smear_len" data-k="smear_len" min="0" max="120" step="1" value="45"><div class="slr"><i>short</i><i>long</i></div><div class="ud"><i>↑ longer sideways streaks</i><i>↓ shorter streaks, more of the landscape's shape</i><i class="dep" hidden></i></div><div class="hint">AE Directional Blur's length (measured to within 1 level), in px at 640 wide.</div></div>
+    </div>
+    <div class="grp"><div class="grph">Light</div>
+      <div class="sl"><div class="slh"><span>Glow</span><b id="l_glowV">0.525</b></div><input type="range" id="l_glow" data-k="glow" min="0.2" max="0.9" step="0.025" value="0.525"><div class="slr"><i>tight</i><i>hazy</i></div><div class="ud"><i>↑ more of all light spreads out: softer edges, a lit ground around each body</i><i>↓ crisper edges, less light spilling onto the ground</i><i class="dep" hidden></i></div><div class="hint">The lens: the share of light it scatters. Energy is kept, so it softens and spreads; it never adds light.</div></div>
+      <div class="sl"><div class="slh"><span>Reach</span><b id="l_reachV">0.30</b></div><input type="range" id="l_reach" data-k="reach" min="0" max="0.8" step="0.05" value="0.3"><div class="slr"><i>close</i><i>far</i></div><div class="ud"><i>↑ the glow carries further across the ground (his reaches about 40 px)</i><i>↓ the glow stays close to the bodies</i><i class="dep" hidden></i></div><div class="hint">The lens's long faint tail: the share of scattered light that goes far.</div></div>
+      <div class="sl"><div class="slh"><span>Sparks</span><b id="l_sparksV">0.15</b></div><input type="range" id="l_sparks" data-k="sparks" min="0" max="1" step="0.05" value="0.15"><div class="slr"><i>none</i><i>many</i></div><div class="ud"><i>↑ more dust specks catching the light</i><i>↓ fewer (0 = none)</i><i class="dep" hidden></i></div><div class="hint">Dust in the air, lit by whatever light reaches it, so specks near the bodies glow brightest. 0.15 matches his count.</div></div>
+    </div>
+    <div class="grp"><div class="grph">Time</div>
+      <div class="sl wv"><div class="slh"><span>Frame rate</span><b id="l_stepV">15 fps</b></div><input type="range" id="l_step" data-k="step" min="1" max="3" step="0.5" value="2"><div class="slr"><i>30 fps</i><i>10 fps</i></div><div class="ud"><i>→ fewer new pictures a second: each is held longer, steadier and choppier</i><i>← 1 = a new picture every frame (30 fps)</i></div><div class="hint">NIHITI's red section is mostly on twos: each picture held for 2 frames, 15 a second.</div></div>
+    </div>
+    </div>
+    <div id="gBoxOutline" style="display:contents" hidden>
+    <div class="gera">Rama, 2002: Find Edges lines over a Colorama hue wheel or his own palettes.</div>
+    <div class="grp"><div class="grph">Lines</div>
+      <div class="sl"><div class="slh"><span>Lines</span><b id="o_edge_gainV">3.00</b></div><input type="range" id="o_edge_gain" data-k="edge_gain" min="0" max="8" step="0.25" value="3"><div class="slr"><i>faint</i><i>heavy</i></div><div class="ud"><i>↑ darker, thicker outlines; busy texture (leaves, hair) turns to scribble</i><i>↓ fainter lines, more flat colour (0 = colour only)</i><i class="dep" hidden></i></div><div class="hint">Find Edges strength: how dark and thick the outlines print.</div></div>
+      <div class="sl wv"><div class="slh"><span>AE lines</span><b id="o_ae_linesV">tuned</b></div><input type="range" id="o_ae_lines" data-k="ae_lines" min="0" max="2" step="1" value="0"><div class="slr"><i>tuned</i><i>AE at DV size</i></div><div class="ud"><i>AE: After Effects' Find Edges exactly · DV size: run at 720 wide like his DV masters, thicker softer lines</i><i>tuned (leftmost): the Lines slider sets the strength</i></div><div class="hint">After Effects' Find Edges, matched to AE 2027's renders with zero error. It has no strength setting, so lines are fainter than the tuned default (3×). DV size computes them at 720 px wide, then scales back up.</div></div>
+    </div>
+    <div class="grp"><div class="grph">Colour</div>
+      <div class="sl"><div class="slh"><span>Wheel</span><b id="o_wheelV">0.60</b></div><input type="range" id="o_wheel" data-k="wheel" min="0" max="1" step="0.05" value="0.6"><div class="slr"><i>Takagi palettes</i><i>hue wheel</i></div><div class="ud"><i>↑ rainbow bands that follow brightness (After Effects' Colorama)</i><i>↓ 0 = only Takagi's sampled palettes: calmer gradients</i><i class="dep" hidden></i></div><div class="hint">Colour: palettes sampled from Takagi's own frames, or After Effects' Colorama hue wheel.</div></div>
+      <div class="sl"><div class="slh"><span>Palette</span><b id="o_paletteV">auto</b></div><input type="range" id="o_palette" data-k="palette" min="-1" max="8" step="1" value="-1" data-pals="8" data-maps="11"><div class="slr"><i>new each shot</i><i>one fixed</i></div><div class="ud"><i>auto (leftmost): a new palette at every cut, like Rama</i><i>a number: that one palette for the whole video (they aren't in any order)</i><i class="dep" hidden></i></div><div class="hint">Leftmost: a new palette at every cut, like Rama. Otherwise one of his 9 palettes for the whole video.</div></div>
+      <div class="sl sel"><div class="slh"><span>Colorama</span></div><select id="o_colorama" data-k="colorama" data-def="0" data-zero="Off"></select><div class="ud"><i>a preset: After Effects' own Colorama palette, pixel-exact (Fire = NIHITI's red scenes)</i><i>Off: colour from the Palette / Wheel above</i></div><div class="hint">After Effects' Colorama "Use Preset Palette" menu, matched to AE 2027's renders with zero error: brightness ((R+G+B)/3) picks a colour along the preset. The menu groups his scenes, AE's named looks and its utility ramps.</div></div>
+    </div>
+    <div class="grp"><div class="grph">Time</div>
+      <div class="sl wv"><div class="slh"><span>Frame rate</span><b id="o_stepV">30 fps</b></div><input type="range" id="o_step" data-k="step" min="1" max="3" step="0.5" value="1"><div class="slr"><i>30 fps</i><i>10 fps</i></div><div class="ud"><i>→ fewer new pictures a second: each is held longer, steadier and choppier</i><i>← 1 = a new picture every frame (30 fps)</i></div><div class="hint">How often the colour redraws. Rama's colour moves 15 times a second, held 2 frames (Takagi strict sets that).</div></div>
+    </div>
+    </div>
+    </div>
+    </div></div>
+    </div>
+  </section>
+  <section class="step" data-step="output">
+    <button class="hd" type="button"><span class="n"><span>4</span></span><span><span class="t">Output</span><span class="sum">960 px max · seed 3</span></span><span class="chev">▾</span></button>
+    <div class="bd">
+    <div class="fieldrow"><label class="flab" for="gW">Max width</label><div class="cell"><input type="number" id="gW" value="960" min="160" max="1920" step="16"><span class="flab">px</span></div></div>
+    <div class="fieldrow"><label class="flab" for="gSeed">Seed</label><div class="cell"><input type="number" id="gSeed" step="1" min="0" placeholder="3"><span class="flab">same seed = same grains</span></div></div>
+    <div class="fieldrow"><label class="flab" for="gName">Name</label><input type="text" id="gName" placeholder="granular_granular_1123_1530"></div>
+    <p class="help" style="margin:0">Finished videos go to Movies › Liminal Engine › granular.</p>
+    </div>
+  </section>
+  </div>
 </div>
-<div class="gofoot"><div class="est" id="est"></div><button class="go" id="go" disabled>Render</button></div>
+<div class="gofoot"><div style="min-width:0"><div class="est" id="est"></div><div class="dest" id="dest"></div></div><button class="go" id="go" disabled title="Render (⌘↩)">Render</button></div>
 </div>
 <div class="right">
+  <div id="gMid" class="gmid" hidden></div>
+  <div id="gStill" class="gstill" hidden>
+    <div class="stage"><span class="name" id="gStillT">Still</span><span class="s" id="gStillS"></span></div>
+    <div class="gsv" id="gSv"><img id="gSvA" alt=""><img id="gSvB" alt=""><i class="gsvl" id="gSvL"><b>⇔</b></i><span class="tag gtl">before</span><span class="tag gtr">after</span><span class="empty" id="gSvE">Pick a clip in Source: one frame of it in this look shows here.</span></div>
+    <div class="tp"><span class="tpt" id="gSvT" style="min-width:0;text-align:left">0:00</span><input type="range" id="gSvAt" min="0" max="15" step="0.05" value="1" title="Which moment of the clip to show"><span class="tpt" id="gSvD" style="min-width:0">0:15</span></div>
+  </div>
   <div class="stage"><span class="name" id="jobName">—</span><span class="s" id="jobStage">nothing running</span></div>
   <div class="bar"><i id="bar"></i></div>
   <div class="nums"><span>frame <b id="nFrame">0</b> / <b id="nTotal">0</b></span><span>elapsed <b id="nEl">0:00</b></span><span>left <b id="nEta">—</b></span><span><b id="nRate">—</b> s/frame</span></div>
   <div class="view" id="view"><span class="empty">Set the steps on the left, then Render. Frames land here as they finish.</span></div>
   <div class="tp" id="tp" hidden>
-    <button class="tpb" id="tpPlay" title="Play / pause (space)">❚❚</button>
+    <button class="tpb" id="tpPlay" title="Play / pause (space) · ? for all keys">❚❚</button>
     <button class="tpb sm" id="tpBack" title="Back one frame (←, shift = 1 s)">‹</button>
     <button class="tpb sm" id="tpFwd" title="Forward one frame (→, shift = 1 s)">›</button>
     <div class="tpbar" id="tpBar"><i id="tpFill"></i><b id="tpHead"></b></div>
     <span class="tpt" id="tpTime">0:00 / 0:00</span>
-    <button class="tpb txt" id="tpSound" title="Sound on / off" hidden>sound off</button>
+    <button class="tpb txt" id="tpSound" title="Sound on / off (M)" hidden>sound off</button>
     <button class="tpb txt" id="tpLive" title="Back to the newest frame" hidden>live</button>
   </div>
   <div class="acts" id="acts"></div>
   <div class="log" id="log" hidden></div>
-  <div class="libhead"><div class="lbl">Renders <b id="libCount"></b></div>
-    <div class="libfilt" id="libFilt"><button data-f="" class="on">All</button><button data-f="dream">Dream</button><button data-f="collage">Collage</button><button data-f="cut">Cut bank</button><button data-f="crt">CRT</button></div>
+  <div class="libhead"><div class="lbl">Renders <b id="libCount"></b></div><select id="libProj" title="Which project you're in: new renders go here"></select><span id="libNew" hidden><input type="text" id="libNewName" placeholder="project name" style="width:150px;padding:4px 8px"><button class="btn" id="libNewGo">make</button></span>
+    <div class="libfilt" id="libFilt"><button data-f="" class="on">All</button><button data-f="dream">Dream</button><button data-f="cut">Cut bank</button><button data-f="granular">Granular</button><button data-f="crt">CRT</button></div>
     <span class="sp"></span><span id="libActs"></span><button class="btn" id="libSel">select</button></div>
   <div class="lib" id="lib"></div>
+  <button class="btn more" id="libMore" hidden>show more</button>
+  <details id="inboxBox" hidden><summary id="inboxSum">inbox</summary><div class="hint">Songs, clips and pictures you dropped in are copied here (app/inbox). × moves one to the Trash.</div><div id="inboxList"></div></details>
 </div>
+<aside class="gside" id="gSide" hidden><div class="gsidein" id="gSideIn"></div><div class="hintbar" id="gHintBar"></div></aside>
 </div>
 </div>
 <script>
 const $=s=>document.querySelector(s);
-const S={cTech:'colour',cHold:'2',cLen:'test',cFrame:'16:9',cAudio:null,cAudioDur:0,cLanes:new Set(),lModel:null,lAudio:null,lAudioDur:0,lLen:'test',bLen:'snip',mode:'latent',job:null,view:'live',lastFrame:-1,viewingOut:null,bAudio:null,bAudioDur:0,useDropped:true,dropped:[],sel:false,picked:new Set(),sig:{},lanes:new Set(),fx:new Set(['negate','chroma','smear','trails','twocolor','dither','pixel','scanlines','mirror','contrast','hue','jitter','strobe','fast','posterize'])};
-const FX=['negate','chroma','smear','trails','twocolor','dither','pixel','scanlines','mirror','contrast','hue','jitter','strobe','fast','slow','reverse','posterize'];
-const COH={1:'wild',2:'loose',3:'balanced',4:'tight',5:'locked'};
+const S={lModel:null,lAudio:null,lAudioDur:0,lLen:'test',bLen:'snip',mode:'latent',job:null,view:'live',lastFrame:-1,viewingOut:null,bAudio:null,bAudioDur:0,useDropped:true,dropped:[],droppedOff:new Set(),sel:false,picked:new Set(),sig:{},lanes:new Set(),moves:new Set(['fast','slow','reverse']),bTape:'off',bGen:'1',faults:new Set(['dropout','tracking','clog','skew','wobble','ckill']),libShow:60};
 const fmt=s=>{s=Math.max(0,Math.round(s||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
 function esc(t){return (t==null?'':String(t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function bindBankLen(){
@@ -445,14 +681,16 @@ function bindDrop(el,input,kind){
   });
 }
 async function upload(f,kind){
-  const r=await fetch('/api/upload?name='+encodeURIComponent(f.name),{method:'POST',body:f}).then(r=>r.json());
-  if(kind==='baudio')setBAudio(r.path,r.name,null); else if(kind==='caudio')setCAudio(r.path,r.name,null); else setLAudio(r.path,r.name,null);
+  let r;try{r=await api('/api/upload?name='+encodeURIComponent(f.name),{method:'POST',body:f})}catch(e){r={error:'the app did not answer ('+e.message+')'}}
+  if(!r||r.error||!r.path){alert(`couldn't copy ${f.name}: ${(r&&r.error)||'no reply from the app'}`);return}
+  if(kind==='baudio')setBAudio(r.path,r.name,null); else if(kind==='gaudio')setGAudio(r.path,r.name,null); else setLAudio(r.path,r.name,null);
   refresh();
 }
 function setBAudio(p,n,d){S.bAudio=p;S.bAudioDur=d||0;$('#bAudN').textContent=n;$('#bAudM').textContent=d?fmt(d)+' long':'cuts land on its hits';markChips('#bRecentAud',p);gate()}
 $('#lanePathGo').onclick=async()=>{const r=await api('/api/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:$('#lanePath').value.trim()})});if(r.error){alert(r.error);return}if(r.kind!=='folder'){alert('that is a file, not a folder');return}S.lanes.add(r.path);S.extraLanes=(S.extraLanes||[]).concat([{name:r.name,path:r.path}]);$('#lanePath').value='';refresh()};
-$('#mode').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.v==='crt'){location.href='/crt';return}S.mode=b.dataset.v;[...$('#mode').children].forEach(x=>x.classList.toggle('on',x===b));$('#mLatent').hidden=S.mode!=='latent';$('#mCollage').hidden=S.mode!=='collage';$('#mBank').hidden=S.mode!=='bank';gate();est()});
-{const h=location.hash.slice(1);const mb=[...$('#mode').children].find(x=>x.dataset.v===h);if(mb)mb.click()}
+$('#mode').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.v==='crt'){location.href='/crt';return}S.mode=b.dataset.v;[...$('#mode').children].forEach(x=>x.classList.toggle('on',x===b));$('#mLatent').hidden=S.mode!=='latent';$('#mBank').hidden=S.mode!=='bank';$('#mGranular').hidden=S.mode!=='granular';$('#nogran').hidden=!(S.mode==='granular'&&S.granOk===false);gate();est();gLayout()});
+function modeFromHash(){const h=location.hash.slice(1);const mb=[...$('#mode').children].find(x=>x.dataset.v===h&&h!=='crt');if(mb&&!mb.classList.contains('on'))mb.click()}
+modeFromHash();addEventListener('hashchange',modeFromHash);
 function markChips(sel,p){document.querySelectorAll(sel+' .chip').forEach(c=>c.classList.toggle('on',c.dataset.p===p))}
 function setLAudio(p,n,d){S.lAudio=p;S.lAudioDur=d||0;$('#lAudN').textContent=n;$('#lAudM').textContent=d?fmt(d)+' long':'harmony drifts it · drums pulse it';markChips('#lRecentAud',p);gate();est()}
 function mThumb(m){let u=m.sample?fileUrl(m.sample):(m.sample_url||'');if(u&&!/^(\/api\/file|https?:)/.test(u))u='';return u?`background-image:url("${u.replace(/["'()\\]/g,c=>'%'+c.charCodeAt(0).toString(16))}")`:''}
@@ -468,7 +706,11 @@ function drawModels(){const q=($('#lModelSearch').value||'').toLowerCase(),g=S.m
   $('#lGroups').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{S.mGroup=b.dataset.g;drawModels()});}
 $('#lModelSearch').addEventListener('input',drawModels);
 $('#lPickTog').onclick=()=>{const h=!$('#lPicker').hidden;$('#lPicker').hidden=h;$('#lPickTog').textContent=h?'change':'close';if(!h){drawModels();$('#lModelSearch').focus()}};
-$('#lLen').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.lLen=b.dataset.v;[...$('#lLen').children].forEach(x=>x.classList.toggle('on',x===b));$('#lStartRow').style.display=S.lLen==='full'?'none':'flex';est()});
+// 11-25: Length is a slider (5 s .. 2 min, rightmost = the whole song / clip) instead of 15-sec test / whole
+const LENS=[5,10,15,20,30,45,60,90,120];
+function lenRead(pre){const el=$('#'+pre+'LenS'),i=+el.value,full=i>=LENS.length;S[pre+'Len']=full?'full':'test';S[pre+'Dur']=full?0:LENS[i];
+  $('#'+pre+'LenV').textContent=full?el.dataset.whole:(LENS[i]<60?LENS[i]+' s':(LENS[i]/60)+' min');return full}
+$('#lLenS').addEventListener('input',()=>{$('#lStartRow').style.display=lenRead('l')?'none':'flex';est()});
 $('#lModelGo').onclick=async()=>{const r=await post('/api/check',{path:$('#lModelPath').value.trim()});if(r.error){alert(r.error);return}if(r.kind!=='model'){alert('that is not a .pkl model');return}S.extraModels=(S.extraModels||[]).concat([{name:r.name.replace(/\.pkl$/,''),path:r.path}]);setLModel(r.path,r.name);$('#lModelPath').value='';S.sig.models=null;refresh()};
 $('#l_fps').addEventListener('input',est);$('#l_draft').addEventListener('change',est);
 bindDrop($('#lDropAud'),$('#lFileAud'),'laudio');
@@ -485,28 +727,35 @@ bindDrop($('#bDropAud'),$('#bFileAud'),'baudio');
   });
 })();
 async function uploadMany(files){const all=files.length;files=files.filter(f=>/^(video|image)\//.test(f.type)||/\.(mp4|mov|webm|mkv|avi|m4v|mts|jpg|jpeg|png|tif|tiff|webp)$/i.test(f.name));if(all&&!files.length) return toast('none of those were clips or stills');if(all>files.length) toast(`skipped ${all-files.length} file(s) that aren't clips or stills`);
+  const bad=[];
   for(let i=0;i<files.length;i++){$('#dropBankN').innerHTML=`<span class="uploading">copying ${i+1} / ${files.length} · ${esc(files[i].name)}</span>`;
-    await fetch('/api/upload?kind=dropped&name='+encodeURIComponent(files[i].name),{method:'POST',body:files[i]})}
-  $('#dropBankN').textContent='drop clips or stills here, or click';S.useDropped=true;refresh()}
+    let r;try{r=await api('/api/upload?kind=dropped&name='+encodeURIComponent(files[i].name),{method:'POST',body:files[i]})}catch(e){r={error:e.message}}
+    if(!r||r.error)bad.push(files[i].name+': '+((r&&r.error)||'no reply'))}
+  $('#dropBankN').textContent='drop clips or stills here, or click';S.useDropped=true;refresh();
+  if(bad.length)alert(`${bad.length} file(s) didn't copy:\n`+bad.slice(0,8).join('\n'))}
 
-function gate(){if(S.mode==='latent'&&S.ai===false){$('#go').disabled=true;return}const ok=S.mode==='latent'?(S.lModel&&S.lAudio):S.mode==='collage'?(S.cLanes.size>0&&S.cAudio):(((S.useDropped&&S.dropped.length)||S.lanes.size>0)&&S.bAudio);$('#go').disabled=!ok||(S.job&&S.job.running)}
-function est(){if(S.mode==='collage'){const d=S.cLen==='full'?S.cAudioDur:15;const h=S.cHold==='auto'?2:+S.cHold;const pics=Math.round(d*24/h/(S.cTech==='stepin'?+$('#cSteps').value:1));$('#est').textContent=d?`≈ ${pics} pictures · about ${Math.max(1,Math.round(d*24*0.03/60+0.5))} min`:'';return}if(S.mode!=='latent'){$('#est').textContent='';return}const fps=+($('#l_fps').value||24);const d=S.lLen==='full'?S.lAudioDur:15;const fr=Math.round(d*fps)/($('#l_draft').checked?2:1);$('#est').textContent=fr?`≈ ${Math.round(fr)} frames · about ${Math.max(1,Math.round((fr*0.27+25)/60))} min`:''}
+function gate(){if(S.mode==='latent'&&S.ai===false){$('#go').disabled=true;return}const ok=S.mode==='latent'?(S.lModel&&S.lAudio):S.mode==='granular'?(S.gClip&&(S.gSnd!=='song'||S.gAudio)&&S.granOk!==false):((droppedClips().length||S.lanes.size>0)&&S.bAudio);$('#go').disabled=!ok||(S.job&&S.job.running)}
+function est(){if(S.mode==='granular'){const st=S.gLen==='full'?0:Math.max(0,+$('#gStart').value||0);const d=S.gClipDur?(S.gLen==='full'?S.gClipDur:Math.min(S.gDur||15,Math.max(0,S.gClipDur-st))):(S.gClip&&S.gLen==='test'?S.gDur||15:0);
+    const v=S.gClipV||{},[W,H]=gOutSize(),fps=v.fps>31?30000/1001:(v.fps||30000/1001);   // the engine conforms clips above 31 fps to 29.97 and keeps the rest
+    const spf=0.12*Math.pow(W*H/307200,0.9)*({granular:1,paint:1.2,outline:1.3,light:1.4}[S.gLook]||1);   // seconds per frame, measured at 640x480
+    const fr=Math.round(d*fps);$('#est').textContent=fr?`≈ ${fr} frames · about ${Math.max(1,Math.round(fr*spf/60+0.3))} min`:'';return}if(S.mode!=='latent'){$('#est').textContent='';return}const fps=+($('#l_fps').value||24);const d=S.lLen==='full'?S.lAudioDur:Math.min(S.lDur||15,S.lAudioDur?Math.max(0,S.lAudioDur-(+$('#lStart').value||0)):Infinity);const fr=Math.round(d*fps)/($('#l_draft').checked?2:1);$('#est').textContent=fr?`≈ ${Math.round(fr)} frames · about ${Math.max(1,Math.round((fr*0.27+25)/60))} min`:''}
 
 // ---- go / stop ----
 $('#go').addEventListener('click',async()=>{
   if(S.job&&S.job.running){await api('/api/stop',{method:'POST'});return}
   let r;
   if(S.mode==='latent'){
-    const b={model:S.lModel,audio:S.lAudio,length:S.lLen,start:$('#lStart').value,duration:15,bend:$('#lBend').value,spin:$('#lSpin').value,decay:$('#lDecay').value,name:$('#lName').value,classic:$('#l_classic').checked,draft:$('#l_draft').checked};
-    ['decay_shape','flash','speed_fpm','pulse_react','motion_react','psi','fps','size','seed'].forEach(k=>{const x=$('#l_'+k).value;if(x!=='')b[k]=x});
-    r=await post('/api/latent',b);$('#lName').value='';
-  }else if(S.mode==='collage'){
-    const b={clips:[...S.cLanes],audio:S.cAudio,technique:S.cTech,hold:S.cHold,length:S.cLen,start:$('#cStart').value,duration:15,steps:$('#cSteps').value,lens:$('#cLens').value,printscan:$('#cPrint').checked,frame:S.cFrame,label:$('#cLabel').value,name:$('#cName').value};
-    r=await post('/api/collage',b);$('#cName').value='';
+    const b={model:S.lModel,audio:S.lAudio,length:S.lLen,start:$('#lStart').value,duration:S.lDur||15,bend:$('#lBend').value,spin:$('#lSpin').value,decay:$('#lDecay').value,name:$('#lName').value,classic:$('#l_classic').checked,draft:$('#l_draft').checked};
+    ['decay_shape','speed_fpm','pulse_react','motion_react','psi','fps','size','seed'].forEach(k=>{const x=$('#l_'+k).value;if(x!=='')b[k]=x});
+    b.project=S.dest;b.ui=uiSnap();r=await post('/api/latent',b);$('#lName').value='';
   }else if(S.mode==='bank'){
-    const b={clips:[...(S.useDropped&&S.dropped.length?[S.droppedDir]:[]),...S.lanes],audio:S.bAudio,start:(S.bLen==='full'?0:$('#bStart').value),duration:(S.bLen==='full'?0:$('#bDur').value),width:$('#bW').value,height:$('#bH').value,fps:$('#bFps').value,effects:[...S.fx].join(','),name:$('#bName').value};
-    ['min_shot','max_shot','effects_per_shot','plain_chance','strobe_hz','max_clips'].forEach(k=>{const v=$('#'+k).value;if(v!=='')b[k]=v});const sd=$('#bSeed').value;if(sd!=='')b.seed=sd;
-    r=await api('/api/bank',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});$('#bName').value='';
+    const b={clips:[...droppedClips(),...S.lanes],audio:S.bAudio,start:(S.bLen==='full'?0:$('#bStart').value),duration:(S.bLen==='full'?0:$('#bDur').value),width:$('#bW').value,height:$('#bH').value,fps:$('#bFps').value,moves:[...S.moves].join(','),move_chance:$('#bMoveChance').value,tape:S.bTape,gen:S.bGen,damage:$('#bDamage').value,faults:[...S.faults].join(','),react:$('#bReact').checked,name:$('#bName').value};
+    ['min_shot','max_shot','max_clips'].forEach(k=>{const v=$('#'+k).value;if(v!=='')b[k]=v});const sd=$('#bSeed').value;if(sd!=='')b.seed=sd;
+    b.project=S.dest;b.ui=uiSnap();r=await api('/api/bank',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});$('#bName').value='';
+  }else if(S.mode==='granular'){
+    const b={source:S.gClip,audio:S.gSnd==='song'?S.gAudio:'',song_start:$('#gSongStart').value,look:S.gLook,length:S.gLen,duration:S.gDur||15,start:$('#gStart').value,width:$('#gW').value,name:$('#gName').value,settings:gSettings()};
+    const sd=$('#gSeed').value;if(sd!=='')b.seed=Math.max(0,Math.round(+sd)||0);   // the engine takes seeds from 0 up
+    b.project=S.dest;b.ui=uiSnap();r=await post('/api/granular',b);$('#gName').value='';
   }
   if(r.error){alert(r.error);return}
   S.view='live';S.viewingOut=null;S.lastFrame=-1;refresh();
@@ -517,27 +766,35 @@ function render(st){
   const j=st.job;S.job=j;S.ai=st.ai;gate();
   $('#nover').hidden=!!st.engine_ok; $('#noai').hidden=(st.ai!==false)||S.mode!=='latent';
   // recents
-  if(!same('recents',[st.audio.slice(0,8),S.lAudio,S.bAudio,S.cAudio])){
-  const rl=$('#lRecentAud');rl.innerHTML='';st.audio.slice(0,8).forEach(a=>{const b=document.createElement('button');b.className='chip'+(S.lAudio===a.path?' on':'');b.dataset.p=a.path;b.innerHTML='<span class="nm">'+esc(a.name)+'</span><span class="dur">'+(a.duration?fmt(a.duration):'')+'</span>';b.onclick=()=>setLAudio(a.path,a.name,a.duration);rl.appendChild(b)});
-  const rc=$('#cRecentAud');rc.innerHTML='';st.audio.slice(0,8).forEach(a=>{const b=document.createElement('button');b.className='chip'+(S.cAudio===a.path?' on':'');b.dataset.p=a.path;b.innerHTML='<span class="nm">'+esc(a.name)+'</span><span class="dur">'+(a.duration?fmt(a.duration):'')+'</span>';b.onclick=()=>setCAudio(a.path,a.name,a.duration);rc.appendChild(b)});
-  const rb=$('#bRecentAud');rb.innerHTML='';st.audio.slice(0,8).forEach(a=>{const b=document.createElement('button');b.className='chip'+(S.bAudio===a.path?' on':'');b.dataset.p=a.path;b.innerHTML='<span class="nm">'+esc(a.name)+'</span><span class="dur">'+(a.duration?fmt(a.duration):'')+'</span>';b.onclick=()=>setBAudio(a.path,a.name,a.duration);rb.appendChild(b)});
+  if(!same('recents',[st.audio.slice(0,8),S.lAudio,S.bAudio,S.gAudio])){
+    [['#lRecentAud','lAudio',setLAudio],['#bRecentAud','bAudio',setBAudio],['#gRecentAud','gAudio',setGAudio]].forEach(([sel,key,set])=>{
+      const box=$(sel);box.innerHTML='';st.audio.slice(0,8).forEach(a=>{const row=document.createElement('div');row.className='row1';
+        const b=document.createElement('button');b.className='chip'+(S[key]===a.path?' on':'');b.dataset.p=a.path;b.innerHTML='<span class="nm">'+esc(a.name)+'</span><span class="dur">'+(a.duration?fmt(a.duration):'')+'</span>';b.onclick=()=>set(a.path,a.name,a.duration);row.appendChild(b);
+        if(a.inbox){const x=document.createElement('button');x.className='xbtn';x.textContent='×';x.title='Move this song to the Trash';x.onclick=()=>removeFile('/api/inbox_remove',a.path,a.name);row.appendChild(x)}
+        box.appendChild(row)})});
   }
   if(!same('models',[st.models,S.lModel,(S.extraModels||[]).length])){
     S.models=[...(st.models||[]),...(S.extraModels||[])];const ms=S.models;drawModels();
     if(!S.lModel&&ms.length){const d=ms.find(m=>/microscope/i.test(m.name))||ms[0];setLModel(d.path,d.name)} else if(S.lModel) setLModel(S.lModel,'');
     $('#lModelsHint').textContent=ms.length?'':'no models yet — get more →';
   }
-  if(!same('clanes',[(st.lanes||[]).map(l=>l.path),[...S.cLanes],(S.cExtra||[]).length,st.dropped_dir])){
-    const cl=$('#cLanes');cl.innerHTML='';[{name:'your dropped clips',path:st.dropped_dir},...(st.lanes||[]),...(S.cExtra||[])].forEach(l=>{const b=document.createElement('button');b.className='chip'+(S.cLanes.has(l.path)?' on':'');b.innerHTML='<span class="nm">'+esc(l.name)+'</span>';b.title=l.path;b.onclick=()=>{S.cLanes.has(l.path)?S.cLanes.delete(l.path):S.cLanes.add(l.path);S.sig.clanes=null;gate();refresh()};cl.appendChild(b)});
-    $('#cLaneCount').textContent=S.cLanes.size?S.cLanes.size+' picked':'';
-  }
+  gRender(st);
   S.dropped=st.dropped||[];S.droppedDir=st.dropped_dir;
-  if(!same('dropped',[S.dropped,S.lanes.size?[...S.lanes]:[],(st.lanes||[]).length,(S.extraLanes||[]).length])){
-  const dl=$('#droppedList');dl.innerHTML='';S.dropped.forEach(f=>{const b=document.createElement('button');b.className='chip on';b.title=f.path;b.innerHTML=`<span class="nm">${f.kind==='video'?'▶ ':''}${esc(f.name)}</span><span class="x">×</span>`;b.onclick=async()=>{await api('/api/dropped_remove',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:f.path})});refresh()};dl.appendChild(b)});
-  $('#dropCount').textContent=S.dropped.length?`${S.dropped.filter(f=>f.kind==='video').length} clips · ${S.dropped.filter(f=>f.kind==='image').length} stills`:'';
+  [...S.droppedOff].forEach(p=>{if(!S.dropped.some(f=>f.path===p))S.droppedOff.delete(p)});
+  if(!same('dropped',[S.dropped,[...S.droppedOff],S.lanes.size?[...S.lanes]:[],(st.lanes||[]).length,(S.extraLanes||[]).length])){
+  const dl=$('#droppedList');dl.innerHTML='';S.dropped.forEach(f=>{const row=document.createElement('div');row.className='row1';
+    const b=document.createElement('button');const off=S.droppedOff.has(f.path);b.className='chip'+(off?' off':' on');b.title=(off?'Left out — click to use it':'In the cut — click to leave it out')+' · '+f.path;b.innerHTML=`<span class="nm">${f.kind==='video'?'▶ ':''}${esc(f.name)}</span>`;
+    b.onclick=()=>{S.droppedOff.has(f.path)?S.droppedOff.delete(f.path):S.droppedOff.add(f.path);S.sig.dropped=null;gate();refresh()};
+    const x=document.createElement('button');x.className='xbtn';x.textContent='×';x.title='Move this clip to the Trash';x.onclick=()=>removeFile('/api/dropped_remove',f.path,f.name);
+    row.append(b,x);dl.appendChild(row)});
+  const nOn=S.dropped.filter(f=>!S.droppedOff.has(f.path));
+  $('#dropCount').textContent=S.dropped.length?`${nOn.filter(f=>f.kind==='video').length} clips · ${nOn.filter(f=>f.kind==='image').length} stills`+(nOn.length<S.dropped.length?` · ${S.dropped.length-nOn.length} left out`:''):'';
   const ln=$('#lanes');ln.innerHTML='';[...(st.lanes||[]),...(S.extraLanes||[])].forEach(l=>{const b=document.createElement('button');b.className='chip'+(S.lanes.has(l.path)?' on':'');b.innerHTML='<span class="nm">'+esc(l.name)+'</span>';b.title=l.path;b.onclick=()=>{S.lanes.has(l.path)?S.lanes.delete(l.path):S.lanes.add(l.path);gate();refresh()};ln.appendChild(b)});$('#laneCount').textContent=S.lanes.size?S.lanes.size+' picked':'';
   }
-  const fx=$('#fx');if(!fx.children.length){FX.forEach(f=>{const b=document.createElement('button');b.className='chip'+(S.fx.has(f)?' on':'');b.textContent=f;b.onclick=()=>{S.fx.has(f)?S.fx.delete(f):S.fx.add(f);b.classList.toggle('on',S.fx.has(f));$('#fxCount').textContent=S.fx.size+' on'};fx.appendChild(b)});$('#fxCount').textContent=S.fx.size+' on'}
+  if(!same('inbox',[st.inbox])){const box=$('#inboxList');box.innerHTML='';const all=st.inbox||[];
+    $('#inboxSum').textContent=`inbox · ${all.length} file${all.length===1?'':'s'} · ${mbs(all.reduce((t,f)=>t+f.size,0))}`;
+    all.forEach(f=>{const row=document.createElement('div');row.className='row1';row.innerHTML=`<span class="nm" title="${esc(f.path)}">${f.kind==='audio'?'♪ ':f.kind==='video'?'▶ ':''}${esc(f.name)}</span><span class="sz">${mbs(f.size)}</span>`;
+      const x=document.createElement('button');x.className='xbtn';x.textContent='×';x.title='Move to the Trash';x.onclick=()=>removeFile('/api/inbox_remove',f.path,f.name);row.appendChild(x);box.appendChild(row)})}
   if(S.lAudio&&!S.lAudioDur){const a=st.audio.find(x=>x.path===S.lAudio);if(a){S.lAudioDur=a.duration;$('#lAudM').textContent=fmt(a.duration)+' long';est()}}
   // job panel
   const go=$('#go');
@@ -545,10 +802,11 @@ function render(st){
   $('#topst').textContent=j?(j.running?j.stage:j.stage):'idle';document.body.classList.toggle('running',!!(j&&j.running));document.body.classList.toggle('hasjob',!!j);
   if(j){
     $('#jobName').textContent=j.name;
-    const s=$('#jobStage');s.textContent=j.running?j.stage+'…':j.stage;s.className='s '+(j.running?'run':j.stage==='done'?'ok':j.stage==='error'?'bad':'');
-    const pct=j.frames_total?Math.min(100,100*j.frames_done/j.frames_total):0;$('#bar').style.width=pct+'%';
-    document.querySelector('.nums span').firstChild.textContent=(j.kind==='bank'||j.kind==='collage'?'shot ':'frame ');$('#nFrame').textContent=j.frames_done;$('#nTotal').textContent=j.frames_total||'?';$('#nEl').textContent=fmt(j.elapsed);
-    $('#nEta').textContent=j.running&&j.eta!=null?fmt(j.eta):(j.running?'…':'—');$('#nRate').textContent=j.sec_per_frame?j.sec_per_frame.toFixed(1):'—';
+    const taping=j.running&&j.stage==='recording to tape'&&j.tape_total;
+    const s=$('#jobStage');s.textContent=(j.running?j.stage+'…':j.stage)+(taping?` ${j.tape_done}/${j.tape_total} frames`:'');s.className='s '+(j.running?'run':j.stage==='done'?'ok':j.stage==='error'?'bad':'');
+    const pct=taping?Math.min(100,100*j.tape_done/j.tape_total):j.frames_total?Math.min(100,100*j.frames_done/j.frames_total):0;$('#bar').style.width=pct+'%';
+    document.querySelector('.nums span').firstChild.textContent=(j.kind==='bank'?'shot ':'frame ');$('#nFrame').textContent=j.frames_done;$('#nTotal').textContent=j.frames_total||'?';$('#nEl').textContent=fmt(j.elapsed);
+    $('#nEta').textContent=j.running&&j.eta!=null?fmt(j.eta):(j.running?'…':'—');$('#nRate').textContent=j.sec_per_frame?j.sec_per_frame.toFixed(j.sec_per_frame<0.1?2:1):'—';
     const v=$('#view');
     if(S.view==='live'){
       if(j.output_ready&&j.stage==='done'){ if(!v.querySelector('video')||v.dataset.src!==j.out){v.innerHTML=`<video autoplay loop muted playsinline src="${fileUrl(j.out)}"></video><span class="tag">${esc(j.name)}.mp4</span>`;v.dataset.src=j.out} }
@@ -557,10 +815,15 @@ function render(st){
       else if(j.kind==='bank'&&j.running){v.innerHTML=`<span class="empty">${j.stage}… ${j.frames_done} shots</span>`}
       else if(!j.latest_frame&&!v.querySelector('img,video')){v.innerHTML=`<span class="empty">${j.stage}…</span>`}
     }
-    if(!same('acts',[j.name,j.running,j.stage,j.output_ready,j.frames_done>0,$('#log').hidden])){
+    if(!same('acts',[j.name,j.out,j.running,j.stage,j.output_ready,j.frames_done>0,$('#log').hidden])){
     const acts=$('#acts');acts.innerHTML='';
     if(j.output_ready){acts.append(btn('open in quicktime',()=>post('/api/open',{p:j.out})),btn('show in finder',()=>post('/api/reveal',{p:j.deliv||j.out})))}
-    if(!j.running){acts.append(btn('start over with this name',async()=>{await api('/api/clear_frames',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({out:j.out})});refresh()}))}
+    if(!j.running&&j.output_ready){
+      const rr=btn('re-render',async()=>{if(!confirm(`Render "${j.name}" again with the same settings? The finished video goes to the Trash first.`))return;
+        const r=await post('/api/rerender',{out:j.out});if(r.error){alert(r.error);return}toast('old video moved to the Trash · rendering again');S.view='live';S.viewingOut=null;S.lastFrame=-1;refresh()});
+      rr.title='Moves the finished video to the Trash and renders it again under the same name';
+      const rm=btn('remove video',async()=>{const r=await post('/api/clear_frames',{out:j.out});if(r.error){alert(r.error);return}toastUndo(`${j.name} moved to the Trash`,r.trashed);refresh()});
+      rm.title='Moves the finished video (and its copy in the renders folder) to the Trash, so the name is free again';rm.classList.add('danger');acts.append(rr,rm)}
     acts.append(btn($('#log').hidden?'log':'hide log',()=>{$('#log').hidden=!$('#log').hidden;S.sig.acts=null;refresh()}));
     }
     $('#log').textContent=(j.log||[]).join('\n');
@@ -572,60 +835,326 @@ function render(st){
   }
   tpSync(j);
   // library — rebuilt only when the set of outputs (or select mode / picks / current view) changes
-  $('#libCount').textContent=st.outputs.length||'';
+  // 11-25 render files: projects (the picker), renders grouped into stacks per clip, newest stack first; star keeps, Remake
+  if(st.projects&&!same('projects',[st.projects,S.proj,S.dest]))drawProjects(st.projects);
+  const shown=st.outputs.filter(o=>(!S.libFilter||String(o.arm||'').toLowerCase().startsWith(S.libFilter))&&(!S.proj||o.project===S.proj));S.outputs=st.outputs;
+  $('#libCount').textContent=shown.length?(shown.length>S.libShow?`${S.libShow} of ${shown.length}`:shown.length):'';
+  $('#libMore').hidden=shown.length<=S.libShow;$('#libMore').textContent=`show ${Math.min(60,shown.length-S.libShow)} more`;
   const la=$('#libActs');la.innerHTML='';la.append(btn('renders folder',()=>post('/api/renders_folder',{})));
-  if(S.sel){const n=S.picked.size;la.append(btn(n?`remove ${n} selected`:'pick some',()=>removeOutputs([...S.picked])),btn('all',()=>{st.outputs.forEach(o=>S.picked.add(o.path));S.sig.lib=null;refresh()}),btn('none',()=>{S.picked.clear();S.sig.lib=null;refresh()}));la.children[1].classList.add('danger')}
-  if(!same('lib',[st.outputs.map(o=>[o.path,o.size,o.frames]),S.sel,[...S.picked],S.viewingOut,S.libFilter||''])){
+  if(S.sel){const n=S.picked.size;la.append(btn(n?`remove ${n} selected`:'pick some',()=>removeOutputs([...S.picked])),btn('all',()=>{shown.forEach(o=>S.picked.add(o.path));S.sig.lib=null;refresh()}),btn('none',()=>{S.picked.clear();S.sig.lib=null;refresh()}));la.children[1].classList.add('danger')}
+  if(!same('lib',[shown.slice(0,S.libShow).map(o=>[o.path,o.size,o.frames,o.star,o.project,o.stack]),S.sel,[...S.picked],S.viewingOut,S.libFilter||'',S.proj])){
   const lib=$('#lib');lib.innerHTML='';lib.classList.toggle('sel',S.sel);
-  st.outputs.filter(o=>!S.libFilter||String(o.arm||'').toLowerCase().startsWith(S.libFilter)).forEach(o=>{const c=document.createElement('div');c.className='card'+(S.viewingOut===o.path?' on':'')+(S.picked.has(o.path)?' picked':'');
-    c.innerHTML=`<img src="/api/frame?out=${encodeURIComponent(o.path)}&n=${Math.max(0,Math.floor(o.frames/2))}" loading="lazy" onerror="this.style.visibility='hidden'"><span class="ck">✓</span><button class="rm" title="Move to _cleanup">×</button><button class="rv" title="Show in Finder">↗</button>${o.arm?'<span class="arm">'+esc(o.arm)+'</span>':''}<div class="c"><b>${esc(o.name)}</b><small>${(o.size/1e6).toFixed(1)} MB</small></div>`;
+  const stacks=new Map();shown.slice(0,S.libShow).forEach(o=>{const k=o.project+'\u0000'+(o.stack||'');if(!stacks.has(k))stacks.set(k,[]);stacks.get(k).push(o)});
+  stacks.forEach((os,k)=>{const [proj,stack]=k.split('\u0000');const all=shown.filter(o=>o.project===proj&&(o.stack||'')===stack);const kept=all.filter(o=>o.star);
+    const h=document.createElement('div');h.className='stackh';
+    h.innerHTML=`<b>${esc(stack||proj)}</b>${!S.proj&&stack?`<span class="pj">${esc(proj)}</span>`:''}<span>${all.length} render${all.length===1?'':'s'}${kept.length?' · '+kept.length+' kept':''}</span>`;
+    const rest=all.filter(o=>!o.star&&!(S.job&&S.job.running&&S.job.out===o.path));
+    if(proj!=='Earlier renders'&&proj!=='CRT'&&rest.length&&kept.length){const c=btn(`clear the other ${rest.length}`,()=>removeOutputs(rest.map(o=>o.path)));c.title='Move the renders without a star in this stack to the Trash (undo for 8 s)';h.appendChild(c)}
+    lib.appendChild(h);
+    os.forEach(o=>{const c=document.createElement('div');c.className='card'+(S.viewingOut===o.path?' on':'')+(S.picked.has(o.path)?' picked':'');
+    const tag=o.look||o.arm;
+    c.innerHTML=`<img src="/api/frame?out=${encodeURIComponent(o.path)}&n=${Math.max(0,Math.floor(o.frames/2))}" loading="lazy" onerror="this.style.visibility='hidden'"><span class="ck">✓</span><button class="rm" title="Move to the Trash (Delete key)">×</button><button class="rv" title="Show in Finder">↗</button>${o.project!=='Earlier renders'&&o.project!=='CRT'?`<button class="sr${o.star?' on':''}" title="${o.star?'Kept: click to un-keep':'Keep this one (clear the rest of the stack later)'}">${o.star?'★':'☆'}</button>`:''}${o.remake?'<button class="rk" title="Remake: load the settings this was made with">↺</button>':''}${tag?'<span class="arm">'+esc(tag)+'</span>':''}<div class="c"><b>${esc(o.name)}</b><small>${(o.size/1e6).toFixed(1)} MB</small></div>`;
     c.querySelector('.rv').onclick=e=>{e.stopPropagation();post('/api/reveal',{p:o.deliv||o.path})};
     c.querySelector('.rm').onclick=e=>{e.stopPropagation();removeOutputs([o.path])};
+    const sr=c.querySelector('.sr');if(sr)sr.onclick=async e=>{e.stopPropagation();const r=await post('/api/star',{path:o.path,on:!o.star});if(r.error)toast(r.error);S.sig.lib=null;refresh()};
+    const rk=c.querySelector('.rk');if(rk)rk.onclick=async e=>{e.stopPropagation();const r=await post('/api/recipe',{path:o.path});if(r.error){toast(r.error);return}await uiApply(r.ui);toast('settings loaded from '+o.name)};
     c.onclick=()=>{if(S.sel){S.picked.has(o.path)?S.picked.delete(o.path):S.picked.add(o.path);S.sig.lib=null;refresh();return}
-      S.view='out';S.viewingOut=o.path;const v=$('#view');v.innerHTML=`<video autoplay loop playsinline src="${fileUrl(o.path)}"></video><span class="tag">${esc(o.name)} · <a href="#" id="backLive">back to live</a></span>`;v.dataset.src=o.path;$('#backLive').onclick=e=>{e.preventDefault();S.view='live';S.viewingOut=null;S.lastFrame=-1;v.innerHTML='';v.dataset.src='';S.sig.lib=null;refresh()};S.sig.lib=null;refresh()};
-    lib.appendChild(c)});
+      S.view='out';S.viewingOut=o.path;const v=$('#view');v.innerHTML=`<video autoplay loop playsinline src="${fileUrl(o.path)}"></video><span class="tag">${esc(o.name)} · <a href="#" id="backLive">back to live</a></span>`;v.dataset.src=o.path;$('#backLive').onclick=e=>{e.preventDefault();backToLive()};S.sig.lib=null;refresh()};
+    lib.appendChild(c)})});
   }
 }
+// projects: the picker is both where you're looking and where new renders go ("All projects" only looks)
+try{S.proj=localStorage.getItem('leProj')??'';S.dest=localStorage.getItem('leDest')||'Tests'}catch(e){S.proj='';S.dest='Tests'}
+function drawProjects(ps){const sel=$('#libProj');S.projects=ps;if(S.proj&&!ps.includes(S.proj))S.proj='Tests';if(!ps.includes(S.dest))S.dest='Tests';
+  sel.innerHTML='<option value="">All projects</option>'+ps.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('')+'<option value="__new">+ new project…</option>';
+  sel.value=S.proj||'';$('#dest').textContent='saves to '+S.dest}
+$('#libProj').addEventListener('change',e=>{const v=e.target.value;if(v==='__new'){$('#libNew').hidden=false;$('#libNewName').focus();e.target.value=S.proj||'';return}
+  S.proj=v;if(v)S.dest=v;try{localStorage.setItem('leProj',S.proj);localStorage.setItem('leDest',S.dest)}catch(x){}S.libShow=60;S.sig.lib=null;S.sig.projects=null;refresh()});
+async function newProject(){const n=$('#libNewName').value.trim();if(!n)return;const r=await post('/api/project',{name:n});if(r.error){toast(r.error);return}
+  $('#libNew').hidden=true;$('#libNewName').value='';S.proj=S.dest=r.project;try{localStorage.setItem('leProj',S.proj);localStorage.setItem('leDest',S.dest)}catch(x){}S.sig.projects=null;S.sig.lib=null;refresh()}
+$('#libNewGo').onclick=newProject;$('#libNewName').addEventListener('keydown',e=>{if(e.key==='Enter')newProject();if(e.key==='Escape')$('#libNew').hidden=true});
+// Remake: each new render keeps a snapshot of its tab's settings; this puts them back
+function uiSnap(){const roots={latent:['#mLatent'],bank:['#mBank'],granular:['#mGranular','#gSet']}[S.mode]||[];const v={},seg={},chips={};
+  roots.forEach(r=>{const R=$(r);if(!R)return;
+    R.querySelectorAll('input[id],select[id],textarea[id]').forEach(el=>{if(el.type==='file'||/(Name|Path|Search|NewName)$/.test(el.id))return;v[el.id]=el.type==='checkbox'?el.checked:el.value});
+    R.querySelectorAll('.seg[id]').forEach(g=>{const b=g.querySelector('button.on');if(b&&g.id!=='gLay')seg[g.id]=b.dataset.v});
+    R.querySelectorAll('.chips[id]').forEach(g=>{const b=g.querySelector('.chip.on');chips[g.id]=b?b.dataset.p:null})});
+  const picks={latent:{model:S.lModel,audio:S.lAudio},bank:{audio:S.bAudio,lanes:[...S.lanes],useDropped:S.useDropped},granular:{clip:S.gClip,audio:S.gAudio}}[S.mode]||{};
+  return {mode:S.mode,v,seg,chips,picks}}
+async function uiApply(u){if(!u||!u.mode)return;const mb=document.querySelector('#mode button[data-v="'+u.mode+'"]');if(mb&&!mb.classList.contains('on'))mb.click();
+  const P=u.picks||{},nm=p=>p?String(p).split('/').pop():'';
+  if(u.mode==='granular'){if(P.clip)setGClip(P.clip,nm(P.clip),0);if(P.audio)setGAudio(P.audio,nm(P.audio),0)}
+  if(u.mode==='latent'){if(P.model)setLModel(P.model,nm(P.model));if(P.audio)setLAudio(P.audio,nm(P.audio),0)}
+  if(u.mode==='bank'){if(P.audio)setBAudio(P.audio,nm(P.audio),0);if(P.lanes)S.lanes=new Set(P.lanes);if('useDropped' in P)S.useDropped=P.useDropped;S.sig.dropped=null}
+  Object.entries(u.seg||{}).forEach(([id,val])=>{const b=document.querySelector('#'+CSS.escape(id)+' button[data-v="'+CSS.escape(String(val))+'"]');if(b&&!b.classList.contains('on'))b.click()});
+  Object.entries(u.v||{}).forEach(([id,val])=>{const el=document.getElementById(id);if(!el)return;
+    if(el.type==='checkbox'){if(id==='gStrict'){el.checked=!!val;return}if(el.checked!==!!val){el.checked=!!val;el.dispatchEvent(new Event('change',{bubbles:true}))}return}
+    if(el.value!==String(val)){el.value=val;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}))}});
+  Object.entries(u.chips||{}).forEach(([id,p])=>document.querySelectorAll('#'+CSS.escape(id)+' .chip').forEach(c=>c.classList.toggle('on',c.dataset.p===p)));
+  if(u.mode==='granular'){gVals();gStrictDraw();gFreezeDraw();gModDraw()}est();gate();S.sig={};refresh()}
 function same(key,val){const j=JSON.stringify(val);if(S.sig[key]===j)return true;S.sig[key]=j;return false}
-async function removeOutputs(paths){if(!paths.length)return;const r=await api('/api/remove_outputs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paths})});
-  if(r.moved&&r.moved.length){toast(`${r.moved.length} moved to _cleanup`);if(S.viewingOut&&paths.includes(S.viewingOut)){S.view='live';S.viewingOut=null;S.lastFrame=-1;$('#view').innerHTML='';$('#view').dataset.src=''}}
+function backToLive(){const v=$('#view');S.view='live';S.viewingOut=null;S.lastFrame=-1;v.innerHTML='';v.dataset.src='';S.sig.lib=null;refresh()}
+async function removeOutputs(paths){if(!paths.length)return;const r=await post('/api/remove_outputs',{paths});
+  if(r.moved&&r.moved.length){toastUndo(r.moved.length===1?`${r.moved[0]} moved to the Trash`:`${r.moved.length} renders moved to the Trash`,r.trashed);if(S.viewingOut&&paths.includes(S.viewingOut))backToLive()}
+  if(r.error)alert(r.error);
   S.picked.clear();S.sig.lib=null;refresh()}
+function mbs(b){return b>=1e9?(b/1e9).toFixed(2)+' GB':(b/1e6).toFixed(b<1e7?1:0)+' MB'}
+function forget(p){if(S.lAudio===p){S.lAudio=null;$('#lAudN').textContent='Drop a song, or click'}if(S.bAudio===p){S.bAudio=null;$('#bAudN').textContent='Drop a song, or click'}if(S.gAudio===p){S.gAudio=null;$('#gAudN').textContent='Drop a song, or click';gModDraw()}if(S.gClip===p){S.gClip=null;S.gClipDur=0;$('#gClipN').textContent='Drop a clip, or click';gClipMeta()}S.droppedOff.delete(p);gate()}
+async function removeFile(url,path,name){const r=await post(url,{path});if(r.error){alert(r.error);return}forget(path);toastUndo(`${name} moved to the Trash`,r.trashed);S.sig={...S.sig,recents:null,dropped:null,inbox:null};refresh()}
+// toast with Undo: the server says where each thing landed in the Trash; Undo moves it back (8 s)
+function toastUndo(t,items){let e=$('#undoEl');if(!e){e=document.createElement('div');e.id='undoEl';e.className='toast';e.setAttribute('role','status');document.body.appendChild(e)}
+  e.innerHTML='';const sp=document.createElement('span');sp.textContent=t;e.appendChild(sp);
+  if(items&&items.length){const u=document.createElement('button');u.className='btn';u.style.marginLeft='12px';u.textContent='undo';u.onclick=async()=>{e.hidden=true;const r=await post('/api/restore',{items});toast(r.error?('undo: '+r.error):'put back');S.sig={};refresh()};e.appendChild(u)}
+  e.hidden=false;clearTimeout(e._t);e._t=setTimeout(()=>e.hidden=true,8000)}
 function toast(t){let e=$('#toastEl');if(!e){e=document.createElement('div');e.id='toastEl';e.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:14px;font-size:10px;text-transform:uppercase;letter-spacing:.1em;z-index:50;transition:opacity .3s';document.body.appendChild(e)}e.textContent=t;e.style.opacity=1;clearTimeout(e._t);e._t=setTimeout(()=>e.style.opacity=0,2200)}
 $('#libSel').onclick=()=>{S.sel=!S.sel;S.picked.clear();$('#lib').classList.toggle('sel',S.sel);$('#libSel').textContent=S.sel?'done':'select';S.sig.lib=null;refresh()};
 function btn(t,f){const b=document.createElement('button');b.className='btn';b.textContent=t;b.onclick=f;return b}
 async function refresh(){try{render(await api('/api/state'))}catch(e){$('#topst').textContent='server gone — reopen the launcher'}}
 bindBankLen();
-// ---- COLLAGE
-const CTECH={colour:'one picture per frame, sorted by colour so the cuts flow into each other · swirl lens, dark corners',
-  stepin:'walks closer to one detail in steps, then jumps to the next picture',archive:'every picture at its own size and shape on black · compression breaks and dropped frames stay in'};
-function setCAudio(p,n,d){S.cAudio=p;S.cAudioDur=d||0;$('#cAudN').textContent=n;$('#cAudM').textContent=d?fmt(d)+' long':'sets the length · auto hold follows its loudness';markChips('#cRecentAud',p);gate();est()}
+// ---- CUT BANK look: editing moves, tape
+function droppedClips(){if(!S.useDropped||!S.dropped.length)return[];const on=S.dropped.filter(f=>!S.droppedOff.has(f.path));
+  return on.length===S.dropped.length?[S.droppedDir]:on.map(f=>f.path)}   // all in: the folder; some left out: just the ones still in
+function movesDraw(){document.querySelectorAll('#moves .chip').forEach(c=>c.classList.toggle('on',S.moves.has(c.dataset.m)));$('#movesCount').textContent=S.moves.size?[...S.moves].join(' · '):'none — every shot plays as shot';$('#row_bMoveChance').classList.toggle('off',!S.moves.size)}
+$('#moves').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const m=b.dataset.m;S.moves.has(m)?S.moves.delete(m):S.moves.add(m);movesDraw()});
+$('#bMoveChance').addEventListener('input',e=>$('#bMoveChanceV').textContent=Math.round(e.target.value*100)+'%');
+$('#bDamage').addEventListener('input',e=>$('#bDamageV').textContent=(+e.target.value).toFixed(2));
+function faultsDraw(){const tbc=S.bTape==='betacam-sp';   /* Betacam SP plays through a TBC: no wobble, no skew */
+  document.querySelectorAll('#faults .chip').forEach(c=>{const na=tbc&&/^(wobble|skew)$/.test(c.dataset.k);c.classList.toggle('on',S.faults.has(c.dataset.k)&&!na);c.disabled=na;c.style.opacity=na?.35:'';if(na)c.title='Betacam SP is played through a time-base corrector: no '+c.textContent});
+  const n=[...S.faults].filter(k=>!(tbc&&/^(wobble|skew)$/.test(k))).length;$('#faultsCount').textContent=n?n+' on':'none'}
+$('#faults').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b||b.disabled)return;const k=b.dataset.k;S.faults.has(k)?S.faults.delete(k):S.faults.add(k);faultsDraw()});
+$('#bTape').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.bTape=b.dataset.v;[...$('#bTape').children].forEach(x=>x.classList.toggle('on',x===b));$('#bTapeBox').hidden=S.bTape==='off';faultsDraw()});
+segBind('#bGen','bGen');faultsDraw();
+movesDraw();
+$('#libMore').onclick=()=>{S.libShow+=60;S.sig.lib=null;refresh()};
+
+// segmented buttons -> S[key] (shared by every tab; it lived in the Collage block until 11-25)
 function segBind(id,key,after){$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S[key]=b.dataset.v;[...$(id).children].forEach(x=>x.classList.toggle('on',x===b));after&&after()})}
-function cTechDraw(){$('#cTechHint').textContent=CTECH[S.cTech];$('#cTechHint').hidden=true;document.querySelectorAll('#cTech button').forEach(b=>b.title=CTECH[b.dataset.v]||'');$('#cStepsRow').hidden=S.cTech!=='stepin';$('#cLensRow').hidden=S.cTech!=='colour';est()}
-segBind('#cTech','cTech',cTechDraw);segBind('#cHold','cHold',()=>{$('#cHoldV').textContent=S.cHold==='auto'?'follows the song':S.cHold==='2'?'on twos':S.cHold+' frames';est()});
-segBind('#cLen','cLen',()=>{$('#cStartRow').style.display=S.cLen==='full'?'none':'flex';est()});segBind('#cFrame','cFrame');
-$('#cSteps').addEventListener('input',e=>{$('#cStepsV').textContent=e.target.value;est()});$('#cLens').addEventListener('input',e=>$('#cLensV').textContent=(+e.target.value).toFixed(2));
-$('#cLanePathGo').onclick=async()=>{const r=await post('/api/check',{path:$('#cLanePath').value.trim()});if(r.error){alert(r.error);return}S.cLanes.add(r.path);S.cExtra=(S.cExtra||[]).concat([{name:r.name,path:r.path}]);$('#cLanePath').value='';S.sig.clanes=null;refresh()};
-bindDrop($('#cDropAud'),$('#cFileAud'),'caudio');cTechDraw();
+// ---- GRANULAR (11-23): one clip through the Takagi looks — app/granular.py
+const GDEF={l_bands:6,s_bands:5,rebuild:0.5,density:2500,size_dark:5.5,size_light:1.2,envelope:0.3,ink:0.3,spray:1.5,time_spray:3,decay:3,follow:0.8,freeze_len:3,dry:0.8,step:2,mod_density:0,mod_size:0,mod_spray:0};
+const GPRE={'default':{},paper:{dry:0,density:5000},'long tail':{time_spray:10,decay:10,follow:1,spray:3},freeze:{freeze:true,freeze_at:0.7,freeze_len:3},reset:{}};
+const GBOX={granular:'#gBoxGranular',paint:'#gBoxPaint',outline:'#gBoxOutline',light:'#gBoxLight'};
+// "Takagi strict": granular.py's own STRICT table ({granular:{…},paint:{…},outline:{…}}), from /api/state, so the page
+// never keeps a second copy. Ticking it moves every look's controls that a STRICT key drives; a control still at that
+// value is left out of the job, because a value sent with the job beats STRICT in the engine.
+let LSTRICT=null;
+function gRate(st){const f=30000/1001/st;return (Math.abs(f-Math.round(f))<0.05?Math.round(f):f.toFixed(1))+' fps'+(st===2.5?' (held 2,3,2,3)':'')}
+function gStrictHint(look){if(look==='light')return 'Not for Light: it\'s already built from his measured effects and palettes, so there\'s nothing stricter to switch to.';if(!LSTRICT)return 'Loading his measured settings…';const s=LSTRICT[look];if(!s)return '';const h=[];   // what strict does, worded from the table itself
+  if(look==='outline'){if(s.step)h.push('colour at '+gRate(s.step));if(s.edge_step)h.push('lines held '+s.edge_step+' frames');
+    if(s.edge_mix!=null)h.push('lines '+Math.round((1-s.edge_mix)*100)+'% dark (never black)');if(s.edge_floor>0)h.push('lighter lines (faint edges dropped)');
+    if(s.tone)h.push('a brightness curve fitted to his frames');if(s.col_sat>1)h.push('more vivid colour');if(s.cmap)h.push('colour maps measured from his frames');if(s.dv)h.push('DV colour blocks');return h.join(', ')}
+  if(s.step)h.push(gRate(s.step));
+  if(look==='granular'){if(s.decay===1)h.push('fresh grains every frame');if(s.decay===1&&!s.follow&&!s.time_spray)h.push('no tail or follow');
+    h.push(s.ink_flat?'near-black dots':'dark-centred dots');if(s.sprinkle>0)h.push('a few out on the white paper');if(s.elong>0)h.push('oval dots along edges');if(s.dry!=null&&s.dry<GDEF.dry)h.push('a thinner painted bed');if(s.bed_blur>0)h.push('a softer painted bed')}
+  if(look==='paint'){if(s.refresh===1)h.push('a new dot pattern every frame');if(s.smear===0&&!s.motion_streak)h.push('no motion smear');
+    h.push(s.mask_brush===0?'crisp near-black dots':'dark-centred dots');if(s.noise_brush>0)h.push('dots line up along edges');if(s.dots)h.push('dots out on the white paper');if(s.paper_lo!=null||s.exposure!=null)h.push('brighter paper')}
+  return h.join(', ')}
+function gStrictDraw(){const on=$('#gStrict').checked;$('#gStrictHint').textContent=gStrictHint(S.gLook);
+  Object.entries(GBOX).forEach(([look,sel])=>{const s=(LSTRICT||{})[look]||{};   // a typed field strict owns shows strict's value as its placeholder
+    document.querySelectorAll(sel+' input[data-k]:not([type=range])').forEach(el=>{if(el.dataset.ph0===undefined)el.dataset.ph0=el.placeholder;el.placeholder=on&&el.dataset.k in s?String(s[el.dataset.k]):el.dataset.ph0})});
+  // outline sliders strict makes do nothing (line_gain beats Lines, measured maps replace the Wheel): greyed, hint says why
+  const so=on?((LSTRICT||{}).outline||{}):{},hint=(id,msg)=>{const h=$('#'+id).closest('.sl').querySelector('.hint');if(h.dataset.h0===undefined)h.dataset.h0=h.textContent;h.textContent=msg||h.dataset.h0};
+  [['o_edge_gain',so.line_gain>0,'Takagi strict draws the lines at its own strength: Lines does nothing while it is on.'],
+   ['o_wheel',!!so.cmap,'Takagi strict takes the colour from maps measured off his frames: Wheel does nothing while it is on.']].forEach(([id,dead,msg])=>{
+    $('#'+id).closest('.sl').classList.toggle('off',dead);$('#'+id).dataset.dead=dead?'1':'';hint(id,dead?msg:'')});
+  const pal=$('#o_palette'),pv=pal.value;pal.max=so.cmap?pal.dataset.maps:pal.dataset.pals;   // strict: his 12 measured maps, not the 9 palettes
+  hint('o_palette',so.cmap?'Leftmost: a new colour map at every cut, like Rama. Otherwise one of the '+(+pal.dataset.maps+1)+' maps measured off his frames for the whole video.':'');
+  if(pal.value!==pv)gVals()}
+function gDead(id){return $('#'+id).dataset.dead==='1'}
+function gOwned(){const out=[];Object.entries(GBOX).forEach(([look,sel])=>{const s=(LSTRICT||{})[look]||{};   // [control, strict value] for every control a STRICT key drives, all three looks
+  document.querySelectorAll(sel+' [data-k]').forEach(el=>{if(el.dataset.k in s)out.push([el,s[el.dataset.k]])})});return out}
+function gChipState(){return JSON.stringify([...document.querySelectorAll('#gBoxGranular [data-k]')].map(i=>i.value).concat($('#gFreeze').checked,$('#gFreezeAt').value))}   // what the preset chips describe
+function gStrictOn(){const c=document.querySelector('#gPresets .chip.on'),own=gOwned();
+  S.gPre={chip:c?c.dataset.p:null,was:own.map(([el])=>[el,el.value])};   // what strict is about to change, and the lit chip
+  own.forEach(([el,x])=>{el.value=el.type==='range'?x:'';el.dataset.sv=el.value});   // sv = what the control really reads back (a slider snaps to its step and range); a typed field empties to show strict's value
+  S.gPre.box=gChipState();document.querySelectorAll('#gPresets .chip').forEach(c=>c.classList.remove('on'))}
+function gStrictOff(){const P=S.gPre;S.gPre=null;let chip=null;   // put back only what strict moved and nobody touched since
+  if(!P){gOwned().forEach(([el])=>el.value=el.defaultValue);chip='default'}   // never snapshotted: the page's own defaults
+  else{const still=gChipState()===P.box;P.was.forEach(([el,x])=>{if(el.dataset.sv!==undefined&&el.value===el.dataset.sv)el.value=x});
+    if(still)chip=P.chip}   // relight the old chip only if nothing in the granular box moved
+  document.querySelectorAll('#gSet [data-sv]').forEach(el=>delete el.dataset.sv);return chip}
+Object.assign(S,{gClip:null,gClipDur:0,gAudio:null,gAudioDur:0,gSnd:'clip',gLen:'test',gLook:'granular',granOk:null});
+function gShow(el){const x=+el.value;if(el.dataset.k==='palette')return x<0?'auto':String(x+1);if(el.dataset.k==='cutout')return ['fast','balanced','accurate'][x];if(el.dataset.k==='ae_lines')return ['tuned','AE','AE · DV size'][x];if(el.dataset.k==='step'&&el.type==='range')return Math.round(30/x)+' fps';   /* auto = a new palette at every cut */return x.toFixed((String(el.step).split('.')[1]||'').length)}   // as many decimals as the slider's step
+function gVals(){document.querySelectorAll('#gSet input[type=range][data-k]').forEach(el=>{const b=$('#'+el.id+'V');if(b)b.textContent=gShow(el)});gDeps();gGrpSums()}
+function gDeps(){const v=id=>+$('#'+id).value,dep=(id,msg)=>{const d=$('#'+id).closest('.sl').querySelector('.dep');d.textContent=msg||'';d.hidden=!msg};   // when a slider can't do anything right now, or flips meaning, say so under it
+  const rb=v('g_rebuild')===0?'No effect at Rebuild 0: grains take the exact pixel, not the band colour.':'';dep('g_l_bands',rb);dep('g_s_bands',rb);
+  const cm=v('o_colorama')>0?'No effect while a Colorama preset is on: the preset sets the colour.':'';dep('o_wheel',cm);dep('o_palette',cm);
+  dep('o_edge_gain',v('o_ae_lines')>0?'No effect with AE lines: After Effects\' Find Edges has no strength setting.':'');
+  dep('g_follow',v('g_decay')<=1?'No effect at Decay 1: grains only live one picture, so there is nothing to move.':'');
+  dep('g_size_light',v('g_size_light')>v('g_size_dark')?'Now bigger than Size dark: the light tones get the biggest dots.':'');
+  dep('g_mod_spray',v('g_spray')===0?'No effect while Position is 0.':'')}
+function gModDraw(){const song=S.gSnd==='song'&&!!S.gAudio;document.querySelectorAll('#gModGrp .sl').forEach(r=>r.classList.toggle('off',!song));
+  const on=['g_mod_density','g_mod_size','g_mod_spray'].some(id=>+$('#'+id).value>0);
+  $('#gModNote').textContent=!song&&on?'Audio mod only acts when a song is picked in Sound.':''}
+function gFreezeDraw(){const on=$('#gFreeze').checked;$('#gFreezeRow').hidden=!on;$('#gFreezeLenGrp').hidden=!on}
+function gLookDraw(){Object.entries(GBOX).forEach(([k,sel])=>$(sel).hidden=k!==S.gLook);
+  const none=S.gLook==='light',cb=$('#gStrict');if(none&&cb.checked){cb.checked=false;cb.dispatchEvent(new Event('change',{bubbles:true}))}   // Light has no strict table yet
+  cb.disabled=none||!LSTRICT;cb.closest('label').title=none?'Light bodies is already built from effects measured off After Effects: there is no strict version yet':'Match what frame-by-frame measurement of his videos showed, instead of your picks';gStrictDraw();est()}
+function gDur(s){return s>0&&s<60?s.toFixed(1)+' s':fmt(s)}   // a short clip reads 0.4 s, not 0:00
+function gClipMeta(){$('#gClipM').textContent=S.gClipDur?gDur(S.gClipDur)+' long'+(S.gLen==='test'&&S.gClipDur<(S.gDur||15)?' · shorter than the length, so all of it':''):'one handheld clip · scaled to 960 wide at most'}
+function gVid(c){return c&&c.width?{width:+c.width,height:+c.height,fps:+c.fps||0}:null}   // the clip's picture size + rate (server: ffprobe_video)
+function gOutSize(){const v=S.gClipV,mw=Math.max(64,Math.trunc(Math.max(160,Math.min(1920,+$('#gW').value||960))));   // output W x H the way the server + granular.py work it out
+  const ev=x=>Math.max(2,Math.round(x/2)*2);if(!v||!v.width)return [640,480];return v.width>mw?[ev(mw),ev(v.height*mw/v.width)]:[ev(v.width),ev(v.height)]}
+function setGClip(p,n,d,c){const was=S.gClip;S.gClip=p;S.gClipDur=d||0;S.gClipV=gVid(c);$('#gClipN').textContent=n;gClipMeta();markChips('#gClips',p);gate();est();gSvRange(was!==p)}
+function setGAudio(p,n,d){S.gAudio=p;S.gAudioDur=d||0;$('#gAudN').textContent=n;$('#gAudM').textContent=d?fmt(d)+' long':'its loudness can drive the grains';markChips('#gRecentAud',p);gModDraw();gate();est()}
+function gSettings(){const o={},strict=$('#gStrict').checked,song=S.gSnd==='song'&&!!S.gAudio;
+  document.querySelectorAll(GBOX[S.gLook]+' [data-k]').forEach(i=>{if(i.value==='')return;
+    if(strict&&i.dataset.sv!==undefined&&i.value===i.dataset.sv)return;   // untouched since strict moved it: leave it out so granular.py's STRICT wins
+    if(!song&&i.dataset.k.startsWith('mod_'))return;   // audio mod only acts with a song
+    o[i.dataset.k]=i.value});
+  if(S.gLook==='granular')o.freeze_sec=$('#gFreeze').checked?($('#gFreezeAt').value||'0.7'):-1;
+  if($('#gStrict').checked)o.strict=1;return o}
+function gRender(st){
+  if(S.granOk!==st.granular){S.granOk=st.granular;gate()}$('#nogran').hidden=!(S.mode==='granular'&&st.granular===false);
+  const clips=[...(st.dropped||[]).filter(f=>f.kind==='video').map(f=>({...f,where:'dropped'})),...(st.inbox||[]).filter(f=>f.kind==='video').map(f=>({...f,where:'inbox'}))];
+  if(st.strict&&Object.keys(st.strict).length&&!same('gstrict',st.strict)){LSTRICT=st.strict;$('#gStrict').disabled=S.gLook==='light';gStrictDraw()}
+  if(S.gClip&&(!S.gClipDur||!S.gClipV)){const c=clips.find(x=>x.path===S.gClip);if(c&&c.duration&&!S.gClipDur){S.gClipDur=c.duration;gClipMeta();est();gSvRange(false)}if(c&&!S.gClipV&&gVid(c)){S.gClipV=gVid(c);est()}}
+  if(same('gclips',[clips.map(c=>[c.path,c.duration]),S.gClip]))return;
+  const box=$('#gClips');box.innerHTML='';
+  clips.forEach(c=>{const row=document.createElement('div');row.className='row1';
+    const b=document.createElement('button');b.className='chip'+(S.gClip===c.path?' on':'');b.dataset.p=c.path;b.title=c.path;b.innerHTML='<span class="nm">'+esc(c.name)+'</span><span class="dur">'+(c.duration?gDur(c.duration):'')+'</span>';b.onclick=()=>setGClip(c.path,c.name,c.duration,c);
+    const x=document.createElement('button');x.className='xbtn';x.textContent='×';x.title='Move this clip to the Trash';x.onclick=()=>removeFile(c.where==='dropped'?'/api/dropped_remove':'/api/inbox_remove',c.path,c.name);
+    row.append(b,x);box.appendChild(row)});
+  $('#gClipCount').textContent=clips.length?clips.length+(clips.length===1?' clip':' clips'):'';
+}
+async function gUpload(f){$('#gClipN').innerHTML=`<span class="uploading">copying ${esc(f.name)}…</span>`;
+  let r;try{r=await api('/api/upload?kind=dropped&name='+encodeURIComponent(f.name),{method:'POST',body:f})}catch(e){r={error:'the app did not answer ('+e.message+')'}}
+  if(!r||r.error||!r.path){$('#gClipN').textContent=S.gClip?S.gClip.split('/').pop():'Drop a clip, or click';alert(`couldn't copy ${f.name}: ${(r&&r.error)||'no reply from the app'}`);return}
+  setGClip(r.path,r.name,0);S.sig.gclips=null;refresh()}
+(function(){const el=$('#gDrop'),input=$('#gFile');const isVid=f=>/^video\//.test(f.type)||/\.(mp4|mov|webm|mkv|avi|m4v|mts)$/i.test(f.name);
+  el.addEventListener('click',()=>input.click());
+  input.addEventListener('change',()=>{const f=input.files[0];input.value='';if(!f)return;if(!isVid(f))return toast(`${f.name} is not a video clip`);gUpload(f)});
+  ['dragenter','dragover'].forEach(e=>el.addEventListener(e,ev=>{ev.preventDefault();el.classList.add('over')}));
+  ['dragleave','drop'].forEach(e=>el.addEventListener(e,ev=>{ev.preventDefault();el.classList.remove('over')}));
+  el.addEventListener('drop',ev=>{
+    if([...(ev.dataTransfer.items||[])].some(i=>i.webkitGetAsEntry&&i.webkitGetAsEntry()&&i.webkitGetAsEntry().isDirectory))return toast('drop one clip, not a folder');
+    const fs=[...ev.dataTransfer.files];const f=fs.find(isVid);if(!f)return toast(fs.length?`${fs[0].name} is not a video clip`:'nothing to copy');
+    if(fs.length>1)toast('one clip at a time · using '+f.name);gUpload(f)});
+})();
+$('#gPathGo').onclick=async()=>{const r=await post('/api/check',{path:$('#gPath').value.trim()});if(r.error){alert(r.error);return}if(r.kind!=='video'){alert('that is not a video clip');return}setGClip(r.path,r.name,r.duration,r);$('#gPath').value=''};
+bindDrop($('#gDropAud'),$('#gFileAud'),'gaudio');
+segBind('#gSnd','gSnd',()=>{$('#gSongBox').hidden=S.gSnd!=='song';gModDraw();gate()});
+$('#gLenS').addEventListener('input',()=>{$('#gStartRow').style.display=lenRead('g')?'none':'';gClipMeta();est()});lenRead('l');lenRead('g');
+segBind('#gLook','gLook',gLookDraw);
+$('#gStart').addEventListener('input',est);$('#gW').addEventListener('input',est);
+$('#gFreeze').addEventListener('change',()=>{gFreezeDraw();document.querySelectorAll('#gPresets .chip').forEach(c=>c.classList.remove('on'))});
+document.querySelectorAll('#gSet input[type=range][data-k]').forEach(el=>el.addEventListener('input',()=>{gVals();gModDraw();if(el.closest('#gBoxGranular'))document.querySelectorAll('#gPresets .chip').forEach(c=>c.classList.remove('on'))}));
+$('#gStrict').addEventListener('change',()=>{   // on: every look's strict controls move to granular.py's STRICT; off: put back what strict moved. A preset chip turns it off.
+  if($('#gStrict').checked)gStrictOn();else{const chip=gStrictOff();document.querySelectorAll('#gPresets .chip').forEach(c=>c.classList.toggle('on',c.dataset.p===chip))}
+  gVals();gStrictDraw();est()});
+$('#gPresets').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const P=GPRE[b.dataset.p]||{};
+  if($('#gStrict').checked||S.gPre)gStrictOff();$('#gStrict').checked=false;gStrictDraw();   // paint + outline controls strict moved go back too
+  Object.entries(GDEF).forEach(([k,x])=>$('#g_'+k).value=k in P?P[k]:x);
+  ['exposure','sat','paper'].forEach(k=>$('#g_'+k).value='');
+  $('#gFreeze').checked=!!P.freeze;$('#gFreezeAt').value=P.freeze_at||0.7;
+  document.querySelectorAll('#gPresets .chip').forEach(c=>c.classList.toggle('on',c===b&&b.dataset.p!=='reset'));gVals();gFreezeDraw();gModDraw()});
+// ---- 11-25: Light presets (granular.py LIGHT_PRESETS, over LIGHT's defaults = the sliders' own defaults)
+const LPRE={flat:{},shaded:{shade:0.8},'flat close':{body:0.61,ground:0.055,streaks:0,glow:0.6,reach:0},'shaded close':{body:0.61,ground:0.055,streaks:0,glow:0.6,reach:0,shade:0.8}};
+const LOWN=el=>!['cutout','steady','step'].includes(el.dataset.k);   // what a preset sets (not cut-out quality, steadiness or frame rate)
+$('#lightPre').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const P=LPRE[b.dataset.p]||{};
+  document.querySelectorAll('#gBoxLight input[type=range][data-k]').forEach(el=>{if(LOWN(el))el.value=el.dataset.k in P?P[el.dataset.k]:el.defaultValue});
+  document.querySelectorAll('#lightPre .chip').forEach(c=>c.classList.toggle('on',c===b));gVals()});
+document.querySelectorAll('#gBoxLight input[type=range][data-k]').forEach(el=>{if(LOWN(el))el.addEventListener('input',()=>document.querySelectorAll('#lightPre .chip').forEach(c=>c.classList.remove('on')))});
+// ---- 11-25 (friends beta): each look shows its presets and four main settings; the rest sits under Fine-tune (closed)
+const GMAIN={gBoxGranular:['g_density','g_size_dark','g_decay','g_step'],gBoxPaint:['p_ink_amount','p_brush','p_exposure','p_step'],
+  gBoxOutline:['o_edge_gain','o_colorama','o_palette','o_step'],gBoxLight:['l_colorama','l_body','l_glow','l_step']};
+let GFINE={};try{GFINE=JSON.parse(localStorage.getItem('gFine')||'{}')||{}}catch(e){}
+Object.entries(GMAIN).forEach(([box,ids])=>{const b=$('#'+box);
+  const main=document.createElement('div');main.className='grp gmain';main.innerHTML='<div class="grph">Main</div>';
+  ids.forEach(id=>main.appendChild($('#'+id).closest('.sl')));
+  const fine=document.createElement('div');fine.className='gfine';
+  [...b.children].filter(el=>!el.classList.contains('gera')&&!el.classList.contains('gpre')).forEach(el=>fine.appendChild(el));
+  fine.querySelectorAll('.grp').forEach(g=>{if(!g.querySelector('.sl,label,.fieldrow,input,select'))g.remove()});   // a group left with nothing
+  const n=fine.querySelectorAll('.sl,input[type=checkbox],details').length;
+  const tog=document.createElement('button');tog.type='button';tog.className='gfinetog';tog.innerHTML='<span>Fine-tune</span><small>'+n+' more</small>';
+  (b.querySelector(':scope>.gpre')||b.querySelector(':scope>.gera')).after(main);main.after(tog);tog.after(fine);
+  b.classList.toggle('fineopen',!!GFINE[box]);
+  tog.onclick=()=>{b.classList.toggle('fineopen');GFINE[box]=b.classList.contains('fineopen')?1:0;try{localStorage.setItem('gFine',JSON.stringify(GFINE))}catch(e){}}});
+// ---- 11-25: the look settings in three layouts (a: left column · b: across the middle · c: a still of the clip in the
+// middle, settings on the right like After Effects' Effect Controls), Colorama as a grouped menu, groups that fold.
+const GCOL='Carribean,Clay,Copper,Deep Ocean,Earthenware,Fire,Fire And Smoke,Golden 1,Golden 2,Granite,Horizon,Leather,Moldy,Mossy,Old Glory,Rusty,Sepia 1,Sepia 2,Skink,Sunset,Hue Cycle,Negative,Ramp Red,Ramp Green,Ramp Blue,Ramp Grey,RGB,Saturation Ramp,Solarize Red,Solarize Green,Solarize Blue,Solarize Grey'.split(',');   // granular.py COLORAMA order: value = index + 1
+function gColMenu(sel){const el=$(sel),def=+el.dataset.def,o=(v,t)=>`<option value="${v}"${v===def?' selected':''}>${esc(t)}</option>`;
+  el.innerHTML='<optgroup label="His scenes">'+o(6,'Fire · NIHITI red')+(el.dataset.blue?o(33,'NIHITI blue · his pale-blue scenes'):'')+'</optgroup>'
+    +'<optgroup label="After Effects looks">'+GCOL.slice(0,20).map((n,i)=>i===5?'':o(i+1,n)).join('')+'</optgroup>'
+    +'<optgroup label="Utility ramps">'+GCOL.slice(20).map((n,i)=>o(i+21,n)).join('')+'</optgroup>'
+    +'<optgroup label="None">'+o(0,el.dataset.zero)+'</optgroup>'}
+function gColName(id){const el=$('#'+id),o=el&&el.options[el.selectedIndex];return o?o.textContent.split(' · ')[0]:''}
+gColMenu('#l_colorama');gColMenu('#o_colorama');
+document.querySelectorAll('#gSet select[data-k]').forEach(el=>el.addEventListener('change',gVals));
+let GFOLD={};try{GFOLD=JSON.parse(localStorage.getItem('gFold')||'{}')||{}}catch(e){}   // folded groups, per look
+function gGrpKey(g){const box=g.closest('[id^=gBox]');return (box?box.id:'')+':'+g.querySelector('.grph').firstChild.textContent.trim()}
+document.querySelectorAll('#gSet .grp').forEach(g=>{const h=g.querySelector(':scope>.grph');if(!h)return;const sm=document.createElement('span');sm.className='gsum';h.appendChild(sm);
+  if(GFOLD[gGrpKey(g)])g.classList.add('shut');
+  h.addEventListener('click',()=>{g.classList.toggle('shut');GFOLD[gGrpKey(g)]=g.classList.contains('shut')?1:0;try{localStorage.setItem('gFold',JSON.stringify(GFOLD))}catch(e){}})});
+function gGrpSums(){document.querySelectorAll('#gSet .grp').forEach(g=>{const sm=g.querySelector('.gsum');if(!sm)return;   // what a folded group is set to
+  sm.textContent=[...g.querySelectorAll('.sl')].filter(r=>!r.closest('[hidden]')).slice(0,3).map(r=>{const c=r.querySelector('select'),b=r.querySelector('.slh b');
+    return r.querySelector('.slh span').textContent.toLowerCase()+' '+(c?gColName(c.id):b?b.textContent:'')}).join(' · ')})}
+function gHint(sl){const bar=$('#gHintBar');document.querySelectorAll('#gSet .sl.cur').forEach(x=>x.classList.remove('cur'));   // layout c: help for the setting you're on
+  if(!sl){bar.innerHTML='<b>Help</b><i>Point at a setting, or touch it: what it does shows here.</i>';return}
+  sl.classList.add('cur');const h=sl.querySelector('.hint'),ud=[...sl.querySelectorAll('.ud i')].filter(i=>!i.hidden&&i.textContent);
+  bar.innerHTML='<b>'+esc(sl.querySelector('.slh span').textContent)+'</b>'+(h?esc(h.textContent):'')+ud.map(i=>'<i'+(i.classList.contains('dep')?' class="dep"':'')+'>'+esc(i.textContent)+'</i>').join('')}
+['pointerover','pointerdown','focusin'].forEach(ev=>$('#gSideIn').addEventListener(ev,e=>{const sl=e.target.closest('.sl');if(sl)gHint(sl)}));
+function gLayout(){const L=S.gLay||'a',on=S.mode==='granular',set=$('#gSet');if(!set)return;
+  document.body.classList.toggle('gl-b',on&&L==='b');document.body.classList.toggle('gl-c',on&&L==='c');
+  const host=!on||L==='a'?$('#gHome'):L==='b'?$('#gMid'):$('#gSideIn');if(set.parentElement!==host)host.appendChild(set);
+  $('#gMid').hidden=!(on&&L==='b');$('#gSide').hidden=!(on&&L==='c');$('#gStill').hidden=!(on&&L==='c');
+  const aw=$('#gAway');aw.hidden=L==='a';aw.textContent=L==='b'?'The look settings are in the middle →':'The look settings are on the right, with a still of your clip in the middle →';
+  [...$('#gLay').children].forEach(b=>b.classList.toggle('on',b.dataset.v===L));
+  if(on&&L==='c'){gHint(null);gStillAsk()}}
+$('#gLay').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.gLay=b.dataset.v;try{localStorage.setItem('gLayout',S.gLay)}catch(x){}gLayout()});
+// the still (layout c): granular.py --still through /api/granular/still, redrawn a moment after a setting is let go
+var GSV={n:0,key:'',t:null};
+const GLOOKN={granular:'Granular',paint:'Paint',outline:'Outline',light:'Light'};
+function gSvRange(reset){const r=$('#gSvAt'),d=S.gClipDur||15;r.max=Math.max(0.1,d-0.1).toFixed(2);
+  if(reset)r.value=Math.min(+r.max,Math.max(0,(+$('#gStart').value||0)+1)).toFixed(2);if(+r.value>+r.max)r.value=r.max;
+  $('#gSvD').textContent=gDur(d);$('#gSvT').textContent=gDur(+r.value);gStillAsk()}
+function gStillAsk(){clearTimeout(GSV.t);GSV.t=setTimeout(gStillGo,350)}
+async function gStillGo(){if(S.mode!=='granular'||(S.gLay||'a')!=='c')return;
+  const sv=$('#gSv'),st=$('#gStillS');
+  if(!S.gClip){sv.classList.remove('has','busy');st.textContent='';st.className='s';GSV.key='';return}
+  const body={source:S.gClip,look:S.gLook,settings:gSettings(),at:+$('#gSvAt').value,width:Math.min(640,+$('#gW').value||960),seed:+$('#gSeed').value||3};
+  const key=JSON.stringify(body);if(key===GSV.key)return;GSV.key=key;const n=++GSV.n;
+  const col=S.gLook==='light'||(S.gLook==='outline'&&+$('#o_colorama').value)?' · '+gColName(S.gLook==='light'?'l_colorama':'o_colorama'):'';
+  $('#gStillT').textContent='Still · '+gDur(body.at)+' · '+GLOOKN[S.gLook]+col;
+  sv.classList.add('busy');st.className='s run';st.textContent='drawing…';
+  let r;try{r=await post('/api/granular/still',body)}catch(e){r={error:'the app did not answer ('+e.message+')'}}
+  if(n!==GSV.n||(r&&r.stale))return;   // a newer one is on its way
+  if(!r||r.error||!r.after){sv.classList.remove('busy');GSV.key='';st.className='s bad';st.textContent=(r&&r.error)||'the preview failed';return}
+  const ims=[r.after,r.before].map(f=>{const im=new Image();im.src=fileUrl(f)+'&v='+n;return im});   // load both, then swap: no flash
+  await Promise.all(ims.map(im=>im.decode().catch(()=>{})));
+  if(n!==GSV.n)return;
+  sv.classList.remove('busy');$('#gSvA').src=ims[0].src;$('#gSvB').src=ims[1].src;sv.classList.add('has');
+  st.className='s ok';st.textContent='up to date · '+r.secs+' s'+(S.gLook==='granular'?' · the render\'s grains fall in other spots':'')}
+$('#gSet').addEventListener('change',gStillAsk);
+$('#gSet').addEventListener('click',()=>setTimeout(gStillAsk,0));   // look, preset chips (deduped: same settings, no new still)
+['#gW','#gSeed'].forEach(id=>$(id).addEventListener('change',gStillAsk));
+$('#gSvAt').addEventListener('input',()=>$('#gSvT').textContent=gDur(+$('#gSvAt').value));
+$('#gSvAt').addEventListener('change',gStillAsk);
+(function(){const sv=$('#gSv');let dn=false;const at=e=>{const r=sv.getBoundingClientRect();sv.style.setProperty('--split',Math.max(0,Math.min(100,(e.clientX-r.left)/r.width*100)).toFixed(1)+'%')};   // drag: before | after
+  sv.addEventListener('pointerdown',e=>{dn=true;sv.setPointerCapture(e.pointerId);at(e)});sv.addEventListener('pointermove',e=>{if(dn)at(e)});
+  ['pointerup','pointercancel'].forEach(ev=>sv.addEventListener(ev,()=>dn=false))})();
+try{S.gLay=localStorage.getItem('gLayout')||'a'}catch(e){S.gLay='a'}if(!['a','b','c'].includes(S.gLay))S.gLay='a';
+$('#gStrict').checked=false;gVals();gFreezeDraw();gModDraw();gLookDraw();gSvRange(false);gLayout();
 
 // ---- LATENT DREAM controls: values, what-drives-what map, interaction notes, presets
-const LS=['l_speed_fpm','l_motion_react','l_pulse_react','l_psi','lBend','lSpin','lDecay','l_decay_shape','l_flash'];
-const PRESETS={calm:{l_speed_fpm:6,l_motion_react:0.3,l_pulse_react:0.2,l_psi:0.7,lBend:0,lSpin:0,lDecay:0,l_flash:0},
-  pulse:{l_speed_fpm:12,l_motion_react:0.5,l_pulse_react:1.0,l_psi:0.8,lBend:0.3,lSpin:0,lDecay:0,l_flash:0.35},
-  chaos:{l_speed_fpm:30,l_motion_react:1.1,l_pulse_react:1.2,l_psi:1.1,lBend:0.8,lSpin:0.6,lDecay:0,l_flash:0.5},
-  fade:{l_speed_fpm:8,l_motion_react:0.4,l_pulse_react:0.4,l_psi:0.8,lBend:0.2,lSpin:0,lDecay:0.9,l_decay_shape:2.2,l_flash:0.1},
-  reset:{l_speed_fpm:12,l_motion_react:0.5,l_pulse_react:0.5,l_psi:0.8,lBend:0,lSpin:0,lDecay:0,l_decay_shape:1.6,l_flash:0.2}};
+const LS=['l_speed_fpm','l_motion_react','l_pulse_react','l_psi','lBend','lSpin','lDecay','l_decay_shape'];
+const PRESETS={calm:{l_speed_fpm:6,l_motion_react:0.3,l_pulse_react:0.2,l_psi:0.7,lBend:0,lSpin:0,lDecay:0},
+  pulse:{l_speed_fpm:12,l_motion_react:0.5,l_pulse_react:1.0,l_psi:0.8,lBend:0.3,lSpin:0,lDecay:0},
+  chaos:{l_speed_fpm:30,l_motion_react:1.1,l_pulse_react:1.2,l_psi:1.1,lBend:0.8,lSpin:0.6,lDecay:0},
+  fade:{l_speed_fpm:8,l_motion_react:0.4,l_pulse_react:0.4,l_psi:0.8,lBend:0.2,lSpin:0,lDecay:0.9,l_decay_shape:2.2},
+  reset:{l_speed_fpm:12,l_motion_react:0.5,l_pulse_react:0.5,l_psi:0.8,lBend:0,lSpin:0,lDecay:0,l_decay_shape:1.6}};
 const v=id=>+$('#'+id).value;
 function lsDraw(){
   LS.forEach(id=>{const x=v(id);$('#'+id+'V').textContent=(id==='l_speed_fpm'?x:x.toFixed(2))});
   document.querySelectorAll('.sl[data-needs]').forEach(r=>r.classList.toggle('off',v(r.dataset.needs)===0));
   const tag=(t,on)=>`<span class="${on?'on':''}${t.length>13?' wide':''}" title="${t}">${t}</span>`;   /* long ones take the full row */
-  $('#mapH').innerHTML=tag('drift',v('l_motion_react')>0)+tag('spin · turn',v('lSpin')>0)+tag('new forms land on beats',true);
-  $('#mapD').innerHTML=tag('pulse',v('l_pulse_react')>0)+tag('flash',v('l_flash')>0)+tag('bend · shred + stutter',v('lBend')>0)+tag('spin · push',v('lSpin')>0);
-  $('#mapT').innerHTML=tag('decay',v('lDecay')>0);
+  const classic=$('#l_classic').checked;   /* classic (2021) math changes forms on a fixed clock; only the new math snaps them to beats */
+  $('#mapH').innerHTML=tag('drift',v('l_motion_react')>0)+tag('spin · turn',v('lSpin')>0);
+  $('#mapD').innerHTML=tag('pulse',v('l_pulse_react')>0)+tag('bend · shred + stutter',v('lBend')>0)+tag('spin · push',v('lSpin')>0)+(classic?'':tag('new forms land on beats',true));
+  $('#beatsHint').textContent=classic?'Classic math: on a steady clock, not the beat.':'Lands on beats.';
+  $('#mapT').innerHTML=tag('decay',v('lDecay')>0)+(classic?tag('new forms · steady clock',true):'');
   const sh=v('l_decay_shape'), half=Math.round(100*Math.pow(0.5,1/sh));
   $('#decayWhen').textContent=v('lDecay')>0?`half-forgotten about ${half}% of the way through the song`:'only matters when decay is above 0';
   const n=[];
-  if(v('l_pulse_react')>0.8&&v('l_flash')>0.35) n.push('pulse + flash both hit on the drums → strobe-like');
   if(v('lBend')>0.5&&v('l_pulse_react')>0.8) n.push('bend + drum pulse both react to hits → very twitchy');
   if(v('l_speed_fpm')>24&&v('l_motion_react')>0.9) n.push('fast new forms + strong drift → busy; lower one to let forms breathe');
   if(v('lSpin')>0&&v('lDecay')>0.6) n.push('spin keeps turning while decay fades it → a slow swirl into fog');
@@ -635,6 +1164,7 @@ function lsDraw(){
 }
 LS.forEach(id=>$('#'+id).addEventListener('input',()=>{lsDraw();document.querySelectorAll('#lPresets .chip').forEach(c=>c.classList.remove('on'))}));
 $('#lPresets').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const P=PRESETS[b.dataset.p];Object.entries(P).forEach(([k,x])=>$('#'+k).value=x);document.querySelectorAll('#lPresets .chip').forEach(c=>c.classList.toggle('on',c===b&&b.dataset.p!=='reset'));lsDraw()});
+$('#l_classic').addEventListener('change',lsDraw);
 lsDraw();
 
 // ---- transport: play / pause / scrub / jog the picture — a finished video, or the frames a render has made so far
@@ -646,7 +1176,7 @@ function tpSync(j){
   const v=tpVideo();
   if(v){TP.kind='video';TP.held=false;tpStop();TP.fps=(S.view==='live'&&j&&j.fps)||24;
     if(!v._tp){v._tp=1;['timeupdate','play','pause','loadedmetadata','volumechange'].forEach(e=>v.addEventListener(e,tpPaint))}}
-  else if(S.view==='live'&&j&&j.running&&j.latest_frame){TP.kind='frames';TP.out=j.out;TP.fps=(j.fps||24)/(j.draft?2:1);   /* draft frames run at half rate */TP.n=j.frames_done;if(!TP.held)TP.i=Math.max(0,TP.n-1)}
+  else if(S.view==='live'&&j&&j.running&&j.latest_frame){TP.kind='frames';TP.out=j.out;TP.fps=j.preview_fps||(j.fps||24)/(j.draft?2:1);   /* draft frames run at half rate; collage: one per picture */TP.n=j.preview_frames||j.frames_done;if(!TP.held)TP.i=Math.max(0,TP.n-1)}
   else{TP.kind=null;TP.held=false;tpStop()}
   tpPaint();
 }
@@ -720,10 +1250,37 @@ $('#tpSound').onclick=()=>{const v=tpVideo();if(v){v.muted=!v.muted;if(!v.muted&
   let acc=0;view.addEventListener('wheel',e=>{if(!TP.kind||Math.abs(e.deltaX)<=Math.abs(e.deltaY))return;e.preventDefault();
     acc+=e.deltaX;const step=Math.trunc(acc/6);if(step){acc-=step*6;tpVideo()?.pause();tpStep(step/TP.fps)}},{passive:false});
 })();
+// ---- keyboard (11-18). Nothing fires while typing in a text field; arrows on a focused slider move the slider.
+const KEYS=[['Space','play / pause'],['← →','one frame back / forward (shift: 1 s)'],['Home End','start / end'],['M','sound on / off'],
+  ['Delete','move the video you are watching (or the selected renders) to the Trash · undo for 8 s'],['Esc','back to live · close pickers'],['⌘ ↩','Render'],['?','this list']];
+function typing(t){if(!t||!t.tagName)return false;if(t.isContentEditable||t.tagName==='TEXTAREA'||t.tagName==='SELECT')return true;
+  return t.tagName==='INPUT'&&!/^(range|checkbox|radio|button|submit|file|color)$/i.test(t.type)}
+function keySheet(show){let k=$('#keysEl');if(show===undefined)show=!k||k.hidden;
+  if(!k){k=document.createElement('div');k.id='keysEl';k.className='keys';k.innerHTML='<div role="dialog" aria-label="Keyboard shortcuts"><h3>Keys</h3><table>'+KEYS.map(([a,b])=>`<tr><td>${a.split(' ').map(x=>'<kbd>'+esc(x)+'</kbd>').join(' ')}</td><td>${esc(b)}</td></tr>`).join('')+'</table></div>';k.onclick=()=>keySheet(false);document.body.appendChild(k)}
+  k.hidden=!show}
 document.addEventListener('keydown',e=>{
-  if(!TP.kind||e.metaKey||e.ctrlKey||e.altKey||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
+  const t=e.target;
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();const g=$('#go');if(!g.disabled&&!(S.job&&S.job.running))g.click();return}   // never Stop by accident
+  if(e.key==='Escape'){
+    const k=$('#keysEl');if(k&&!k.hidden){keySheet(false);return}
+    if(typing(t)){t.blur();return}
+    if(!$('#lPicker').hidden){$('#lPickTog').click();return}
+    if(S.sel){$('#libSel').click();return}
+    if(S.view==='out'){backToLive();return}
+    if(TP.kind==='frames'&&TP.held){tpLive();return}
+    return}
+  if(e.metaKey||e.ctrlKey||e.altKey||typing(t))return;
+  if(e.key==='?'){e.preventDefault();keySheet();return}
+  if(e.key==='Delete'||e.key==='Backspace'){
+    if(S.sel&&S.picked.size){e.preventDefault();removeOutputs([...S.picked])}
+    else if(S.view==='out'&&S.viewingOut){e.preventDefault();removeOutputs([S.viewingOut])}
+    return}
+  if(!TP.kind)return;
+  const slider=t.tagName==='INPUT'&&t.type==='range';
   if(e.key===' '){e.preventDefault();tpToggle()}
-  else if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();if(TP.kind==='video')tpVideo()?.pause();tpStep((e.key==='ArrowLeft'?-1:1)*(e.shiftKey?1:1/TP.fps))}
+  else if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&!slider){e.preventDefault();if(TP.kind==='video')tpVideo()?.pause();tpStep((e.key==='ArrowLeft'?-1:1)*(e.shiftKey?1:1/TP.fps))}
+  else if((e.key==='Home'||e.key==='End')&&!slider){e.preventDefault();if(TP.kind==='video')tpVideo()?.pause();tpSeek(e.key==='Home'?0:tpLen())}
+  else if(e.key==='m'||e.key==='M'){const v=tpVideo();if(v){e.preventDefault();v.muted=!v.muted;if(!v.muted&&v.paused)v.play()}}
 });
 refresh();setInterval(refresh,2000);
 </script>
@@ -740,28 +1297,30 @@ function sums(){
   const set=(arm,step,txt,done)=>{const sec=document.querySelector('#'+arm+' .step[data-step="'+step+'"]');if(!sec)return;sec.querySelector('.sum').textContent=txt;sec.classList.toggle('done',!!done);};
   // latent
   const lm=T('lModelName'); set('mLatent','source',(lm&&lm!=='pick a model')?lm+(T('lCurMeta')?' · '+T('lCurMeta'):''):'Pick a model',!!S.lModel);
-  set('mLatent','sound',S.lAudio?T('lAudN')+' · '+(S.lLen==='full'?'whole song':'15-sec test at '+V('lStart')+' s'):'Drop a song',!!S.lAudio);
+  set('mLatent','sound',S.lAudio?T('lAudN')+' · '+(S.lLen==='full'?'whole song':T('lLenV')+' from '+V('lStart')+' s'):'Drop a song',!!S.lAudio);
   const lp=document.querySelector('#lPresets .chip.on'); set('mLatent','look',(lp?lp.textContent+' · ':'')+T('l_speed_fpmV')+' forms/min · drift '+T('l_motion_reactV')+(+V('lBend')>0?' · bend':'')+(+V('lDecay')>0?' · decay':''),true);
   set('mLatent','output',(V('l_size')||'512')+' px · '+(V('l_fps')||'24')+' fps'+(V('l_draft')&&q('#l_draft').checked?' · draft':'')+(V('lName')?' · '+V('lName'):''),true);
-  // collage
-  set('mCollage','source',S.cLanes.size?S.cLanes.size+(S.cLanes.size===1?' folder':' folders'):'Pick folders of pictures',S.cLanes.size>0);
-  set('mCollage','sound',S.cAudio?T('cAudN')+' · '+(S.cLen==='full'?'whole song':'15-sec test at '+V('cStart')+' s'):'Drop a song',!!S.cAudio);
-  set('mCollage','look',segOn('cTech')+' · hold '+T('cHoldV')+(S.cTech!=='stepin'?' · lens '+T('cLensV'):' · '+T('cStepsV')+' steps')+(q('#cPrint')&&q('#cPrint').checked?' · print + scan':''),true);
-  set('mCollage','output',segOn('cFrame')+(V('cLabel')?' · '+V('cLabel'):'')+(V('cName')?' · '+V('cName'):''),true);
   // bank
-  const nd=(S.useDropped?S.dropped.length:0), nl=S.lanes.size;
+  const nd=(S.useDropped?S.dropped.filter(f=>!S.droppedOff.has(f.path)).length:0), nl=S.lanes.size;
   set('mBank','source',(nd||nl)?[nd?nd+(nd===1?' clip':' clips'):null,nl?nl+(nl===1?' folder':' folders'):null].filter(Boolean).join(' · '):'Drop clips',nd>0||nl>0);
   set('mBank','sound',S.bAudio?T('bAudN')+' · '+(S.bLen==='full'?'whole song':'snip '+V('bStart')+' s for '+V('bDur')+' s'):'Drop a song',!!S.bAudio);
-  set('mBank','look',S.fx.size+' treatments on',true);
+  set('mBank','look',(S.moves.size?[...S.moves].join(' / ')+' on '+T('bMoveChanceV')+' of shots':'no moves')+(S.bTape!=='off'?' · '+segOn('bTape')+' '+segOn('bGen')+' gen · damage '+T('bDamageV'):' · no tape'),true);
   set('mBank','output',V('bW')+' × '+V('bH')+' · '+V('bFps')+' fps'+(V('bName')?' · '+V('bName'):''),true);
+  // granular
+  set('mGranular','source',S.gClip?T('gClipN')+(S.gClipDur?' · '+gDur(S.gClipDur):''):'Drop a clip',!!S.gClip);
+  set('mGranular','sound',(S.gSnd==='song'?(S.gAudio?T('gAudN')+' from '+(V('gSongStart')||0)+' s':'pick a song'):"clip's own sound")+' · '+(S.gLen==='full'?'whole clip':T('gLenV')+' from '+(V('gStart')||0)+' s'),S.gSnd!=='song'||!!S.gAudio);
+  const gp=document.querySelector('#gPresets .chip.on'), gmod=S.gSnd==='song'&&S.gAudio&&['g_mod_density','g_mod_size','g_mod_spray'].some(id=>+V(id)>0);
+  set('mGranular','look',(q('#gStrict').checked?'Takagi strict · ':'')+(S.gLook==='paint'?'Paint · ink '+T('p_ink_amountV')+' · brush '+T('p_brushV')+' · '+T('p_stepV'):S.gLook==='light'?'Light · '+((q('#lightPre .chip.on')||{}).textContent||'custom')+' · '+gColName('l_colorama')+' · '+T('l_stepV'):S.gLook==='outline'?'Outline · lines '+(+$('#o_ae_lines').value?T('o_ae_linesV'):gDead('o_edge_gain')?'strict':T('o_edge_gainV'))+' · '+(+$('#o_colorama').value?'Colorama '+gColName('o_colorama'):T('o_paletteV')==='auto'?'new palette each shot':'palette '+T('o_paletteV')):
+    'Granular'+(gp?' · '+gp.textContent:'')+' · density '+T('g_densityV')+' · tail '+T('g_decayV')+(q('#gFreeze').checked?' · freeze at '+(V('gFreezeAt')||0.7)+' s':'')+(gmod?' · audio mod':'')),true);
+  set('mGranular','output',(V('gW')||'960')+' px max · seed '+(V('gSeed')||'3')+(V('gName')?' · '+V('gName'):''),true);
   // first open: the first step not done, per arm, only if none is open yet
   qa('.arm').forEach(arm=>{if(arm.dataset.init)return;arm.dataset.init='1';if(arm.querySelector('.step.open'))return;const first=[...arm.querySelectorAll('.step')].find(s=>!s.classList.contains('done'))||arm.querySelector('.step');if(first)first.classList.add('open');});
 }
-document.querySelector('.left').addEventListener('input',()=>sums());
-document.querySelector('.left').addEventListener('click',()=>setTimeout(sums,0));
+document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('.left,#gSet'))sums()});   // #gSet moves out of .left in the Granular tab's Middle / Preview layouts
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.left,#gSet'))setTimeout(sums,0)});
 setInterval(sums,1500); setTimeout(sums,300);
 // library filter
-const lf=q('#libFilt'); if(lf){lf.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;lf.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));S.libFilter=b.dataset.f||'';S.sig.lib=null;refresh();});}
+const lf=q('#libFilt'); if(lf){lf.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;lf.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));S.libFilter=b.dataset.f||'';S.libShow=60;S.sig.lib=null;refresh();});}
 // Render / Stop labels on first paint
 const go=q('#go'); if(go&&/^go$/i.test(go.textContent.trim()))go.textContent='Render';
 })();

@@ -2,7 +2,7 @@
 """
 LATENT DREAM — audio-reactive StyleGAN latent walk (the Lucid Sonic Dreams method, on a Mac).
 
-Unlike hallucinate.py (Stable Diffusion img2img feedback, where every frame is a re-paint of the
+Unlike the retired Stable Diffusion mode (img2img feedback, where every frame is a re-paint of the
 last one), this walks smoothly through a trained GAN's latent space, so every frame is a clean
 sample from the model and nothing accumulates or melts.
 
@@ -33,7 +33,8 @@ FF = shutil.which("ffmpeg") or "/opt/homebrew/bin/ffmpeg"
 
 
 def spec_norm(y, sr, hop, n_mels=512):
-    """LSD's signal: per-frame max of the mel spectrogram, normalised 0..1."""
+    """LSD's signal: per-frame max of the mel spectrogram, normalised 0..1. Same call as upstream get_spec_norm
+    (lucidsonicdreams/helper_functions.py): n_mels=512, librosa's default fmax (sr/2), checked 11-18."""
     s = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=n_mels, hop_length=hop).max(axis=0)
     return (s - s.min()) / (np.ptp(s) + 1e-9)
 
@@ -75,7 +76,6 @@ def main():
     p.add_argument("--truncation", type=float, default=1.0)
     p.add_argument("--psi", type=float, default=0.8, help="StyleGAN truncation_psi at synthesis")
     p.add_argument("--fine_from", type=int, default=8, help="plus mode: first W layer that takes the pulse")
-    p.add_argument("--flash", type=float, default=0.0, help="brightness flash on drums (LSD flash effect) 0..1")
     p.add_argument("--seed", type=int, default=1)
     p.add_argument("--draft", action="store_true", help="render half the frames, blend the in-betweens on encode (~2x faster)")
     p.add_argument("--bend", type=float, default=0.0, help="NETWORK BENDING 0..1: shred texture channels on drums, stutter (echo an old frame's structure) on big hits")
@@ -162,7 +162,7 @@ def main():
         os.rename(frames, f"{frames}-old-{int(time.time())}")
     os.makedirs(frames, exist_ok=True)
 
-    from PIL import Image, ImageEnhance
+    from PIL import Image
     import torch.nn.functional as F
     ST = {"i": 0, "angle": 0.0, "zoom": 1.0, "shred": 0.0, "decay": 0.0, "stutter": False}
     trng = torch.Generator().manual_seed(a.seed)
@@ -211,7 +211,6 @@ def main():
             getattr(G.synthesis, f"b{res}").register_forward_hook(make_hook(res))
     onset_thr = np.percentile(pulse, 92)
     m_angle = 0.0
-    perc_env = pulse
     t0 = time.time()
     with torch.no_grad():
         for i in range(n):
@@ -243,8 +242,6 @@ def main():
                 out = Image.fromarray(im[:, :, :3])
             if a.size != out.width:
                 out = out.resize((a.size, a.size), Image.LANCZOS)
-            if a.flash > 0:
-                out = ImageEnhance.Brightness(out).enhance(1 + a.flash * float(perc_env[i]) ** 2)
             out.save(f"{frames}/f_{i:06d}.png", compress_level=1)   # temp frames: fast write, not small
             if i % 48 == 0:
                 el = time.time() - t0

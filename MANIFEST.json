@@ -1,8 +1,8 @@
 {
- "version": "2026.11.16",
+ "version": "2026.11.25",
  "files": {
   "Liminal Engine.app/Contents/Info.plist": {
-   "sha": "a0321011ca58913dc1a52e00e085bdc1dcdcd042aee9bfacfe0466cb49b2de00",
+   "sha": "abeba575a935c5c34dad4cbf74a1c4fc41e299127f01c0199414a9395144fefe",
    "mode": 420
   },
   "Liminal Engine.app/Contents/MacOS/launch": {
@@ -14,71 +14,67 @@
    "mode": 420
   },
   "READ ME FIRST.html": {
-   "sha": "d6c768e2e74e5830507b7317fac83190819df403d9d323fe71b0268f9acb9657",
+   "sha": "8af6b29c80dfe4fd9227fd0f9de40ad090977fa5c748cb9f03a3289c16c582bb",
    "mode": 420
   },
   "Set Up.command": {
    "sha": "aad63073251ee2054ec3a202038bfde0f254f989de3dcac4007ad7426e588dd6",
    "mode": 493
   },
+  "app/ae_colorama.npy": {
+   "sha": "8ff3c30c7ef690df58cedeaa55bb98e011fd9ebc70661c4ded0ec4af3a0efb5b",
+   "mode": 420
+  },
   "app/bank.py": {
-   "sha": "f7dc420a795af535fd2cc2071d2c4939f4d63007dee2a18b80b13686c2abbce9",
+   "sha": "6d29c1c0c9a7a88eb7b1eb289260e85af19fd5e4ba42bee1d693a87dedf8f80e",
    "mode": 420
   },
   "app/channel.json": {
    "sha": "40a1e47a53519a70f5de8b4052f700cab383f17d09072d61b216ecd00d91a61d",
    "mode": 420
   },
-  "app/collage.py": {
-   "sha": "db9e7b63ceff9db74d3a4af9a3eed0bbbfad59a9f054bbf5aab3b5f5376088d1",
-   "mode": 420
-  },
   "app/crt.html": {
-   "sha": "084260792fbaa3676a2f91494052cce4d77e93be8a057d4b1bfc1d0801afe292",
+   "sha": "cb299a1133ac9b2b6c61edeb4a182b43918910bc47702ce7b39cf8ad2eb23b16",
    "mode": 420
   },
-  "app/crt_logos/amfm-clean.png": {
-   "sha": "959e93ff99e43fd734535176b6bff9c94e97b2d1c78e47f214aa09e43eeffa6e",
+  "app/crt_logos/test-card.png": {
+   "sha": "2514a0dba774c645500aa18f6bcbb17ce8ccdf69d4a08e32822ee948cab6c4bd",
    "mode": 420
   },
-  "app/crt_logos/amfm-logo-dev-1-01.png": {
-   "sha": "15d633e5f031875458269b54f348505bb3982198d3f053c233566dca36671d56",
+  "app/era_texture.py": {
+   "sha": "eff478d968ddd9570d500ae49b1174d3ce03c7fe82630c57f2419de95f3e3da1",
    "mode": 420
   },
-  "app/crt_logos/amfm-logo-dev-1-02.png": {
-   "sha": "5944d26a4beff9e4ea5400fdbfacead566498993eadbbaba6520f784cb049b37",
-   "mode": 420
-  },
-  "app/crt_logos/amfm-logo-dev-1-03.png": {
-   "sha": "47ac66d9200b43da7f8cf464bb6a85d41b8acf751754db0af7416de61526291e",
-   "mode": 420
-  },
-  "app/crt_logos/amfm-logo-dev-1-04.png": {
-   "sha": "8fc85bda86dd49b6de93e248fe59da2a822a6cca309084e8157d206fe61bac95",
-   "mode": 420
-  },
-  "app/crt_sound.js": {
-   "sha": "aa22a8fa2b509c8a1a63d9c1a23df0d21635aa90da8ba7c41c775688d2d1be13",
+  "app/granular.py": {
+   "sha": "ee9890f0e134dd091ae64e3eea7acb28e3eb1cd6cc3366af0a73e256f90f2822",
    "mode": 420
   },
   "app/index.html": {
-   "sha": "77a563c459b24b77f9fbb615ed4d72a14a8fd97b953a3eafe776daef0189a99d",
+   "sha": "961a5671e8ca6032c081eb03c2cf0a18159825e063f7df90efea07bbbaa02d6d",
    "mode": 420
   },
   "app/models.html": {
-   "sha": "552949b6f018da8def4db6d9b74ee5c0f1e399eb94cf017b51cdd9b06b3367a3",
+   "sha": "b1719c89476e403f6d84523c86251ee70ea951539e3420e2a89212816f1b78b3",
    "mode": 420
   },
   "app/models_lib.py": {
-   "sha": "871181f2bc67528ce70e2c250171b09249342886f6999ad4beabb8993eb7e76e",
+   "sha": "b1d4da8c3fd7c84830b0b5383779899f1df2415a843ade322724265f0f0f012d",
    "mode": 420
   },
   "app/native.py": {
    "sha": "7800d15b9d16b404c4fdb877c52d9a389d9d5758c515cda3a13f3bffe081139f",
    "mode": 420
   },
+  "app/nihiti_blue.npy": {
+   "sha": "14efcb162a6476fa639080ee375bc172eaeeb032912123dceed2df85dba7d07e",
+   "mode": 420
+  },
+  "app/person_mask.swift": {
+   "sha": "bfcfecf5e5bb6e79f6d0bace6d3410e4e0d3bd52e59da77b16bd78c126a3f07d",
+   "mode": 420
+  },
   "app/server.py": {
-   "sha": "b6a45ca2e186c295dfa733c8eae83760711a17a9b80088913d1d0252769f7c30",
+   "sha": "c1643ce69405c3c7eebe2bc6506929a20fc43bd8de6d7d7f0d92ad609788287c",
    "mode": 420
   },
   "app/update.js": {
@@ -90,7 +86,7 @@
    "mode": 420
   },
   "latent_dream.py": {
-   "sha": "f596721a5f185db22b236652d657281064b986cecc2971e792d634060ad38af0",
+   "sha": "ac5a5154cbc59f0cc12e06d7884808124c09005e74c8fb8fb1474e3ba5b335cb",
    "mode": 420
   },
   "models/stylegan2-ada-pytorch/.github/ISSUE_TEMPLATE/bug_report.md": {
@@ -302,7 +298,7 @@
    "mode": 420
   },
   "requirements.txt": {
-   "sha": "547e33fb4826d84b5cd91d2751d095c11d9ab6922baa2487818da0266fc6fe2d",
+   "sha": "f5c3c42a65f9b293c1bcd23ab242213d76646dbe5ac7797be32313dd186b8a10",
    "mode": 420
   }
  }

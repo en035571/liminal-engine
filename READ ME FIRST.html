@@ -41,7 +41,7 @@
 <div class="wrap">
   <div class="mark">Liminal Engine</div>
   <h1>Music-driven visuals and CRT treatments, running on your own Mac.</h1>
-  <p class="lede">Everything happens locally. Nothing is uploaded anywhere. Setup takes about five minutes, once. Version 2026.11.16.</p>
+  <p class="lede">Everything happens locally. Nothing is uploaded anywhere. Setup takes about five minutes, once. Version 2026.11.25.</p>
 
   <h2>What you need</h2>
   <table>
@@ -58,11 +58,12 @@
   </ol>
   <p class="note">No Homebrew? Setup will open <a href="https://brew.sh">brew.sh</a>. Paste the one line from that page into Terminal, then run Set Up again.</p>
 
-  <h2>The four tools</h2>
+  <h2>The five tools</h2>
   <div class="arms">
     <div class="arm"><b>Latent Dream</b><span>An AI model dreams to a song: the music drives the motion. Set Up downloads a first model (microscope images); the Models page has more.</span></div>
     <div class="arm"><b>Collage</b><span>Turns folders of stills and clips into a moving-stills collage, held on the beat of a song, in three styles.</span></div>
     <div class="arm"><b>Cut Bank</b><span>Chops your footage to the beats of a song, with treatments on each shot.</span></div>
+    <div class="arm"><b>Granular</b><span>Runs one clip through painterly grain looks (granular, paint, outline). Add a song and its loudness can drive the grains.</span></div>
     <div class="arm"><b>CRT</b><span>Puts any image or video through a simulated tube TV, tape deck and camera. Try the presets in Look.</span></div>
   </div>
 
@@ -85,6 +86,7 @@
   <dl>
     <dt>"Can't be opened because Apple cannot check it"</dt><dd>Right-click the file and choose Open. Or open System Settings › Privacy &amp; Security, scroll down and click Open Anyway.</dd>
     <dt>"Liminal Engine is not set up yet"</dt><dd>Run Set Up first (step 2). If it stopped with an error, run it again; it continues where it left off.</dd>
+    <dt>Granular says OpenCV is missing</dt><dd>Run Set Up again; it adds it.</dd>
     <dt>Latent Dream says PyTorch is missing</dt><dd>You skipped it during setup. Run Set Up again and answer yes.</dd>
     <dt>An update didn't finish</dt><dd>The bar says why, and nothing was changed. Check the internet connection and click Try again.</dd>
     <dt>The window is blank or a tool does nothing</dt><dd>Quit the app and open it again. If a render failed, the red line under the Render button says why.</dd>

@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""FREAKOUT CUT BANK — beat-cut a folder of footage/stills into one abstract sequence.
-Reads the song's onsets, cuts on every hit, gives every shot a random abstraction, concatenates,
-muxes the song. ffmpeg + librosa only. Progress lines: "shot i/N".
+"""CUT BANK — beat-cut a folder of footage/stills into one sequence.
+Reads the song's onsets, cuts on every hit, picks a random moment of a random clip for every shot, concatenates,
+muxes the song. Some shots get an editing move (fast / slow / reverse). Optionally the finished edit is recorded
+onto a modelled analogue tape (era_texture.py: VHS SP/EP, U-matic, Betacam SP; generation; damage; faults that the
+song's hits trigger), as one continuous recording, the way a tape is.
+ffmpeg + librosa (numpy, scipy) only. Progress lines: "shot i/N", then "[tape] i/N frames".
 """
-import argparse, json, math, os, random, shutil, subprocess, sys, time
+import re, argparse, json, os, random, shutil, subprocess, sys, time
 from pathlib import Path
 
 # --- ffmpeg/ffprobe discovery ------------------------------------------------
@@ -28,10 +31,6 @@ FFPROBE = _need("ffprobe")
 VID = {".mp4", ".mov", ".webm", ".mkv", ".avi", ".m4v", ".mts", ".flv", ".wmv"}
 IMG = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp"}
 
-PALETTES = [("255,0,120", "10,10,10"), ("255,255,255", "0,0,0"), ("255,40,40", "0,0,0"), ("240,230,0", "20,0,60"),
-            ("0,255,180", "0,0,0"), ("255,255,255", "170,0,255"), ("255,120,0", "0,20,40")]
-
-
 def probe(p):
     """Duration in seconds, or 0.0 if this particular file is unreadable."""
     try:
@@ -46,45 +45,16 @@ def probe(p):
         return 0.0
 
 
-def two_color(pal):
-    (r1, g1, b1), (r0, g0, b0) = [tuple(map(int, c.split(","))) for c in pal]
-    t = random.randint(90, 170)
-    return (f"format=gray,geq=r='if(gt(lum(X,Y),{t}),{r1},{r0})':g='if(gt(lum(X,Y),{t}),{g1},{g0})':b='if(gt(lum(X,Y),{t}),{b1},{b0})',format=yuv420p")
-
-
-def effect_chain(names, fps, strobe_hz, W, H):
-    """Return an ffmpeg -vf fragment (applied AFTER the shot is scaled to W×H)."""
-    chain = []
-    for n in names:
-        if n == "negate": chain.append("negate")
-        elif n == "chroma": chain.append(f"rgbashift=rh={random.randint(-24,24)}:bh={random.randint(-24,24)}:gv={random.randint(-8,8)}")
-        elif n == "smear": chain.append(f"tmix=frames={random.randint(4,10)}")
-        elif n == "trails": chain.append(f"lagfun=decay={random.choice([0.9,0.95,0.97])}")
-        elif n == "twocolor": chain.append(two_color(random.choice(PALETTES)))
-        elif n == "dither":
-            k = random.choice([2, 3, 4])
-            chain.append(f"format=gray,scale=iw/{k}:ih/{k},format=monob,scale={W}:{H}:flags=neighbor,format=yuv420p")
-        elif n == "pixel": chain.append(f"pixelize=w={random.choice([8,12,16,24])}:h={random.choice([8,12,16,24])}")
-        elif n == "scanlines": chain.append(f"drawgrid=w=iw:h={random.choice([2,3,4])}:t=1:c=black@0.7")
-        elif n == "mirror": chain.append("crop=iw/2:ih:0:0,split[a][b];[b]hflip[c];[a][c]hstack")
-        elif n == "contrast": chain.append(f"eq=contrast={random.choice([2.5,3.5,5])}:saturation={random.choice([0,0,2.5])}")
-        elif n == "hue": chain.append(f"hue=h={random.randint(0,359)}:s={random.choice([1,2,3])}")
-        elif n == "jitter":
-            z = random.choice([0.55, 0.65, 0.8])
-            chain.append(f"crop=iw*{z}:ih*{z}:(iw-ow)*random(1):(ih-oh)*random(1),scale={W}:{H}")
-        elif n == "strobe":
-            k = max(2, math.ceil(fps / strobe_hz))          # period in frames; never faster than strobe_hz
-            chain.append(f"negate=enable='lt(mod(n,{k}),{k//2})'")
-        elif n == "fast": chain.append(f"setpts={random.choice([0.5,0.33,0.25])}*PTS")
-        elif n == "slow": chain.append(f"setpts={random.choice([2,3])}*PTS")
-        elif n == "reverse": chain.append("reverse")
-        elif n == "posterize": chain.append(f"lutyuv=y='if(gt(val,{random.randint(90,170)}),255,0)'")
-    return chain
+MOVES = {   # editing moves, not looks: a shot plays faster, slower or backwards (picture only; the song is untouched)
+    "fast": lambda: f"setpts={random.choice([0.5, 0.33, 0.25])}*PTS",      # 2x / 3x / 4x speed
+    "slow": lambda: f"setpts={random.choice([2, 3])}*PTS",                  # 1/2 or 1/3 speed
+    "reverse": lambda: "reverse",
+}
 
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--clips", action="append", required=True, help="folder(s) of footage and/or stills (recursive)")
+    p.add_argument("--clips", action="append", required=True, help="folder(s) of footage and/or stills (recursive), or single files")
     p.add_argument("--audio", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--start", type=float, default=0.0)
@@ -94,10 +64,13 @@ def main():
     p.add_argument("--fps", type=int, default=24)
     p.add_argument("--min_shot", type=float, default=0.125, help="shortest shot, seconds (8 cuts/sec max at 0.125)")
     p.add_argument("--max_shot", type=float, default=0.8)
-    p.add_argument("--effects", default="negate,chroma,smear,trails,twocolor,dither,pixel,scanlines,mirror,contrast,hue,jitter,strobe,fast,posterize")
-    p.add_argument("--effects_per_shot", default="1-2")
-    p.add_argument("--plain_chance", type=float, default=0.15, help="fraction of shots left untouched")
-    p.add_argument("--strobe_hz", type=float, default=3.0, help="hard cap on flash rate")
+    p.add_argument("--moves", default="fast,slow,reverse", help="editing moves a shot may get: fast, slow, reverse (empty = none)")
+    p.add_argument("--move_chance", type=float, default=0.3, help="fraction of shots that get one move")
+    p.add_argument("--tape", default="off", help="record the finished edit onto tape: off, vhs-sp, vhs-ep, umatic, betacam-sp")
+    p.add_argument("--gen", type=int, default=1, help="tape generation: 1 = original, 2+ = analogue dubs")
+    p.add_argument("--damage", type=float, default=0.3, help="tape damage 0..1: how many faults, how big")
+    p.add_argument("--faults", default="dropout,tracking,clog,skew,wobble,ckill", help="faults that can happen")
+    p.add_argument("--react", type=int, default=1, help="1 = the song's hits trigger the faults, 0 = they fall at random")
     p.add_argument("--max_clips", type=int, default=600)
     p.add_argument("--seed", type=int, default=0)
     a = p.parse_args()
@@ -119,11 +92,22 @@ def main():
         while t1 - t0 > a.max_shot:
             d = random.uniform(a.min_shot, a.max_shot); shots.append((t0, d)); t0 += d
         if t1 - t0 >= 0.03: shots.append((t0, t1 - t0))
+    # every shot a whole number of frames on one shared frame grid: per-shot rounding otherwise adds up, the edit
+    # comes out short of the song and the cuts slide off the beat
+    F = a.fps; grid = []
+    for t0, d in shots:
+        f0, f1 = round(t0 * F), round((t0 + d) * F)
+        if f1 > f0: grid.append((f0 / F, (f1 - f0) / F, f1 - f0))
+    if grid: grid[-1] = (grid[-1][0], (round(total * F) - round(grid[-1][0] * F)) / F, round(total * F) - round(grid[-1][0] * F))
+    shots = [g for g in grid if g[2] > 0]
     print(f"[cuts] {len(shots)} shots over {total:.1f}s", flush=True)
 
     print("[clips] scanning...", flush=True)
     files = []
     for d in a.clips:
+        if os.path.isfile(d):                     # a single clip (dropped clips with some left out)
+            if Path(d).suffix.lower() in VID | IMG: files.append(Path(d))
+            continue
         for root, _, fs in os.walk(d):
             if "_cleanup" in root or "/." in root: continue
             for f in fs:
@@ -145,29 +129,30 @@ def main():
 
     out = Path(a.out).resolve(); work = out.parent / (out.stem + "_shots"); work.mkdir(parents=True, exist_ok=True)
     for old in work.glob("s_*.mp4"): old.unlink()
-    names = [n.strip() for n in a.effects.split(",") if n.strip()]
-    try:
-        lo, _, hi = a.effects_per_shot.strip().partition("-")
-        lo, hi = int(lo), int(hi or lo)
-        if lo < 0 or hi < lo: raise ValueError
-    except ValueError:
-        sys.exit(f"[error] treatments-per-shot must be a number or a range like 1-2, not '{a.effects_per_shot}'")
+    moves = [n.strip() for n in a.moves.split(",") if n.strip() in MOVES]
     W, H, F = a.width, a.height, a.fps
     base = f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},fps={F},format=yuv420p"
+    HOLD = "tpad=stop_mode=clone:stop_duration=2"    # a source that runs out early holds its last frame: never a short shot
     listing = []
-    for i, (t0, d) in enumerate(shots):
+    for i, (t0, d, nf) in enumerate(shots):
         use_still = stills and (not vids or random.random() < len(stills) / (len(stills) + 4 * len(vids)))
-        chain = [] if random.random() < a.plain_chance else effect_chain(random.sample(names, k=min(len(names), random.randint(lo, hi))), F, a.strobe_hz, W, H)
-        vf = ",".join([base] + chain)
+        mv = random.choice(moves) if moves and random.random() < a.move_chance else None
+        if use_still and mv: mv = None                                  # a still has no time to speed up or reverse
+        f = MOVES[mv]() if mv else ""
+        vf = ",".join(([f] if f.startswith("setpts") else []) + [base] + ([f] if f == "reverse" else []) + [HOLD])
         dst = work / f"s_{i:05d}.mp4"
         if use_still:
             src = random.choice(stills)
-            cmd = [FFMPEG, "-y", "-v", "error", "-loop", "1", "-t", f"{d:.3f}", "-i", str(src), "-vf", vf, "-t", f"{d:.3f}", "-an",
+            cmd = [FFMPEG, "-y", "-v", "error", "-loop", "1", "-t", f"{d + 0.1:.3f}", "-i", str(src), "-vf", vf, "-frames:v", str(nf), "-an",
                    "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", str(dst)]
         else:
-            src = random.choice(vids); need = d * (4 if "fast" in vf else 1) + 0.2
+            src = random.choice(vids)
+            # how much source a shot eats: setpts=k*PTS plays k× slower, so it needs d/k seconds (fast 0.25 → 4×d)
+            k = 1.0
+            for m in re.findall(r"setpts=([0-9.]+)\*PTS", vf): k *= float(m)
+            need = d / k + 0.2
             inp = random.uniform(0, max(0.0, durs[src] - need))
-            cmd = [FFMPEG, "-y", "-v", "error", "-ss", f"{inp:.3f}", "-t", f"{need:.3f}", "-i", str(src), "-vf", vf, "-t", f"{d:.3f}", "-an",
+            cmd = [FFMPEG, "-y", "-v", "error", "-ss", f"{inp:.3f}", "-t", f"{need:.3f}", "-i", str(src), "-vf", vf, "-frames:v", str(nf), "-an",
                    "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", str(dst)]
         try:
             r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
@@ -175,11 +160,11 @@ def main():
             print(f"  [warn] shot {i+1} timed out", flush=True); r = None
         if r is None or r.returncode != 0 or not dst.exists():
             # fall back to a plain shot, then to black, so every cut keeps its length and stays on the beat
-            cmd[cmd.index("-vf") + 1] = base
+            cmd[cmd.index("-vf") + 1] = base + "," + HOLD
             try: subprocess.run(cmd, capture_output=True, text=True, timeout=60)
             except subprocess.TimeoutExpired: pass
             if not dst.exists():
-                subprocess.run([FFMPEG, "-y", "-v", "error", "-f", "lavfi", "-i", f"color=black:s={W}x{H}:r={F}:d={d:.3f}",
+                subprocess.run([FFMPEG, "-y", "-v", "error", "-f", "lavfi", "-i", f"color=black:s={W}x{H}:r={F}:d={d + 0.1:.3f}", "-frames:v", str(nf),
                                 "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p", str(dst)], capture_output=True, timeout=60)
         if dst.exists(): listing.append(dst)
         if i % 5 == 0 or i == len(shots) - 1:
@@ -191,12 +176,30 @@ def main():
     seg = work / "_seg.m4a"
     tflag = ["-t", str(a.duration)] if a.duration > 0 else []
     subprocess.run([FFMPEG, "-y", "-v", "error", "-ss", str(a.start), *tflag, "-i", a.audio, "-vn", "-c:a", "aac", "-b:a", "192k", str(seg)])
+    dst = work / "_edit.mp4" if a.tape != "off" else out
     r = subprocess.run([FFMPEG, "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", str(lst), "-i", str(seg),
-                        "-c:v", "libx264", "-preset", "fast", "-crf", "18", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", str(out)],
+                        "-c:v", "libx264", "-preset", "fast", "-crf", "16" if a.tape != "off" else "18", "-pix_fmt", "yuv420p",
+                        "-c:a", "aac", "-shortest", str(dst)],
                        capture_output=True, text=True)
-    if r.returncode != 0 or not out.exists():
+    if r.returncode != 0 or not dst.exists():
         print("[error] join failed:", r.stderr.strip()[-400:], flush=True); sys.exit(2)
-    json.dump({"shots": len(listing), "effects": names, "clips": [str(v) for v in vids[:50]]}, open(work / "recipe.json", "w"), indent=1)
+    if a.tape != "off":
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import era_texture
+        if a.tape not in era_texture.FORMATS: sys.exit(f"[error] unknown tape format '{a.tape}'")
+        print(f"[tape] recording onto {era_texture.FORMATS[a.tape]['name']}, generation {a.gen}, damage {a.damage:.2f}"
+              f"{', faults on the hits' if a.react else ''}", flush=True)
+        def tick(i, n):
+            if i % 24 == 0: print(f"  [tape] {i}/{n} frames", flush=True)
+        try:
+            _, ev = era_texture.process(str(dst), str(out), fmt=a.tape, gen=a.gen, damage=a.damage, faults=a.faults.split(","),
+                                        seed=a.seed or 3, react=a.audio if a.react else None, start=a.start, duration=a.duration,
+                                        crf=18, progress=tick)
+            print("[tape] faults: " + (", ".join(f"{v} {k}" for k, v in ev.items() if v) or "none"), flush=True)
+        except Exception as e:
+            print(f"[error] tape pass failed: {e}", flush=True); sys.exit(2)
+    json.dump({"shots": len(listing), "moves": moves, "move_chance": a.move_chance, "tape": a.tape, "gen": a.gen, "damage": a.damage, "faults": a.faults, "react": a.react,
+               "clips": [str(v) for v in vids[:50]]}, open(work / "recipe.json", "w"), indent=1)
     print(f"[done] {out}", flush=True)
 
 

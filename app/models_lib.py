@@ -41,6 +41,33 @@ def model_dirs():
     return [d for d in (LOCAL, T7, T7 / "faces") if d.is_dir()]   # faces/ loads too; stylegan3/ other-code/ quarantine/ do not (yet)
 
 
+def _pkls():
+    for d in model_dirs():
+        for p in d.glob("*.pkl"):
+            try:
+                if not p.name.startswith("._") and p.stat().st_size > 3_000_000: yield p   # ._ = exFAT sidecars on the T7
+            except OSError: continue
+
+
+def copies_of(p):
+    """The same model file elsewhere on the shelf (same name and size, e.g. this Mac and the T7)."""
+    p = Path(p).resolve()
+    try: size = p.stat().st_size
+    except OSError: return []
+    return [q.resolve() for q in _pkls() if q.name == p.name and q.resolve() != p and q.stat().st_size == size]
+
+
+def model_paths():
+    """Every model once: a model that is both on this Mac and on the T7 is listed by its local copy (loads faster,
+    works with the T7 unplugged)."""
+    seen, out = set(), []
+    for p in _pkls():                      # model_dirs() lists LOCAL first
+        k = (p.name, p.stat().st_size)
+        if k in seen: continue
+        seen.add(k); out.append(p)
+    return out
+
+
 GROUPS = [  # first match wins
     ("faces", r"face|ffhq|obama|anime|waifu|portrait|pony|fursona|person|people"),
     ("science", r"brain|chest|x-?ray|mri|lesion|wound|rim|thyroid|lung|breast|brecahad|iris|microscop|embryo|galax|astro|solar|patholog|skin|oasis|tumou?r|bbl"),
@@ -86,7 +113,7 @@ def describe(paths):
         if p.parent.name == "faces": grp = "faces"
         out.append({"name": name, "path": str(p), "size": p.stat().st_size, "group": grp, "res": meta.get("res"),
                     "sample": meta.get("sample_local"), "sample_url": meta.get("sample_url"),
-                    "where": "T7" if str(p).startswith("/Volumes/") else "this Mac"})
+                    "where": ("this Mac + T7" if copies_of(p) else "T7" if str(p).startswith("/Volumes/") else "this Mac")})
     out.sort(key=lambda m: m["name"].lower())
     return out
 
@@ -97,7 +124,7 @@ def installed():
     for d in model_dirs():
         for p in d.glob("*.pkl"):
             if p.name.startswith("._"): continue          # exFAT AppleDouble sidecars, not models
-            out[slug(p.stem)] = str(p)
+            out.setdefault(slug(p.stem), str(p))    # LOCAL is listed first: a model on both is used from this Mac
     # the microscope model came in under its original file name
     for p in LOCAL.glob("*microscope*.pkl"):
         out["microscope-images"] = str(p)
@@ -154,7 +181,32 @@ def sample(name, kind, fetch=True):
     return str(p)
 
 
+TRASH = None        # server.trash, handed in at start-up (moves to the macOS Trash)
+_tidied = [False]
+
+
+def clear_stale():
+    """Downloads that can't still be running: a worker that died mid-file leaves its entry at queued/downloading
+    forever (and that blocked app updates). Mark those failed. Once per run, partial .tmp-* folders left by a
+    download that was interrupted (app closed, T7 pulled) go to the Trash."""
+    with _lock:
+        alive = _worker is not None and _worker.is_alive()
+        if not alive:
+            for st in DL.values():
+                if st.get("state") in ("queued", "downloading"):
+                    st.update(state="failed", msg="interrupted — pick it and download again")
+        if alive or _tidied[0] or TRASH is None: return
+        _tidied[0] = True
+    for d in {LOCAL, T7}:
+        if not d.is_dir() or any(st.get("state") in ("queued", "downloading") for st in DL.values()): continue
+        for t in d.glob(".tmp-*"):
+            if t.is_dir():
+                try: TRASH(t)
+                except Exception: pass
+
+
 def state():
+    clear_stale()
     inst = installed()
     rows = []
     for x in catalog():

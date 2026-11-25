@@ -61,7 +61,6 @@ body.running .top .st{color:var(--ink)}
 .fieldrow .cell{display:flex;gap:8px;align-items:center;grid-column:2}
 input[type=text],input[type=number],textarea{background:var(--bg);border:1px solid var(--line2);border-radius:var(--r);padding:7px 9px;outline:none;width:100%;font-variant-numeric:tabular-nums}
 input[type=text]:focus,input[type=number]:focus,textarea:focus{border-color:var(--acc)}
-.grp[data-only="phys"].hide{display:none}
 label.s output{white-space:nowrap}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 /* THE CHAIN (11-06): one row per stage, on/off, two or three controls, the rest under MORE */
@@ -91,7 +90,6 @@ label.s output{white-space:nowrap}
 .ticks label{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font:11.5px/1.4 var(--sans);color:var(--mute);cursor:pointer}
 .ticks input{accent-color:var(--acc);margin:0;width:12px;height:12px}
 .mineEmpty{font-size:11px;color:var(--mute);padding:6px 0}
-.physonly{font-size:10.5px;color:var(--mute);padding:0 0 9px}
 .tl{display:grid;gap:5px;padding:0 16px 8px}
 .tlh{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
 #tlc{width:100%;height:28px;display:block;cursor:pointer;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
@@ -252,6 +250,7 @@ select{width:100%;background:var(--bg);border:1px solid var(--line2);border-radi
 .s output{font:11px var(--mono);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
 .s input[type=range]{width:100%;accent-color:var(--acc);margin:0}
 .s.sel{grid-template-columns:96px minmax(0,1fr)}.s.sel output{display:none}
+.s.off{opacity:.4}.s.off input{cursor:not-allowed}   /* a control that doesn't apply here (tape-only on a disc, 40-column screens) */
 #groups{display:flex;flex-direction:column}
 #groups h2{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:14px 0 0;padding:0 0 6px;border-bottom:1px solid var(--line2);font-weight:400}
 .togs{display:flex;flex-direction:column;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
@@ -274,11 +273,17 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
 .status{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;border-top:1px solid var(--line);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
 .status .reveal{padding:4px 9px}
 .hint{margin:0}kbd{font:10px var(--mono);background:var(--panel2);border:1px solid var(--line2);border-radius:3px;padding:0 4px}
+/* KEYS (11-18): the "?" list of shortcuts */
+#keyHelp{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;background:rgba(0,0,0,.55)}
+#keyHelp>div{background:var(--panel);border:1px solid var(--line2);border-radius:var(--r);padding:16px 20px;min-width:320px;max-width:92vw;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+#keyHelp h2{margin:0 0 10px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:400}
+#keyHelp dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font:11.5px/1.4 var(--sans)}#keyHelp dt{text-align:right;white-space:nowrap}#keyHelp dd{margin:0;color:var(--mute)}
+#keyHelp p{margin:12px 0 0;font:11px var(--sans);color:var(--dim)}
 </style></head>
 <body>
 <div class="app">
 <div class="top"><h1>LIMINAL ENGINE</h1>
-  <nav class="mode"><a href="/#latent">Latent dream</a><a href="/#collage">Collage</a><a href="/#bank">Cut bank</a><a href="/crt" class="on">CRT</a></nav>
+  <nav class="mode"><a href="/#latent">Latent dream</a><a href="/#collage">Collage</a><a href="/#bank">Cut bank</a><a href="/#granular">Granular</a><a href="/crt" class="on">CRT</a></nav>
   <span class="st" id="topst">Ready</span></div>
 <div class="wrap">
 <div class="left">
@@ -294,7 +299,7 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
         <div class="gearf"><span class="lbl">Device</span><select id="camDev" aria-label="Camera"></select></div>
         <div class="gearf"><span class="lbl">Camera B</span><select id="camDevB" aria-label="Second camera"><option value="">None</option></select></div>
         <div class="f" id="cutRow" hidden><span class="lbl">Cut</span><div class="seg"><button id="cutA" data-hit="camA" title="Cut to camera A (1)">A</button><button id="cutB" data-hit="camB" title="Cut to camera B (2)">B</button><button id="cutFlip" aria-pressed="false" title="Cut through a burst of snow, like changing channel">Flip cut: off</button></div></div>
-        <div class="f"><span class="lbl">Options</span><div class="seg"><button id="camMirror" title="Flip left and right, like a mirror" aria-pressed="false">Mirror</button><button id="camMic" title="Record your microphone through the TV sound" aria-pressed="false">Mic</button><button id="camHear" title="Play the sound out loud while live (use headphones, or it feeds back)" aria-pressed="false">Hear</button></div></div>
+        <div class="f"><span class="lbl">Options</span><div class="seg"><button id="camMirror" title="Flip left and right, like a mirror" aria-pressed="false">Mirror</button><button id="camMic" title="Record your microphone" aria-pressed="false">Mic</button><button id="camHear" title="Play the sound out loud while live (use headphones, or it feeds back)" aria-pressed="false">Hear</button></div></div>
         <div class="pair"><button class="rec" id="camRec">Record</button><button id="camStill" title="Saves a still at the size under Output">Still</button></div>
         <div class="f"><span class="lbl">Motion</span><div class="seg"><button id="motGo" title="Records only while something moves, then saves each clip">Record on motion: off</button></div></div>
         <label class="s"><span>Sensitivity</span><input type="range" id="motSens" min="0" max="1" step=".01" value=".6"><output id="motSensO">0.60</output></label>
@@ -308,10 +313,10 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
       <input type="file" id="underFile" accept="image/*,video/*" hidden><p class="hint" id="underName" hidden></p>
       <div id="vidPanel" hidden>
         <div class="lbl">Video <b id="vidName"></b></div>
-        <div class="f"><span class="lbl">Play</span><div class="seg"><button id="vPlay">Play</button><button id="vRestart">Restart</button><button id="vLoop" class="on">Loop: on</button><button id="vSound" class="on">Sound: on</button></div></div>
+        <div class="f"><span class="lbl">Play</span><div class="seg"><button id="vPlay" title="Space">Play</button><button id="vRestart" title="Home goes back to the start">Restart</button><button id="vLoop" class="on">Loop: on</button><button id="vSound" class="on">Sound: on</button></div></div>
         <div class="f"><span class="lbl">Deck</span><div class="seg" id="deckSeg" role="group" aria-label="Deck"><button data-d="0" title="Play">▶</button><button data-d="1" title="Pause">❚❚</button><button data-d="2" title="Search ×3">▸▸3</button><button data-d="3" title="Search ×9">▸▸9</button><button data-d="4" title="Rewind ×9">◂◂9</button></div></div>
         <div class="scrub"><span id="vTime">0:00 / 0:00</span><input type="range" id="vScrub" min="0" max="1" step="0.001" value="0" aria-label="Position in video"></div>
-        <div class="pair"><button class="rec" id="recVideo" title="Steps through the video frame by frame; its sound goes through the set with the picture">Export whole video</button><button id="recVideoLive" title="Plays the video through once and records what you see and hear. Hits and sound-react stay off so it matches the video">Record in real time</button></div>
+        <div class="pair"><button class="rec" id="recVideo" title="Steps through the video frame by frame and keeps its own sound">Export whole video</button><button id="recVideoLive" title="Plays the video through once and records what you see and hear. Hits and sound-react stay off so it matches the video">Record in real time</button></div>
       </div>
     </div>
   </section>
@@ -321,12 +326,11 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
       <div><div class="chips" id="presets"></div></div>
       <div><button class="more" id="mineBtn" type="button" aria-expanded="false">Mine ▾</button>
         <div id="mineWrap" hidden><div class="lbl" id="myHead" hidden>Your presets</div><div class="chips" id="mypresets" style="margin-top:8px"></div></div></div>
-      <div class="pair"><button id="savePreset">Save as preset…</button><button id="reset">Reset all</button></div>
+      <div class="pair"><button id="savePreset">Save as preset…</button></div>
       <div class="pair"><button id="copyAmfm" title="Copies the current look as JSON for the AM.FM station (admin › Station › Picture)">Copy settings for AM.FM</button></div>
       <div class="lbl">The chain</div>
       <div id="chain"></div>
       <div id="setExtras">
-      <div class="f"><span class="lbl">Tube</span><div class="seg" id="modelSeg"><button id="mPhys" class="on" title="Linear light, one picture row per scanline, beam width follows brightness">Physical</button><button id="mClassic" title="The look before 11-01">Classic</button></div></div>
       <div class="f"><span class="lbl">Screen</span><div class="seg" id="arSeg"><button id="ar43" class="on">4:3 TV</button><button id="ar169w">16:9</button><button id="ar169" title="A 4:3 tube centred in a 16:9 frame">Boxed</button></div></div>
       </div>
       <div id="groups" hidden></div>
@@ -339,11 +343,10 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
         <label class="tog"><input type="checkbox" id="optOn" checked><span>Start with switch-on</span></label>
         <label class="tog"><input type="checkbox" id="optTune"><span>Tune-in after switch-on (snow and roll)</span></label>
         <label class="tog"><input type="checkbox" id="optOff" checked><span>End with switch-off</span></label>
-        <label class="tog"><input type="checkbox" id="optTone"><span>1 kHz test tone while it holds</span></label>
       </div>
       <label class="s"><span>Hold</span><input type="range" id="holdSecs" min="1" max="30" step=".5" value="5"><output id="holdOut">5.0s</output></label>
       <div id="powerWrap"></div>
-      <div class="f"><span class="lbl">Preview</span><div class="seg"><button id="previewSeq" title="Space also previews">Play</button><button id="loopIdent">Loop: off</button></div></div>
+      <div class="f"><span class="lbl">Preview</span><div class="seg"><button id="previewSeq" title="I also previews (with Hotkeys on)">Play</button><button id="loopIdent">Loop: off</button></div></div>
       <div class="row"><button id="recFree">Start free recording</button></div>
       <p class="hint" id="identRow"><span id="identT"></span></p>
     </div>
@@ -371,12 +374,12 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
     <button class="hd" type="button"><span class="n"><span>5</span></span><span><span class="t">Perform</span><span class="sum" id="sumPerf">Hotkeys on</span></span><span class="chev">▾</span></button>
     <div class="bd">
       <div class="seg" id="hitSeg" style="margin-top:4px"><button data-hit="flip" title="Channel flip (F)">Flip</button><button data-hit="track" title="Tracking loss while held (T)">Tracking</button><button data-hit="glitch" title="Tape damage while held (G)">Damage</button><button data-hit="power" id="hitPower" title="Power off / on (P)">TV off</button></div>
-      <p class="hint">Hits act on the TV (not pure ASCII). F flip · T tracking (hold) · G damage (hold) · P power · A ASCII · M mirror · Y replay text · 1 / 2 camera · R record · O output window · Space sequence · Esc leaves full screen</p>
+      <p class="hint">Hits act on the TV (not pure ASCII). F flip · T tracking (hold) · G damage (hold) · P power · A ASCII · M mirror · Y replay text · 1 / 2 camera · R record · O output window · I sequence. Always on: Space play / pause · ← → frame (Shift 1 s) · Home restart · Esc close · ? all keys</p>
       <div class="f"><span class="lbl">Keys</span><div class="seg"><button id="keysOn" aria-pressed="true">Hotkeys: on</button></div></div>
       <div class="f"><span class="lbl">MIDI</span><div class="seg"><button id="midiGo">Connect</button><button id="midiLearn" aria-pressed="false" disabled>Learn</button><button id="midiClear" disabled>Clear</button></div></div>
       <p class="hint" id="midiState">Map knobs to any slider and pads to the hits: Learn, touch the control, then move the knob or hit the pad.</p>
       <div id="midiMap" class="hint"></div>
-      <div class="f"><span class="lbl">React</span><div class="seg" id="reactSeg"><button data-r="0">Off</button><button data-r="1" title="Whatever goes into the TV sound: the video, or your mic">Sound</button><button data-r="2" title="Listens to the room (music, voice). Never plays out or records">Room</button></div></div>
+      <div class="f"><span class="lbl">React</span><div class="seg" id="reactSeg"><button data-r="0">Off</button><button data-r="1" title="The video's sound, or your mic">Sound</button><button data-r="2" title="Listens to the room (music, voice). Never plays out or records">Room</button></div></div>
       <label class="s"><span>Amount</span><input type="range" id="reactAmt" min="0" max="1" step=".01" value=".6"><output id="reactAmtO">0.60</output></label>
       <label class="s"><span>Sensitivity</span><input type="range" id="reactSens" min="0" max="1" step=".01" value=".5"><output id="reactSensO">0.50</output></label>
       <div class="f"><span class="lbl">Beats</span><div class="seg"><button id="reactBeat" aria-pressed="false" title="A sharp hit in the sound flips the channel">Beats flip: off</button></div></div>
@@ -403,7 +406,8 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
 // ---------------- settings ----------------
 // Controls follow the signal chain, the order things happened to a picture in 1985: the camera that shot it,
 // the tape it was recorded on, the air it crossed, the set that decoded it, the tube that lit it.
-// Camera and Tape exist in the Physical tube only. Keys and defaults of older controls are unchanged, so presets hold.
+// Keys and defaults of older controls are unchanged where the control still exists, so presets hold; retired keys are folded
+// into what replaced them by migrate() (11-18 tidy: one tube, no glow / sheen / grain / TV sound).
 const GROUPS = [
  // ASCII (11-16): the picture turned into characters before anything else touches it; "Shown" puts it on the TV or alone
  ['ASCII', [
@@ -412,80 +416,88 @@ const GROUPS = [
   ['asciiEdge','Edges (follow the outlines; letters and blocks only)',0,0,1,.01], ['asciiAnim','Motion',0,0,2,1], ['asciiRate','Speed',.5,0,1,.01]]],
  // SLIT-SCAN (11-16): time smeared across the picture, before anything else
  ['Slit-scan', [['slitOn','Slit-scan',0,0,1,1], ['slitDir','Direction',0,0,4,1], ['slitLen','Time spread',.5,0,1,.01], ['slitStep','Slowness (frames between slices)',2,1,8,1]]],
- // MATERIAL (11-16): the picture as a physical print or a scope trace, after ASCII; "Shown" puts it on the TV or alone
- ['Material', [['matOn','Material',0,0,1,1], ['matKind','Material',0,0,7,1], ['matAmt','Contrast',.5,0,1,.01], ['matSize','Dot size',.4,0,1,.01],
+ // MATERIAL (11-16): the picture as a physical print or a scope trace, after ASCII; "Shown" puts it on the TV or alone.
+ // matKind keeps its old numbers (1 = 1-bit Mac … 7 = oscilloscope); 0 was xerox, retired 11-18 (old saves map it to halftone)
+ ['Material', [['matOn','Material',0,0,1,1], ['matKind','Material',1,1,7,1], ['matAmt','Contrast',.5,0,1,.01], ['matSize','Dot size',.4,0,1,.01],
   ['matWear','Wear',.4,0,1,.01], ['matInk','Inks (risograph)',0,0,3,1], ['matPure','Shown',0,0,1,1]]],
  ['Camera', [
   ['knee','Highlight knee',0,0,1,.01], ['camLag','Tube lag (smear)',0,0,1,.01], ['comet','Comet tails',0,0,1,.01],
-  ['burn','Burn-in',0,0,1,.01], ['reg','Tube registration',0,0,1,.01], ['shade','Corner shading',0,0,1,.01]], 'phys'],
+  ['burn','Burn-in',0,0,1,.01], ['reg','Tube registration',0,0,1,.01], ['shade','Corner shading',0,0,1,.01]]],
  ['Tape', [
-  ['tapeFmt','Format',0,0,6,1], ['tapeGen','Generation',1,1,5,1], ['tapeWave','Edge wave',1,0,8,.1],
-  ['tracking','Tracking error',0,0,100,1], ['dropout','Dropouts',2,0,40,1],
+  ['tapeFmt','Format',0,0,6,1], ['tapeGen','Generation',1,1,5,1], ['tapeWave','Timebase wobble',1,0,8,.1],
+  ['tracking','Tracking error (past ~20 the noise bands come in)',0,0,100,1], ['dropout','Dropouts',2,0,40,1],
   // DAMAGE (11-06, tape damage atlas): events tied to the tape's own clock, so a bad stretch stays bad for its length
   ['cond','Tape condition (creases, bursts)',0,0,1,.01], ['mould','Mould / sticky tape',0,0,1,.01], ['clog','Head clog',0,0,1,.01],
-  ['skew','Skew (top hooks sideways)',0,0,1,.01], ['mistrack','Mistracking bands',0,0,1,.01], ['ckill','Colour loss',0,0,1,.01],
+  ['skew','Skew (top hooks sideways)',0,0,1,.01], ['ckill','Colour loss',0,0,1,.01],
   ['copyprot','Copy protection',0,0,1,.01], ['deck','Deck',0,0,4,1],
-  // TAPED OVER (11-06): an old recording under this one (Source › Old recording)
-  ['underAmt','Old recording shows through',.25,0,1,.01], ['underEnd','New recording ends at',1,0,1,.01]], 'phys'],
+  // TAPED OVER (11-06): an old recording under this one (Source › Old tape). A worn erase head leaves it showing through.
+  ['underAmt','Bad erase head (the old recording shows through)',0,0,1,.01], ['underEnd','New recording ends at',1,0,1,.01]]],
  ['Broadcast', [
-  ['signal','Signal',1,0,1.5,.01], ['snow','Snow',0,0,1,.01], ['grain','Grain (noise)',.04,0,.3,.005], ['ghost','Ghost',.06,0,.5,.01],
-  ['jitter','Sync wobble',.3,0,4,.05], ['hum','Hum bar',.04,0,.4,.01], ['roll','Roll speed',0,0,1,.01], ['interf','Interference',0,0,1,.01]]],
+  ['signal','Signal strength (1 = good antenna; weak = snow, then the colour killer; over 1 = overload)',1,0,1.5,.01], ['snow','Snow (noise)',.03,0,1,.005], ['ghost','Ghost',.06,0,.5,.01],
+  ['jitter','Sync wobble',.3,0,4,.05], ['hum','Hum bar (60 Hz vs 59.94: one pass every 16.7 s)',.04,0,.4,.01], ['roll','Roll speed',0,0,1,.01], ['interf','Interference (beat carrier: diagonal herringbone)',0,0,1,.01]]],
  ['Set', [
   ['bleed','Colour bleed',3,0,8,.1], ['sharp','Sharpness (edge ring)',0,0,1,.01],
   ['bright','Brightness',0,-.3,.3,.01], ['contrast','Contrast',1,.5,1.6,.01], ['sat','Saturation',1,0,2,.01],
-  ['tint','Tint (green/magenta)',0,-.3,.3,.01], ['black','Black level',.03,0,.15,.005]]],
+  ['tint','Tint (hue: turns the colour phase; greys stay grey)',0,-.3,.3,.01], ['black','Black level (room light reflected off the glass)',.03,0,.15,.005]]],
  ['Tube', [
-  ['lines','Line count',480,240,720,10], ['scan','Scanlines',.42,0,1,.01], ['beam','Beam bloom',.6,0,1,.01],
+  ['lines','Line count (480 NTSC visible, 525 NTSC total, 576 PAL visible)',480,240,720,1], ['scan','Scanlines',.42,0,1,.01], ['beam','Beam bloom',.6,0,1,.01],
   ['maskKind','Mask',0,0,2,1], ['pitch','Mask pitch (triads across)',480,160,900,10], ['mask','Phosphor mask',.22,0,.8,.01],
-  ['converge','Convergence error',0,0,1,.01], ['persist','Phosphor persistence',0,0,1,.01], ['mono','Monochrome tube (P4)',0,0,1,.01],
-  ['curve','Tube curve',.1,0,.3,.005], ['vignette','Vignette',.55,0,1.2,.01], ['corner','Corner round',1,0,1,.01], ['sheen','Glass sheen',.025,0,.15,.005]]],
- ['Glow', [
-  ['glow','Glow',.6,0,2,.01], ['glowSize','Glow size',1,.2,3,.01], ['glowThresh','Glow threshold',.25,0,.9,.01],
-  ['halation','Halation',.25,0,1.5,.01], ['haloWarm','Halation warmth',.6,0,1,.01]]],
+  ['converge','Convergence error',0,0,1,.01], ['persist','Phosphor persistence (0 = P22 colour TV, about 1 ms · 1 = P7 long-afterglow radar tube)',0,0,1,.01], ['mono','Monochrome tube (P4, one gun)',0,0,1,.01],
+  ['curve','Tube curve',.1,0,.3,.005], ['vignette','Vignette',.55,0,1.2,.01], ['corner','Corner round',1,0,1,.01],
+  ['halation','Halation (light scattered in the faceplate glass)',.25,0,1.5,.01]]],
  ['Position', [['picX','Move left / right',0,-.5,.5,.002], ['picY','Move up / down',0,-.5,.5,.002], ['picS','Size',1,.3,3,.01]]],
  ['Power', [['power','Power (on → off)',1,0,1,.005]]],
- // SOUND (11-05): the picture chain's twin (crt_sound.js). "Follows picture" scales everything the picture sliders do to the sound.
- ['Sound', [['sndAmt','Sound follows picture',.6,0,1,.01], ['speaker','TV speaker',.35,0,1,.01], ['whine','Flyback whine',.15,0,1,.01],
-  ['buzz','Sync buzz',.1,0,1,.01], ['crush','Lo-fi (rate / bits)',0,0,1,.01], ['vol','Volume',1,0,2,.01]]],
 ];
 // stepped controls that name their positions
 // one line in the label column; the full wording stays as the hover title
-const SHORT = { knee:'Knee', camLag:'Lag', reg:'Registration', shade:'Shading', tracking:'Tracking', grain:'Grain', roll:'Roll',
-  sharp:'Sharpness', tint:'Tint', pitch:'Mask pitch', mask:'Mask amount', converge:'Convergence', persist:'Persistence', mono:'Monochrome',
-  curve:'Curve', corner:'Corners', sheen:'Sheen', glowThresh:'Threshold', haloWarm:'Halo warmth', picX:'Left / right', picY:'Up / down', power:'Power', lines:'Lines',
-  sndAmt:'Follows', cond:'Condition', mould:'Mould', clog:'Head clog', skew:'Skew', mistrack:'Mistrack', ckill:'Colour loss', copyprot:'Copy prot.', deck:'Deck', underAmt:'Old shows', underEnd:'Ends at', speaker:'Speaker', whine:'Whine', buzz:'Buzz', crush:'Lo-fi', vol:'Volume',
+const SHORT = { knee:'Knee', camLag:'Lag', reg:'Registration', shade:'Shading', tracking:'Tracking', roll:'Roll', signal:'Signal', snow:'Snow', hum:'Hum bar', interf:'Interference',
+  sharp:'Sharpness', tint:'Tint', black:'Black level', pitch:'Mask pitch', mask:'Mask amount', converge:'Convergence', persist:'Persistence', mono:'Monochrome',
+  curve:'Curve', corner:'Corners', halation:'Halation', picX:'Left / right', picY:'Up / down', power:'Power', lines:'Lines', tapeWave:'Timebase',
+  cond:'Condition', mould:'Mould', clog:'Head clog', skew:'Skew', ckill:'Colour loss', copyprot:'Copy prot.', deck:'Deck', underAmt:'Bad erase head', underEnd:'Ends at',
   asciiCols:'Columns', asciiSet:'Characters', asciiCol:'Colour', asciiGain:'Contrast', asciiInv:'Invert', asciiBg:'Behind', asciiPure:'Shown', asciiEdge:'Edges', asciiAnim:'Motion', asciiRate:'Speed',
   slitDir:'Direction', slitLen:'Spread', slitStep:'Slowness', matKind:'Material', matAmt:'Contrast', matSize:'Dot size', matWear:'Wear', matInk:'Inks', matPure:'Shown' };
 const ENUMS = { asciiSet:['ramp','blocks','your text','braille','teletext','PETSCII'], asciiCol:['source','phosphor','amber','white','ANSI 16','teletext 8','C64'], asciiAnim:['still','typing','scramble'],
   slitDir:['top → bottom','bottom → top','left → right','right → left','centre out'], slitOn:['off','on'], matOn:['off','on'],
-  matKind:['xerox','1-bit Mac','Game Boy','halftone','risograph','thermal receipt','fax','oscilloscope'], matInk:['pink + blue','red + teal','yellow + purple','orange + green'], matPure:['on the TV','alone'], asciiInv:['off','on'], asciiPure:['on the TV','pure'], asciiOn:['off','on'],
-  maskKind:['grille','slot','dot'], tapeFmt:['off','Betacam SP','U-matic','VHS SP','VHS EP','DV','VCD'], tapeGen:['1st gen','2nd gen','3rd gen','4th gen','5th gen'], deck:['play','pause','search ×3','search ×9','rewind ×9'] };
-const DAMAGE = ['cond','mould','clog','skew','mistrack','ckill','copyprot','deck'];
+  matKind:['1-bit Mac','Game Boy','halftone','risograph','thermal receipt','fax','oscilloscope'], matInk:['pink + blue','red + teal','yellow + purple','orange + green'], matPure:['on the TV','alone'], asciiInv:['off','on'], asciiPure:['on the TV','pure'], asciiOn:['off','on'],
+  maskKind:['grille','slot','dot'], tapeFmt:['off','Betacam SP','U-matic','VHS SP','VHS EP','DV','Video CD (disc)'], tapeGen:['1st gen','2nd gen','3rd gen','4th gen','5th gen'], deck:['play','pause','search ×3','search ×9','rewind ×9'] };
+const ENUM_BASE = { tapeGen:1, matKind:1 };   // enums whose first value is 1, not 0
+// TELETEXT and PETSCII (11-18) are fixed screens: 40 × 25 character cells over the whole picture, whatever its shape
+const GRID40 = set => set===4 || set===5;
+const asciiColsFor = U => GRID40(Math.round(U.asciiSet)) ? 40 : Math.round(U.asciiCols);
+const DAMAGE = ['cond','mould','clog','skew','ckill','copyprot','deck'];
 const DEF = {}; GROUPS.forEach(g=>g[1].forEach(s=>DEF[s[0]]=s[2]));
 const S = {...DEF};
+// OLD SAVES (11-18): fold retired controls into what replaced them, so a saved look, a "Mine" preset or an old AM.FM
+// copy still loads and looks about the same. Grain was luma-only noise; snow's luma noise is 1.3× its value, so
+// grain g ≙ snow g/1.3. Mistracking bands now come from Tracking past ~20. Xerox (matKind 0) became halftone.
+// Classic tube, glow, glow size, threshold, halation warmth, sheen and the TV-sound keys are simply ignored.
+function migrate(o){ if(!o || typeof o!=='object') return o; o={...o};
+  if('grain' in o){ const g=+o.grain||0, sn=('snow' in o)? +o.snow||0 : 0; o.snow=Math.min(1, sn + g/1.3); delete o.grain; }
+  if('mistrack' in o){ const m=+o.mistrack||0; if(m>0) o.tracking=Math.max(+o.tracking||0, Math.round(20+60*m)); delete o.mistrack; }
+  if('matKind' in o && Math.round(+o.matKind)===0) o.matKind=3;
+  return o; }
 const PRESETS = {
-  'am:fm v1 (Eric)': {grain:0,snow:0,signal:1.14,ghost:.02,bleed:4.5,jitter:0,hum:.26,roll:0,interf:0,glow:1.64,glowSize:.24,glowThresh:.25,halation:.24,haloWarm:.64,curve:0,scan:.45,mask:.05,vignette:.3,corner:0,sheen:0,lines:630,bright:-.04,contrast:1.02,sat:1,tint:-.08,black:.07,picX:-.068,picY:-.0025,picS:1,power:1},
-  'Clean broadcast': {},
-  'No noise': {grain:0, snow:0, interf:0, jitter:0, hum:0, ghost:0},
-  'Flat monitor': {curve:0, corner:0, vignette:.2, sheen:0, scan:.3, mask:.15},
-  'Weak signal': {speaker:.5, snow:.18, ghost:.22, bleed:5, jitter:1.6, hum:.12, signal:.85, interf:.3},
-  'VHS dub': {bleed:6, ghost:.12, jitter:.9, sat:.75, contrast:.9, black:.06, scan:.3, glow:.8, halation:.5, interf:.1},
-  'Hot phosphor': {glow:1.5, glowSize:1.8, glowThresh:.1, halation:.9, contrast:1.15},
-  'Off-air': {buzz:.25, snow:1, signal:0, roll:0, hum:.2},
-  // real gear (physical tube): values from how each was built, not from screenshots
-  'Sony PVM studio monitor': {speaker:.15, whine:.1, buzz:.03, maskKind:0, pitch:620, mask:.35, scan:.55, beam:.5, curve:.04, vignette:.25, corner:.35, bleed:1, sharp:.12, glow:.45, halation:.12, sheen:.01, converge:.04, persist:.08, ghost:0, grain:.015, jitter:0, hum:0},
-  'Consumer TV, 1985': {speaker:.6, whine:.25, buzz:.15, maskKind:2, pitch:360, mask:.5, scan:.35, beam:.75, curve:.14, vignette:.6, corner:1, bleed:4, sharp:.45, converge:.35, persist:.22, ghost:.06, grain:.03, glow:.7, halation:.35, sheen:.03, jitter:.15},
-  'Betacam SP broadcast': {tapeFmt:1, tapeGen:1, tapeWave:.15, tracking:0, dropout:1, maskKind:0, pitch:560, mask:.3, scan:.45, beam:.55, curve:.05, vignette:.3, corner:.4, bleed:1.5, sharp:.15, ghost:0, grain:.02, jitter:0, hum:0},
-  'U-matic news tape': {tapeFmt:2, tapeGen:2, tapeWave:1.2, tracking:6, dropout:5, maskKind:1, pitch:420, mask:.4, scan:.4, bleed:2.5, sharp:.3, curve:.1, grain:.03, jitter:.1},
-  'VHS, third generation': {speaker:.5, whine:.2, tapeFmt:3, tapeGen:3, tapeWave:2, tracking:15, dropout:6, maskKind:2, pitch:360, mask:.45, scan:.35, beam:.7, bleed:3, sharp:.4, curve:.12, sat:.9, converge:.25, persist:.2, ghost:.04, jitter:.1},
+  'am:fm v1 (Eric)': {snow:0,signal:1.14,ghost:.02,bleed:4.5,jitter:0,hum:.26,roll:0,interf:0,halation:.24,curve:0,scan:.45,mask:.05,vignette:.3,corner:0,lines:630,bright:-.04,contrast:1.02,sat:1,tint:-.08,black:.07,picX:-.068,picY:-.0025,picS:1,power:1},
+  'Clean broadcast': {snow:0, ghost:0, jitter:0, hum:0},
+  'No noise': {snow:0, interf:0, jitter:0, hum:0, ghost:0},
+  'Flat monitor': {curve:0, corner:0, vignette:.2, scan:.3, mask:.15},
+  'Weak signal': {snow:.21, ghost:.22, bleed:5, jitter:1.6, hum:.12, signal:.85, interf:.3},
+  'VHS dub': {bleed:6, ghost:.12, jitter:.9, sat:.75, contrast:.9, black:.06, scan:.3, halation:.5, interf:.1},
+  'Off-air': {snow:1, signal:0, roll:0, hum:.2},
+  // real gear: values from how each was built, not from screenshots. Colour sets use P22 phosphors (persistence 0).
+  'Sony PVM studio monitor': {maskKind:0, pitch:620, mask:.35, scan:.55, beam:.5, curve:.04, vignette:.25, corner:.35, bleed:1, sharp:.12, halation:.12, converge:.04, persist:0, ghost:0, snow:.012, jitter:0, hum:0},
+  'Consumer TV, 1985': {maskKind:2, pitch:360, mask:.5, scan:.35, beam:.75, curve:.14, vignette:.6, corner:1, bleed:4, sharp:.45, converge:.35, persist:0, ghost:.06, snow:.023, halation:.35, jitter:.15},
+  'Betacam SP broadcast': {tapeFmt:1, tapeGen:1, tapeWave:.15, tracking:0, dropout:1, maskKind:0, pitch:560, mask:.3, scan:.45, beam:.55, curve:.05, vignette:.3, corner:.4, bleed:1.5, sharp:.15, ghost:0, snow:.015, jitter:0, hum:0},
+  'U-matic news tape': {tapeFmt:2, tapeGen:2, tapeWave:1.2, tracking:6, dropout:5, maskKind:1, pitch:420, mask:.4, scan:.4, bleed:2.5, sharp:.3, curve:.1, snow:.023, jitter:.1},
+  'VHS, third generation': {tapeFmt:3, tapeGen:3, tapeWave:2, tracking:15, dropout:6, maskKind:2, pitch:360, mask:.45, scan:.35, beam:.7, bleed:3, sharp:.4, curve:.12, sat:.9, converge:.25, persist:0, ghost:.04, jitter:.1},
   'Live tube camera (Saticon)': {knee:.6, camLag:.22, comet:.6, burn:.2, reg:.35, shade:.35, maskKind:0, pitch:560, mask:.3, scan:.45, curve:.05, vignette:.35, corner:.4, bleed:1.5, sharp:.2, ghost:0, jitter:0, hum:0},
-  'B&W security monitor': {speaker:.85, whine:.3, buzz:.3, mono:1, sat:0, tint:0, scan:.5, beam:.5, lines:525, curve:.12, vignette:.7, corner:1, persist:.45, grain:.06, hum:.06, interf:.04, jitter:.25, ghost:.05, glow:.5, halation:.3, haloWarm:0},
+  // P4 white phosphor: short persistence too, so no trails; one gun, so no convergence error
+  'B&W security monitor': {mono:1, sat:0, tint:0, scan:.5, beam:.5, lines:525, curve:.12, vignette:.7, corner:1, persist:0, snow:.046, hum:.06, interf:.04, jitter:.25, ghost:.05, halation:.3},
 };
 
-// whole looks built from the gear (11-06): the stage menus hold the gear, these six sit at the top
-PRESETS['Rental VHS'] = {...PRESETS['Consumer TV, 1985'], ...PRESETS['VHS, third generation'], cond:.25, clog:.15, speaker:.55, whine:.25, buzz:.15};
-PRESETS['News archive'] = {...PRESETS['Sony PVM studio monitor'], ...PRESETS['U-matic news tape'], speaker:.3};
-PRESETS['Security monitor'] = {...PRESETS['B&W security monitor']};
+// whole looks built from the gear (11-06): the stage menus hold the gear, these sit at the top
+PRESETS['Rental VHS'] = {...PRESETS['Consumer TV, 1985'], ...PRESETS['VHS, third generation'], cond:.25, clog:.15};
+PRESETS['News archive'] = {...PRESETS['Sony PVM studio monitor'], ...PRESETS['U-matic news tape']};
 // ---------------- UI ----------------
 const $ = id=>document.getElementById(id);
 const sliders = {};
@@ -505,30 +517,29 @@ Object.values(SPEC).forEach(([k,label,def,lo,hi,step])=>{
   lab.append(span, r, o); sliders[k]={r,o}; sliderEl[k]=lab;
 });
 function fmt(v){ return Math.abs(v)>=10 ? Math.round(v) : (+v).toFixed(2); }
-function lab_(k,v){ if(k==='underEnd') return v>=1?'never':Math.round(v*100)+'%'; if(ENUMS[k]){ const a=ENUMS[k], i=Math.round(v)-(k==='tapeGen'?1:0); return a[Math.max(0,Math.min(a.length-1,i))]; } return fmt(v); }
+function lab_(k,v){ if(k==='underEnd') return v>=1?'never':Math.round(v*100)+'%'; if(ENUMS[k]){ const a=ENUMS[k], i=Math.round(v)-(ENUM_BASE[k]||0); return a[Math.max(0,Math.min(a.length-1,i))]; } return fmt(v); }
 function setVal(k,v){ S[k]=v; if(sliders[k]){ sliders[k].r.value=v; sliders[k].o.textContent=lab_(k,v);} chainDirty(); }
 // ---------------- THE CHAIN (11-06) ----------------
-// The rail follows the picture: Camera → Tape → Broadcast → TV set → Sound. A stage's switch remembers its values and zeroes
+// The rail follows the picture: Camera → Tape → Broadcast → TV set. A stage's switch remembers its values and zeroes
 // them (no new saved state, so every old preset loads unchanged). WEAR and DAMAGE are shortcuts that set the real sliders.
 const STAGES=[
  {id:'slit', name:'Slit-scan', keys:['slitDir','slitLen','slitStep'], main:['slitDir','slitLen','slitStep'],
   isOn:()=>S.slitOn>0, sum:()=>lab_('slitDir',S.slitDir)+' · spread '+fmt(S.slitLen)},
  {id:'ascii', name:'ASCII', keys:['asciiCols','asciiSet','asciiCol','asciiGain','asciiInv','asciiBg','asciiPure','asciiEdge','asciiAnim','asciiRate'], main:['asciiCols','asciiSet','asciiCol','asciiEdge','asciiAnim','asciiPure'],
-  isOn:()=>S.asciiOn>0, sum:()=>lab_('asciiSet',S.asciiSet)+' · '+Math.round(S.asciiCols)+' cols'+(S.asciiPure>0?' · pure':'')},
+  isOn:()=>S.asciiOn>0, sum:()=>lab_('asciiSet',S.asciiSet)+' · '+(GRID40(Math.round(S.asciiSet))?'40 × 25':Math.round(S.asciiCols)+' cols')+(S.asciiPure>0?' · pure':'')},
  {id:'mat', name:'Material', keys:['matKind','matAmt','matSize','matWear','matInk','matPure'], main:['matKind','matAmt','matSize','matWear','matInk','matPure'],
   isOn:()=>S.matOn>0, sum:()=>lab_('matKind',S.matKind)+(S.matPure>0?' · alone':'')},
- {id:'cam', name:'Camera', phys:1, keys:['knee','camLag','comet','burn','reg','shade'], main:['camLag','knee'], gear:['Live tube camera (Saticon)'],
+ {id:'cam', name:'Camera', keys:['knee','camLag','comet','burn','reg','shade'], main:['camLag','knee'], gear:['Live tube camera (Saticon)'],
   isOn:()=>['knee','camLag','comet','burn','reg','shade'].some(k=>S[k]>0), sum:()=>'lag '+fmt(S.camLag)+' · knee '+fmt(S.knee)},
- {id:'tape', name:'Tape', phys:1, keys:['tapeFmt','tapeGen','tapeWave','tracking','dropout','cond','mould','clog','skew','mistrack','ckill','copyprot','underAmt','underEnd'], main:[], gear:['Betacam SP broadcast','U-matic news tape','VHS, third generation'],
-  isOn:()=>Math.round(S.tapeFmt)>0, sum:()=>lab_('tapeFmt',S.tapeFmt)+(dmgLevel()>0?' · damaged':' · '+lab_('tapeGen',S.tapeGen))},
- {id:'bc', name:'Broadcast', keys:['signal','snow','grain','ghost','jitter','hum','roll','interf'], main:['signal','snow','ghost'], gear:['No noise','Weak signal','Off-air'],
-  isOn:()=>S.signal!==1||['snow','grain','ghost','jitter','hum','roll','interf'].some(k=>S[k]>0), sum:()=>'signal '+fmt(S.signal)+(S.snow>0?' · snow '+fmt(S.snow):'')},
- {id:'set', name:'TV set', always:1, keys:['bleed','sharp','bright','contrast','sat','tint','black','lines','scan','beam','maskKind','pitch','mask','converge','persist','mono','curve','vignette','corner','sheen','glow','glowSize','glowThresh','halation','haloWarm'],
-  main:['glow','curve','sat'], gear:['Sony PVM studio monitor','Consumer TV, 1985','B&W security monitor','Flat monitor','Hot phosphor'], sum:()=>model==='physical'?'physical tube':'classic tube'},
- {id:'snd', name:'Sound', keys:['sndAmt','speaker','whine','buzz','crush','vol'], main:['sndAmt','speaker'],
-  isOn:()=>['sndAmt','speaker','whine','buzz','crush'].some(k=>S[k]>0), sum:()=>'follows '+fmt(S.sndAmt)},
+ {id:'tape', name:'Tape', keys:['tapeFmt','tapeGen','tapeWave','tracking','dropout','cond','mould','clog','skew','ckill','copyprot','underAmt','underEnd'], main:[], gear:['Betacam SP broadcast','U-matic news tape','VHS, third generation'],
+  isOn:()=>Math.round(S.tapeFmt)>0, sum:()=>lab_('tapeFmt',S.tapeFmt)+(dmgLevel()>0?' · damaged':Math.round(S.tapeFmt)>=5?'':' · '+lab_('tapeGen',S.tapeGen))},
+ {id:'bc', name:'Broadcast', keys:['signal','snow','ghost','jitter','hum','roll','interf'], main:['signal','snow','ghost'], gear:['No noise','Weak signal','Off-air'],
+  isOn:()=>S.signal!==1||['snow','ghost','jitter','hum','roll','interf'].some(k=>S[k]>0), sum:()=>'signal '+fmt(S.signal)+(S.snow>0?' · snow '+fmt(S.snow):'')},
+ {id:'set', name:'TV set', always:1, keys:['bleed','sharp','bright','contrast','sat','tint','black','lines','scan','beam','maskKind','pitch','mask','converge','persist','mono','curve','vignette','corner','halation'],
+  main:['halation','curve','sat'], gear:['Sony PVM studio monitor','Consumer TV, 1985','B&W security monitor','Flat monitor'],
+  sum:()=>(S.mono>0?'monochrome':lab_('maskKind',S.maskKind)+' mask')+' · '+Math.round(S.lines)+' lines'},
 ];
-const OFFVAL={slit:{slitOn:0}, mat:{matOn:0}, ascii:{asciiOn:0}, cam:{}, tape:{tapeFmt:0}, bc:{signal:1,snow:0,grain:0,ghost:0,jitter:0,hum:0,roll:0,interf:0}, snd:{sndAmt:0,speaker:0,whine:0,buzz:0,crush:0}};
+const OFFVAL={slit:{slitOn:0}, mat:{matOn:0}, ascii:{asciiOn:0}, cam:{}, tape:{tapeFmt:0}, bc:{signal:1,snow:0,ghost:0,jitter:0,hum:0,roll:0,interf:0}};
 ['knee','camLag','comet','burn','reg','shade'].forEach(k=>OFFVAL.cam[k]=0);
 const stash={}; const stageEl={};
 const ONKEY={ascii:'asciiOn', slit:'slitOn', mat:'matOn'};   // stages that are one switch over their own sliders
@@ -539,12 +550,20 @@ function setStage(st,on){ if(ONKEY[st.id]){ setVal(ONKEY[st.id], on?1:0); rememb
   else { stash[st.id]={}; keys.forEach(k=>stash[st.id][k]=S[k]); Object.entries(OFFVAL[st.id]).forEach(([k,v])=>setVal(k,v)); }
   remember(); markActive(null); applyDeck(); }
 function applyGear(st,name){ const p=PRESETS[name]; st.keys.forEach(k=>setVal(k, k in p ? p[k] : DEF[k])); remember(); markActive(null); status(st.name+': '+name+'.'); }
-// WEAR: how old the tape is — generation, dropouts, tracking, edge wave move together
+// WEAR: how old the tape is — generation, dropouts, tracking, timebase wobble move together
 function wearLevel(){ const c=x=>Math.max(0,Math.min(1,x)); return c(((S.tapeGen-1)/4 + (S.dropout-1)/19 + S.tracking/30 + (S.tapeWave-.3)/3)/4); }
 function setWear(w){ if(Math.round(S.tapeFmt)===0) setVal('tapeFmt',3);
   setVal('tapeGen',1+Math.round(w*4)); setVal('dropout',Math.round(1+19*w)); setVal('tracking',Math.round(30*w)); setVal('tapeWave',+(.3+3*w).toFixed(1)); remember(); markActive(null); }
 // DAMAGE: how often things go wrong; the ticks pick which kinds (each kind keeps its own slider under MORE)
-const DMG=[['cond','Creases & bursts',1],['clog','Head clog',.8],['mould','Mould',1],['ckill','Colour loss',1],['mistrack','Mistracking',.7],['skew','Skew',.6],['copyprot','Copy protection',1]];
+const DMG=[['cond','Creases & bursts',1],['clog','Head clog',.8],['mould','Mould',1],['ckill','Colour loss',1],['skew','Skew',.6],['copyprot','Copy protection',1]];
+// DIGITAL FORMATS (11-18): DV and Video CD have no analog transport, so the tape-only controls don't pretend to apply.
+// DV is still a tape (heads, tracking, clogs, over-recording) but its copies are bit-exact; a Video CD is a disc.
+function notHere(k){ const F=Math.round(S.tapeFmt); if(F<5) return '';
+  if(k==='tapeGen') return F===5 ? 'DV copies are bit-exact: every generation looks the same' : 'A disc copies bit for bit: no generation loss';
+  if(k==='tapeWave'||k==='skew') return 'Digital playback is re-timed by its own clock: no timebase wobble or skew';
+  if(k==='copyprot') return 'Copy protection here acts on analog recorders only';
+  if(F===6 && ['tracking','clog','mould','underAmt','underEnd'].includes(k)) return 'A Video CD is a disc: no heads, no tape';
+  return ''; }
 let ticks=new Set(['cond','clog']); try{ const t=JSON.parse(localStorage.getItem('amfm-crt-ticks')||'null'); if(t) ticks=new Set(t); }catch(e){}
 function dmgLevel(){ return Math.min(1, Math.max(0,...DMG.map(([k,,w])=>S[k]/w))); }
 function setDamage(d){ if(d>0 && Math.round(S.tapeFmt)===0) setVal('tapeFmt',3); DMG.forEach(([k,,w])=>setVal(k, ticks.has(k)? +(d*w).toFixed(2) : 0)); remember(); markActive(null); }
@@ -558,12 +577,12 @@ function buildChain(){
     const box=el2('div','stg'); box.dataset.st=st.id; stageEl[st.id]=box;
     const hd=el2('div','sth'); hd.setAttribute('role','button'); hd.tabIndex=0; hd.setAttribute('aria-expanded','false');
     const sw=el2('button','sw'+(st.always?' none':'')); sw.type='button'; sw.setAttribute('aria-label',st.name+' on or off');
-    sw.onclick=e=>{ e.stopPropagation(); if(st.always) return; if(st.phys && model!=='physical'){ status(st.name+' needs the Physical tube.'); return; } setStage(st, !st.isOn()); };
+    sw.onclick=e=>{ e.stopPropagation(); if(st.always) return; setStage(st, !st.isOn()); };
     const sum=el2('span','ssum'); const ch=el2('span','schev','▾');
     hd.append(sw, el2('span','sn',st.name), sum, ch);
     const toggle=()=>{ const o=!box.classList.contains('open'); box.classList.toggle('open',o); hd.setAttribute('aria-expanded',o?'true':'false'); ch.textContent=o?'▴':'▾'; };
     hd.onclick=toggle; hd.onkeydown=e=>{ if(e.target!==hd) return; if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); } };
-    const body=el2('div','stbody'); const po=el2('div','physonly','Physical tube only: switch the TV set to Physical.'); po.hidden=true;
+    const body=el2('div','stbody');
     if(st.gear){ const g=el2('div','gearf'); const l=el2('span','lbl','Gear'); const sel=el2('select'); sel.setAttribute('aria-label',st.name+' gear');
       sel.append(new Option('Pick…','')); st.gear.forEach(n=>sel.append(new Option(n.replace(/ \(.*\)$/,''),n)));
       sel.onchange=()=>{ if(sel.value){ applyGear(st,sel.value); sel.value=''; } }; g.append(l,sel); body.append(g); }
@@ -597,7 +616,7 @@ function buildChain(){
     const rest=st.keys.filter(k=>!st.main.includes(k) && k!=='tapeFmt' && k!=='asciiOn');
     if(rest.length){ const mb=el2('button','more','More ('+rest.length+') ▾'); mb.type='button'; mb.setAttribute('aria-expanded','false'); const m=el2('div','mbody');
       rest.forEach(k=>m.append(sliderEl[k])); mb.onclick=()=>{ const o=m.classList.toggle('on'); mb.setAttribute('aria-expanded',o?'true':'false'); mb.textContent='More ('+rest.length+') '+(o?'▴':'▾'); }; body.append(mb,m); }
-    box.append(hd,po,body); box._sum=sum; box._po=po; $('chain').append(box);
+    box.append(hd,body); box._sum=sum; $('chain').append(box);
   });
   ['picX','picY','picS'].forEach(k=>$('posWrap').append(sliderEl[k])); $('powerWrap').append(sliderEl.power);
   $('posBtn').onclick=()=>{ const w=$('posWrap'); w.hidden=!w.hidden; $('posBtn').setAttribute('aria-expanded',w.hidden?'false':'true'); $('posBtn').textContent='Fine position '+(w.hidden?'▾':'▴'); };
@@ -609,17 +628,23 @@ function buildChain(){
 let chainQueued=false;
 function chainDirty(){ if(chainQueued) return; chainQueued=true; requestAnimationFrame(refreshChain); }
 function refreshChain(){ chainQueued=false; if(!stageEl.cam) return;
-  STAGES.forEach(st=>{ const box=stageEl[st.id], blocked=st.phys && model!=='physical'; const on=st.always || (!blocked && st.isOn());
-    box.classList.toggle('off',!on); box._sum.textContent = blocked ? 'physical tube only' : on ? st.sum() : 'off'; box._po.hidden=!blocked;
+  STAGES.forEach(st=>{ const box=stageEl[st.id]; const on=st.always || st.isOn();
+    box.classList.toggle('off',!on); box._sum.textContent = on ? st.sum() : 'off';
     if(box._macros) box._macros.forEach(m=>m._sync());
-    if(box._ticks) DMG.forEach(([k])=>{ const c=$('tick_'+k); if(S[k]>0) ticks.add(k); c.checked = on && ticks.has(k); c.disabled=!on; }); });
+    if(box._ticks) DMG.forEach(([k])=>{ const c=$('tick_'+k), na=notHere(k); if(S[k]>0) ticks.add(k); c.checked = on && ticks.has(k); c.disabled=!on||!!na; c.parentElement.title=na; }); });
+  // tape-only controls on a digital format: greyed and locked, the reason on hover
+  STAGES.find(x=>x.id==='tape').keys.forEach(k=>{ const el=sliderEl[k]; if(!el) return; const na=notHere(k); el.classList.toggle('off',!!na); sliders[k].r.disabled=!!na; el.title=na; });
+  const disc=Math.round(S.tapeFmt)===6; $('underPick').disabled=disc; $('underPick').title=disc?'A Video CD is a disc: it can’t be taped over':'An earlier recording on the same tape: it ghosts through, and shows fully where the new recording ends';
+  // inks belong to the risograph only
+  sliderEl.matInk.hidden = Math.round(S.matKind)!==4;
+  const g40=GRID40(Math.round(S.asciiSet)); sliders.asciiCols.r.disabled=g40; sliderEl.asciiCols.classList.toggle('off',g40); sliderEl.asciiCols.title=g40?'Teletext and PETSCII screens are 40 × 25 characters':'';
   const sel=$('tapeFmtSel'); if(sel) sel.value=String(Math.round(S.tapeFmt));
   document.querySelectorAll('#deckSeg button').forEach(b=>b.classList.toggle('on', +b.dataset.d===(Math.round(S.deck)||0)));
   tlDirty(); }
 // DAMAGE TIMELINE: the damage is repeatable, so it can be drawn ahead — what falls where over the video
 let tlTimer=null;
 function tlDirty(){ clearTimeout(tlTimer); tlTimer=setTimeout(drawTimeline,250); }
-function drawTimeline(){ const box=$('tl'); const show=isVideo && srcEl && srcEl.duration>0 && model==='physical' && Math.round(S.tapeFmt)>0; box.hidden=!show;
+function drawTimeline(){ const box=$('tl'); const show=isVideo && srcEl && srcEl.duration>0 && Math.round(S.tapeFmt)>0; box.hidden=!show;
   document.documentElement.style.setProperty('--tlh', show ? ((box.offsetHeight||64)+10)+'px' : '0px'); if(!show) return; const seen=new Set();
   const c=$('tlc'), W=c.clientWidth||600, H=28; c.width=W*devicePixelRatio; c.height=H*devicePixelRatio; const x=c.getContext('2d'); x.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
   x.clearRect(0,0,W,H); const dur=srcEl.duration, U=uAt(null), cs=getComputedStyle(document.documentElement);
@@ -633,15 +658,15 @@ function tlHead(){ const c=$('tlc'); if($('tl').hidden||!isVideo) return; c.styl
 $('tlc').onclick=e=>{ if(!isVideo) return; const r=$('tlc').getBoundingClientRect(); srcEl.currentTime=(e.clientX-r.left)/r.width*srcEl.duration; vidUI(); };
 // the tape's clock is the video's own time, live and in export, so what you scrub is what exports
 const tapeClock=(now)=> (isVideo && srcEl && srcEl.duration>0) ? srcEl.currentTime : now;
-const deckIdx=()=> (model==='physical' && Math.round(S.tapeFmt)>0) ? (Math.round(S.deck)||0) : 0;   // no tape, no deck
+const deckIdx=()=> Math.round(S.tapeFmt)>0 ? (Math.round(S.deck)||0) : 0;   // no tape, no deck
 function videoTimeAt(t,dur){ const dk=DECK[deckIdx()], vt = dk.spd>0 ? t*dk.spd : dk.spd===0 ? 0 : dur - t*9; return Math.min(Math.max(0,vt), Math.max(0,dur-0.05)); }
 function remember(){ try{ localStorage.setItem('amfm-crt-look', JSON.stringify(S)); }catch(e){} }
 function safeV(k,v){ v=+v; if(!isFinite(v)) return DEF[k]; if(k==='deck') return Math.max(0,Math.min(DECK.length-1,Math.round(v))); const sl=sliders[k]; return sl ? Math.min(+sl.r.max, Math.max(+sl.r.min, v)) : v; }   // saved or typed-in values: a number, inside the slider
-function restore(){ try{ const o=JSON.parse(localStorage.getItem('amfm-crt-look')||'null'); if(o) Object.keys(DEF).forEach(k=>{ if(k in o) setVal(k,safeV(k,o[k])); }); }catch(e){} }
+function restore(){ try{ const o=migrate(JSON.parse(localStorage.getItem('amfm-crt-look')||'null')); if(o) Object.keys(DEF).forEach(k=>{ if(k in o) setVal(k,safeV(k,o[k])); }); }catch(e){} }
 function applyPreset(p){ Object.keys(DEF).forEach(k=>setVal(k, k in PRESETS[p] ? PRESETS[p][k] : DEF[k])); remember(); markActive(p); applyDeck(); }
 let activePreset=null;
 function markActive(name){ activePreset=name; document.querySelectorAll('[data-preset]').forEach(b=>b.classList.toggle('on', b.dataset.preset===name)); try{ localStorage.setItem('amfm-crt-active', name||''); }catch(e){} }
-const LOOKS=['am:fm v1 (Eric)','Clean broadcast','Rental VHS','News archive','Security monitor','Off-air'];
+const LOOKS=['am:fm v1 (Eric)','Clean broadcast','Rental VHS','News archive','Off-air'];   // the B&W security monitor lives under TV set › Gear
 LOOKS.forEach(p=>{ const b=document.createElement('button'); b.textContent=p; b.dataset.preset=p; b.onclick=()=>applyPreset(p); $('presets').append(b); });
 buildChain();
 function loadMine(){ try{ return JSON.parse(localStorage.getItem('amfm-crt-presets')||'{}'); }catch(e){ return {}; } }
@@ -650,7 +675,7 @@ function drawMine(){ const box=$('mypresets'); box.textContent=''; const mine=lo
   if(!Object.keys(mine).length){ const e=document.createElement('div'); e.className='mineEmpty'; e.textContent='No saved presets yet. Save as preset… adds one here.'; box.append(e); }
   Object.keys(mine).forEach(name=>{ const b=document.createElement('button'); b.textContent=name; b.title='Your preset';
     b.dataset.preset='mine:'+name; if(activePreset==='mine:'+name) b.classList.add('on');
-    b.onclick=()=>{ Object.keys(DEF).forEach(k=>setVal(k, k in mine[name] ? safeV(k,mine[name][k]) : DEF[k])); remember(); markActive('mine:'+name); applyDeck(); status('Loaded '+name+'.'); };
+    b.onclick=()=>{ const o=migrate(mine[name]); Object.keys(DEF).forEach(k=>setVal(k, k in o ? safeV(k,o[k]) : DEF[k])); remember(); markActive('mine:'+name); applyDeck(); status('Loaded '+name+'.'); };
     const x=document.createElement('button'); x.textContent='×'; x.title='Delete '+name; x.setAttribute('aria-label','Delete '+name);
     x.onclick=()=>{ if(!confirmDelete(name)) return; const m=loadMine(); delete m[name]; saveMine(m); if(activePreset==='mine:'+name) markActive(null); try{ activePreset=localStorage.getItem('amfm-crt-active')||null; }catch(e){}
 drawMine(); markActive(activePreset); status('Deleted '+name+'.'); };
@@ -661,13 +686,15 @@ drawMine(); markActive(activePreset); markActive('mine:'+name); status('Saved pr
 function confirmDelete(name){ return window.confirm('Delete your preset "'+name+'"?'); }
 try{ activePreset=localStorage.getItem('amfm-crt-active')||null; }catch(e){}
 drawMine(); markActive(activePreset);
-$('reset').onclick=()=>applyPreset('Clean broadcast');
 // AM.FM station (11-12): the look on screen as JSON for station admin › Station › Picture (CRT). Camera/Tape keys stay in but the station ignores them.
-$('copyAmfm').onclick=async()=>{ const txt=JSON.stringify({model, frame:frameMode, settings:{...S}}, null, 1);
+// The station's own renderer still has the retired controls, so they go out switched off (11-18): it then draws what this page draws.
+$('copyAmfm').onclick=async()=>{ const txt=JSON.stringify({model:'physical', frame:frameMode, settings:{...S, grain:0, mistrack:0, glow:0, sheen:0, haloWarm:0}}, null, 1);
   try{ await navigator.clipboard.writeText(txt); status('Copied for AM.FM: paste it into the station admin › Station › Picture (CRT).'); }
   catch(e){ const t=document.createElement('textarea'); t.value=txt; document.body.append(t); t.select(); document.execCommand('copy'); t.remove(); status('Copied for AM.FM.'); } };
 
-const LOGOS = ['amfm-clean.png','amfm-logo-dev-1-01.png','amfm-logo-dev-1-02.png','amfm-logo-dev-1-03.png','amfm-logo-dev-1-04.png'];
+const OWNER=/*server*/true;   // 11-25: the server sets false in friends' copies: AM.FM is Eric's station
+const LOGOS = OWNER ? ['amfm-clean.png','amfm-logo-dev-1-01.png','amfm-logo-dev-1-02.png','amfm-logo-dev-1-03.png','amfm-logo-dev-1-04.png'] : ['test-card.png'];
+if(!OWNER){ $('copyAmfm').closest('.pair').hidden=true; const l=document.querySelector('label[for=logoSel]'); if(l) l.textContent='Picture'; }
 LOGOS.forEach(f=>{ const o=document.createElement('option'); o.value='/crt/logos/'+f; o.textContent=f.replace('.png','').replace(/-/g,' '); $('logoSel').append(o); });
 $('logoSel').onchange = e=>{ if(offline||wholeRec){ status('Wait for the export or recording to finish.'); return; } endLive(); loadImage(e.target.value); };
 
@@ -678,80 +705,6 @@ cv.addEventListener('webglcontextlost', e=>{ e.preventDefault(); $('status').tex
 if(!gl){ $('status').textContent='WebGL2 is not available in this browser.'; throw new Error('no webgl2'); }
 const VS = `#version 300 es
 in vec2 p; out vec2 uv; void main(){ uv=p*.5+.5; gl_Position=vec4(p,0,1); }`;
-const CORE = `#version 300 es
-precision highp float; in vec2 uv; out vec4 o; float sq(float x){ return x*x; }
-uniform sampler2D src; uniform vec2 res; uniform float t, frame, rollpos;
-uniform float rasterAR,picX,picY,picS,grain,snow,signal,ghost,bleed,jitter,hum,roll,interf,curve,scan,mask,vignette,corner,sheen,lines,bright,contrast,sat,tint,black,power,srcAR;
-uint pcg(uint v){ uint st=v*747796405u+2891336453u; uint w=((st>>((st>>28u)+4u))^st)*277803737u; return (w>>22u)^w; }
-float hash(vec2 p){ ivec2 i=ivec2(floor(p)); return float(pcg(uint(i.x)+pcg(uint(i.y))))*(1.0/4294967295.0); }
-vec3 toYIQ(vec3 c){ return vec3(dot(c,vec3(.299,.587,.114)), dot(c,vec3(.596,-.274,-.322)), dot(c,vec3(.211,-.523,.312))); }
-vec3 toRGB(vec3 q){ return vec3(q.x+.956*q.y+.621*q.z, q.x-.272*q.y-.647*q.z, q.x-1.106*q.y+1.703*q.z); }
-vec3 pic(vec2 s){ // source fitted into the 4:3 raster, black outside
-  float ar = srcAR/rasterAR; vec2 q = (s - .5 - vec2(picX, picY))/picS;
-  if(ar>1.0) q.y *= ar; else q.x /= ar;
-  q += .5; if(q.x<0.||q.x>1.||q.y<0.||q.y>1.) return vec3(0);
-  return texture(src, vec2(q.x, 1.0-q.y)).rgb;
-}
-void main(){
-  vec2 p = uv*2.-1.; float r2=dot(p,p); p *= 1.+curve*r2;
-  float vy = power<.5 ? .004 : mix(.004,1.,(power-.5)*2.);
-  float hx = power<.5 ? max(power*2.,.0005) : 1.;
-  vec2 q = vec2(p.x/hx, p.y/vy);
-  vec2 suv = q*.5+.5;
-  float ln = floor(suv.y*lines);
-  float rv = fract(suv.y + rollpos);
-  float bar = roll>.001 ? smoothstep(0.,.01,rv)*(1.-smoothstep(.035,.045,rv)) : 0.;
-  float off = (hash(vec2(ln,frame))-.5)*jitter*.004 + sin(ln/9.+t*20.)*.0012*jitter;  // 0 = no wobble (the sine used to keep a .3 floor)
-  off += interf*.01*sin(suv.y*60.+t*7.)*step(.6, fract(sin(floor(t*3.)*91.)*43.));
-  vec2 s = vec2(suv.x+off, rv);
-  vec2 px = vec2(1./(480.*rasterAR),0.);
-  float Y=0.; for(int i=-1;i<=1;i++) Y += toYIQ(pic(s+px*float(i))).x; Y/=3.;
-  vec2 IQ=vec2(0); float w=0.;
-  for(int i=-6;i<=6;i++){ float k=exp(-float(i*i)/(2.*bleed*bleed+.01)); IQ += toYIQ(pic(s-px*(bleed*.5)+px*float(i))).yz*k; w+=k; }
-  IQ/=w;
-  Y += ghost*toYIQ(pic(s-px*9.)).x;
-  vec3 yiq = vec3(Y,IQ)*signal;
-  yiq.x *= 1.-hum*(.5+.5*cos((suv.y+t*.25)*6.2832));
-  float n = hash(floor(uv*res*.5)+frame*1.37);
-  yiq.x += (n-.5)*(grain+snow*1.1);
-  yiq.yz += (vec2(hash(uv*res+frame),hash(uv*res-frame))-.5)*snow*.25;
-  yiq.x += interf*.15*sin(suv.y*900.+t*40.)*sin(suv.x*30.);
-  yiq.x *= 1.-bar;
-  yiq.yz *= sat; yiq.y += tint*-.15; yiq.z += tint*.15;
-  vec3 c = toRGB(yiq);
-  c = (c-.5)*contrast+.5+bright;
-  c = max(clamp(c,0.,1.), vec3(black));
-  float sl = 1.-scan*(.5-.5*cos(fract(suv.y*lines)*6.2832+3.1416)); c*=sl;
-  float m = mod(floor(uv.x*res.x),3.); vec3 g=vec3(1.-mask);
-  if(m<.5) g.r=1.; else if(m<1.5) g.g=1.; else g.b=1.; c*=g;
-  if(power<1.){
-    float lg = exp(-sq(p.y/(.004+vy*.5)))*exp(-sq(p.x/(.01+hx*.6)));
-    float boost = smoothstep(.85,.55,power)*smoothstep(0.,.08,power);
-    c = c*step(abs(q.y),1.) + lg*boost*vec3(.9,.95,1.);
-    c *= smoothstep(0.,.06,power);
-  }
-  float vig = clamp(1.-vignette*pow(pow(abs(p.x),4.)+pow(abs(p.y),4.),.6),0.,1.);
-  float e = mix(1.0, smoothstep(1.,.985,abs(p.x))*smoothstep(1.,.985,abs(p.y)), corner);
-  float inside = step(abs(p.x),1.)*step(abs(p.y),1.);
-  c *= vig*e*inside;
-  c += sheen*exp(-(sq(p.x+.45)/.18+sq(p.y+.55)/.08));
-  o = vec4(c,1);
-}`;
-const BLUR = `#version 300 es
-precision highp float; in vec2 uv; out vec4 o; uniform sampler2D src; uniform vec2 dir; uniform float thresh;
-void main(){ vec3 a=vec3(0); float w=0.;
-  for(int i=-8;i<=8;i++){ float k=exp(-float(i*i)/32.); vec3 c=texture(src, uv+dir*float(i)).rgb;
-    if(thresh>=0.) c = max(c-thresh, 0.)/(1.-thresh);
-    a+=c*k; w+=k; }
-  o=vec4(a/w,1); }`;
-const COMP = `#version 300 es
-precision highp float; in vec2 uv; out vec4 o; uniform sampler2D base, glowT, haloT; uniform float glow, halation, warm; uniform vec2 fit;
-void main(){ vec2 q = (uv-.5)/fit+.5;
-  if(q.x<0.||q.x>1.||q.y<0.||q.y>1.){ o=vec4(0,0,0,1); return; }
-  vec3 b=texture(base,q).rgb, g=texture(glowT,q).rgb*glow, h=texture(haloT,q).rgb;
-  float hl = dot(h, vec3(.33)); vec3 hc = mix(vec3(hl), vec3(1.,.55,.3)*hl*1.6, warm)*halation;
-  vec3 c = 1.-(1.-b)*(1.-g)*(1.-hc);
-  o=vec4(c,1); }`;
 function prog(fs){ const p=gl.createProgram();
   [[gl.VERTEX_SHADER,VS],[gl.FRAGMENT_SHADER,fs]].forEach(([t,s])=>{ const sh=gl.createShader(t); gl.shaderSource(sh,s); gl.compileShader(sh);
     if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); gl.attachShader(p,sh); });
@@ -773,7 +726,7 @@ vec3 toRGB(vec3 q){ return vec3(q.x+.956*q.y+.621*q.z, q.x-.272*q.y-.647*q.z, q.
 const SIGNAL = `#version 300 es
 precision highp float; in vec2 uv; out vec4 o;
 uniform sampler2D src; uniform float t, frame, rollpos, lines, W;
-uniform float rasterAR,picX,picY,picS,grain,snow,signal,ghost,bleed,jitter,hum,roll,interf,bright,contrast,sat,tint,black,srcAR,sharp,raster;
+uniform float rasterAR,picX,picY,picS,snow,signal,ghost,bleed,jitter,hum,roll,interf,iph,bright,contrast,sat,tint,srcAR,sharp,raster;
 ${COMMON}
 vec3 pic(vec2 s){ if(raster>.5) return texture(src, clamp(s, 0., 1.)).rgb;   // camera / tape output: already framed
   float ar = srcAR/rasterAR; vec2 q = (s - .5 - vec2(picX, picY))/picS;
@@ -785,7 +738,6 @@ void main(){
   float rv = fract(yc + rollpos);                // where the (rolling) picture is sampled
   float bar = roll>.001 ? smoothstep(0.,.01,rv)*(1.-smoothstep(.035,.045,rv)) : 0.;
   float off = (h3(row, frame, 7.)-.5)*jitter*.004 + sin(row/9.+t*20.)*.0012*jitter;
-  off += interf*.01*sin(yc*60.+t*7.)*step(.6, fract(sin(floor(t*3.)*91.)*43.));
   vec2 s = vec2(uv.x+off, rv);
   vec2 px = vec2(1./(480.*rasterAR),0.);
   float Y=0.; for(int i=-1;i<=1;i++) Y += toYIQ(pic(s+px*float(i))).x; Y/=3.;
@@ -798,26 +750,37 @@ void main(){
     vec3 v = toYIQ(pic(s-px*(bleed*.5)+px*fi)); IQ += v.yz*k; w2 += k; }
   IQ/=w2;
   Y += ghost*toYIQ(pic(s-px*9.)).x;
-  vec3 yiq = vec3(Y,IQ)*signal;
-  yiq.x *= 1.-hum*(.5+.5*cos((yc+t*.25)*6.2832));
+  // SIGNAL STRENGTH (11-18): the set's AGC holds the picture level, so a weaker signal is not a darker picture but a
+  // noisier one (the receiver's noise floor stays put while the carrier falls). Below ~0.25 the AGC runs out of gain and
+  // the picture sinks into the snow; below 0.4 the colour burst is too weak and the colour killer switches chroma off.
+  // Over 1 the tuner overloads: sync tips compress, the AGC overshoots, and the whites push up and clip.
+  float agc = clamp(signal/.25, 0., 1.), over = max(signal-1., 0.);
+  vec3 yiq = vec3(Y*agc*(1.+over*.8), IQ*agc*step(.4, signal));
+  float sn = min(1., snow + .8*pow(max(1.-signal, 0.), 1.5));
+  // hum bar: 60 Hz mains ripple against the 59.94 Hz field rate beats at 0.06 Hz, so the bar climbs one screen every 16.7 s
+  yiq.x *= 1.-hum*(.5+.5*cos((yc+t*.06)*6.2832));
   // noise lives in the signal, so it is band-limited along the line: smooth horizontally, independent per line
   float xf = uv.x*W*.35, c0 = floor(xf), fx = smoothstep(0.,1.,fract(xf));
   float nL = mix(h3(c0, row, frame), h3(c0+1., row, frame), fx);
   float xc = uv.x*W*.12, d0 = floor(xc), fc = smoothstep(0.,1.,fract(xc));
   vec2 nC = mix(vec2(h3(d0, row, frame+1e5), h3(d0, row, frame+2e5)), vec2(h3(d0+1., row, frame+1e5), h3(d0+1., row, frame+2e5)), fc);
-  yiq.x += (nL-.5)*(grain+snow*1.3);
-  yiq.yz += (nC-.5)*snow*.3;
-  yiq.x += interf*.15*sin(yc*900.+t*40.)*sin(uv.x*30.);
+  yiq.x += (nL-.5)*sn*1.3;
+  yiq.yz += (nC-.5)*sn*.3;
+  // interference: a beat carrier ~0.6 MHz off (adjacent channel, a nearby transmitter) adds sin(2π(fx·x + fy·line + ft·field)).
+  // fx = cycles across the 52.6 µs active line, fy = the fraction of a cycle it slips per 63.556 µs line (the diagonal),
+  // the field term (iph, worked out on the CPU in double precision) makes it crawl; its sound carrier's FM bends the stripes into herringbone.
+  float fm = .18*sin(6.2832*(yc*2.3 + t*.37));
+  yiq.x += interf*.15*sin(6.2832*(31.56*uv.x*(1.+fm*.08) + .1336*row + iph + fm));
   yiq.x *= 1.-bar;
-  yiq.yz *= sat; yiq.y += tint*-.15; yiq.z += tint*.15;
+  // tint = the hue control: it turns the chroma phase, so I/Q rotate together and anything without colour stays grey
+  float ta = tint*1.745; yiq.yz = mat2(cos(ta), sin(ta), -sin(ta), cos(ta))*yiq.yz*sat;
   vec3 c = toRGB(yiq);
   c = (c-.5)*contrast+.5+bright;                 // brightness/contrast act on the signal, as on a set
-  c = max(clamp(c,0.,1.), vec3(black));
-  o = vec4(c,1);
+  o = vec4(clamp(c,0.,1.),1);
 }`;
 const TUBE = `#version 300 es
 precision highp float; in vec2 uv; out vec4 o; float sq(float x){ return x*x; }
-uniform sampler2D sig, prevT; uniform vec2 res; uniform float lines, curve, scan, beam, mask, vignette, corner, sheen, power, warm;
+uniform sampler2D sig, prevT; uniform vec2 res; uniform float lines, curve, scan, beam, mask, vignette, corner, black, power, warm;
 uniform float maskKind, pitch, converge, persist, dt, hasPrev, mono;
 vec3 beamAt(vec2 suv, float ch){            // light of one gun (ch 0/1/2) at raster position suv
   float y = suv.y*lines; float r0 = floor(y); float lit=0., fl=0.;
@@ -858,8 +821,9 @@ void main(){
   vec2 suv = q*.5+.5;
   vec3 c = vec3(0);
   if(abs(q.x)<=1. && abs(q.y)<=1.){
-    // convergence error: red and blue land slightly off green, worse toward the edges (radial, opposite ways)
-    vec2 cv = p*converge*.0045;
+    // convergence error: red and blue land slightly off green, worse toward the edges (radial, opposite ways).
+    // A monochrome tube has one gun, so there is nothing to converge.
+    vec2 cv = p*converge*.0045*(1.-mono);
     c = vec3(beamAt(suv+cv, 0.).r, beamAt(suv, 1.).g, beamAt(suv-cv*.8, 2.).b);
   }
   // mask: triads across the screen width, box-filtered over the pixel so fine pitches average out instead of aliasing
@@ -883,31 +847,34 @@ void main(){
   float e = mix(1.0, smoothstep(1.,.985,abs(p.x))*smoothstep(1.,.985,abs(p.y)), corner);
   float inside = step(abs(p.x),1.)*step(abs(p.y),1.);
   c *= vig*e*inside;
-  // phosphor persistence: P22 green and red glow on for milliseconds, blue fades fastest -> warm trails on motion
+  // room light on the faceplate: reflected, so it adds to whatever the phosphor emits (linear light), even with the set off.
+  // The slider is the level a black screen reads at.
+  float amb = pow(black, 2.2)*e*inside;
+  // phosphor persistence (11-18): a colour set's P22 phosphors are spent within about a millisecond (red Y2O2S:Eu ~1 ms,
+  // green ZnS:Cu,Al ~60 µs, blue ZnS:Ag ~30 µs), so at 0 nothing reaches the next field. The slider walks (in log time)
+  // to a P7 long-persistence tube, whose yellow-green afterglow lasts a few hundred ms while its blue flash is gone at once.
   if(persist>0. && hasPrev>.5){
-    vec3 tau = persist*vec3(.045,.060,.012);
-    vec3 keep = exp(-dt/max(tau,vec3(1e-4)));
-    vec3 prev = pow(texture(prevT, uv).rgb, vec3(2.2));
+    vec3 tau = exp(mix(log(vec3(1e-3, 6e-5, 3e-5)), log(vec3(.25, .30, .004)), persist));
+    vec3 keep = exp(-dt/tau);
+    vec3 prev = max(pow(texture(prevT, uv).rgb, vec3(2.2)) - amb, 0.);
     c = max(c, prev*keep);
   }
-  float sh = sheen*exp(-(sq(p.x+.45)/.18+sq(p.y+.55)/.08));
-  c += pow(sh, 2.2)*e*inside;
+  c += amb;
   o = vec4(pow(clamp(c,0.,1.), vec3(1./2.2)), 1);
 }`;
+// HALATION: light from the phosphor scatters inside the faceplate glass and comes back out around where it was made —
+// a wide, faint halo, blurred as light (linear) and in the phosphor's own colour (11-18: no glow, threshold or warmth).
 const BLUR2 = `#version 300 es
-precision highp float; in vec2 uv; out vec4 o; uniform sampler2D src; uniform vec2 dir; uniform float thresh;
+precision highp float; in vec2 uv; out vec4 o; uniform sampler2D src; uniform vec2 dir;
 void main(){ vec3 a=vec3(0); float w=0.;
-  for(int i=-8;i<=8;i++){ float k=exp(-float(i*i)/32.); vec3 c=pow(texture(src, uv+dir*float(i)).rgb, vec3(2.2));
-    if(thresh>=0.) c = max(c-thresh, 0.)/(1.-thresh);
-    a+=c*k; w+=k; }
+  for(int i=-8;i<=8;i++){ float k=exp(-float(i*i)/32.); a+=pow(texture(src, uv+dir*float(i)).rgb, vec3(2.2))*k; w+=k; }
   o=vec4(pow(a/w, vec3(1./2.2)),1); }`;
 const COMP2 = `#version 300 es
-precision highp float; in vec2 uv; out vec4 o; uniform sampler2D base, glowT, haloT; uniform float glow, halation, warm; uniform vec2 fit;
+precision highp float; in vec2 uv; out vec4 o; uniform sampler2D base, haloT; uniform float halation; uniform vec2 fit;
 void main(){ vec2 q = (uv-.5)/fit+.5;
   if(q.x<0.||q.x>1.||q.y<0.||q.y>1.){ o=vec4(0,0,0,1); return; }
-  vec3 b=pow(texture(base,q).rgb,vec3(2.2)), g=pow(texture(glowT,q).rgb,vec3(2.2))*glow, h=pow(texture(haloT,q).rgb,vec3(2.2));
-  float hl = dot(h, vec3(.33)); vec3 hc = mix(vec3(hl), vec3(1.,.55,.3)*hl*1.6, warm)*halation;
-  vec3 c = 1.-(1.-b)*(1.-g)*(1.-hc);              // light adds, softly bounded
+  vec3 b=pow(texture(base,q).rgb,vec3(2.2)), h=pow(texture(haloT,q).rgb,vec3(2.2))*halation;
+  vec3 c = 1.-(1.-b)*(1.-h);                      // light adds, softly bounded
   o=vec4(pow(c, vec3(1./2.2)),1); }`;
 
 // CAMERA — a three-tube studio camera (Plumbicon / Saticon), between the scene and the signal.
@@ -1147,9 +1114,12 @@ void main(){ vec2 uv=gl_FragCoord.xy/res; float ar=res.x/res.y;
   float d=p*len*max(filled-1.,0.), a=floor(d), f=fract(d);
   float l0=mod(head-a+N*4., N), l1=mod(head-a-1.+N*4., N); if(a+1.>filled-1.) l1=l0;
   o=vec4(mix(texture(hist, vec3(uv,l0)).rgb, texture(hist, vec3(uv,l1)).rgb, f),1.); }`;
-// MATERIAL: one pass, eight materials. px is in 1440-wide units so grain and dots keep their size at 2x / 3x stills.
+// MATERIAL: one pass, seven materials. px is in 1440-wide units so grain and dots keep their size at 2x / 3x stills.
+// Machines with a fixed screen draw at that screen's own size (square pixels, the picture fitted inside it):
+// the 1-bit Mac at 512×342 (Atkinson's error diffusion, done on the CPU: see macDither), the Game Boy at 160×144.
+// The fax is 1728 dots across the page (G3, 8 per mm) at standard resolution, half as many lines (3.85 per mm).
 const MAT = `#version 300 es
-precision highp float; out vec4 o; uniform sampler2D src; uniform vec2 res; uniform float kind, amt, size, wear, ink, frame;
+precision highp float; out vec4 o; uniform sampler2D src, dith; uniform vec2 res, fitR; uniform float kind, amt, size, wear, ink, frame;
 float luma(vec3 c){ return dot(c,vec3(.299,.587,.114)); }
 float h(vec2 p){ uvec2 q=uvec2(ivec2(floor(p))+65536); uint v=q.x*1664525u ^ (q.y*1013904223u+0x9E3779B9u);   // integer hash: stays exact however long the page runs
   v^=v>>16; v*=0x7feb352du; v^=v>>15; v*=0x846ca68bu; v^=v>>16; return float(v)/4294967295.; }
@@ -1159,18 +1129,9 @@ float bayer8(vec2 p){ ivec2 q=ivec2(mod(p,8.)); int M[64]=int[64](0,32,8,40,2,34
 vec3 S(vec2 uv){ return texture(src, clamp(uv,0.,1.)).rgb; }
 float con(float L, float lo, float hi){ return clamp((L-.5)*mix(lo,hi,amt)+.5,0.,1.); }
 void main(){ vec2 uv=gl_FragCoord.xy/res, px=gl_FragCoord.xy*(1440./res.x); float ar=res.x/res.y, fr=floor(frame); int k=int(kind+.5);
-  if(k==0){ // XEROX: contrast crushed to toner, speckle that changes every copy, drum streaks, thin toner at the edges, a little skew
-    vec2 u=uv+vec2((vn(vec2(uv.y*2.,fr*.37))-.5)*.006*wear, 0.); vec2 e1=vec2(1.5/res.x,0.), e2=vec2(0.,1.5/res.y);
-    float L=luma(S(u)+S(u+e1)+S(u-e2))/3.; float tn=1.-clamp((L-.52)*mix(2.,10.,amt)+.5,0.,1.);
-    float gs=1.+size*3.; tn=clamp(tn+(h(floor(px/gs)+fr)-.5)*(.25+.5*wear)*tn,0.,1.);
-    tn=max(tn, step(1.-.003*(.3+wear), h(floor(px/(gs+1.))+fr*1.7)));
-    tn=max(tn, smoothstep(.985,1.,vn(vec2(px.x*.12,3.)))*wear*.7);
-    float e=min(min(uv.x,1.-uv.x),min(uv.y,1.-uv.y)); tn*=mix(.6,1.,smoothstep(0.,.1,e)); tn=max(tn,(1.-smoothstep(0.,.012,e))*.8*wear);
-    o=vec4(mix(vec3(.95,.94,.9), vec3(.07,.07,.08), tn),1.); return; }
-  if(k==1||k==2||k==5){ // 1-BIT MAC / GAME BOY / THERMAL RECEIPT: few dots across, ordered dither
-    float vw = k==1 ? mix(640.,160.,size) : k==2 ? mix(320.,96.,size) : mix(576.,192.,size);
-    vec2 vr=vec2(vw, floor(vw/ar)), cell=floor(uv*vr), f=fract(uv*vr); float L=luma(S((cell+.5)/vr)), b=bayer8(cell);
-    if(k==1){ L=con(L,.8,2.4); o=vec4(vec3(step(b,L)),1.); return; }
+  if(k==1){ o=vec4(vec3(texture(dith, uv).r),1.); return; }                   // 1-BIT MAC: the CPU's Atkinson dither, pixel for pixel
+  if(k==2||k==5){ // GAME BOY / THERMAL RECEIPT: few dots across, ordered dither
+    vec2 vr = k==2 ? fitR : vec2(mix(576.,192.,size), floor(mix(576.,192.,size)/ar)), cell=floor(uv*vr), f=fract(uv*vr); float L=luma(S((cell+.5)/vr)), b=bayer8(cell);
     if(k==2){ L=con(L,.8,2.); float q=clamp(floor(L*3.+b),0.,3.);
       vec3 GB[4]=vec3[4](vec3(.059,.22,.059),vec3(.188,.384,.188),vec3(.545,.675,.059),vec3(.608,.737,.059)); vec3 c=GB[int(q)];
       c*=mix(1.,.86+.14*step(.12,f.x)*step(.12,f.y),wear); o=vec4(c,1.); return; }
@@ -1192,12 +1153,14 @@ void main(){ vec2 uv=gl_FragCoord.xy/res, px=gl_FragCoord.xy*(1440./res.x); floa
     x=con(x,.8,1.8); y=con(y,.8,1.8); float gs=1.+size*3.; vec2 g=floor(px/gs)+floor(fr/2.)*vec2(7.3,3.1);
     float d1=step(h(g+3.1),x), d2=step(h(g+9.7),y);
     vec3 col=vec3(.97,.95,.9)*mix(vec3(1),I1,d1*.95)*mix(vec3(1),I2,d2*.92); o=vec4(col,1.); return; }
-  if(k==6){ // FAX: half the lines, dithered black, rows that slip, lines lost in transmission, yellowed thermal paper
-    float vw=mix(864.,288.,size); vec2 vr=vec2(vw, floor(vw/ar*.5)); float row=floor(uv.y*vr.y);
+  if(k==6){ // FAX: 1728 dots across, standard mode's half-height lines, dithered black, rows that slip, lines lost, yellowed thermal paper
+    vec2 vr=vec2(1728., floor(1728./ar*.5)); float row=floor(uv.y*vr.y);
     float slip=step(1.-.04*wear, h(vec2(row,floor(fr/6.))))*(h(vec2(row,3.))-.5)*.05;
-    vec2 cell=floor(vec2(uv.x+slip,uv.y)*vr); float L=con(luma(S((cell+.5)/vr)),.9,2.4);
-    float v=1.-step(bayer8(cell),L+(h(cell+fr)-.5)*.15*wear);
-    float lost=step(1.-.012*wear, h(vec2(row,floor(fr/10.)+1.))); v=mix(v, 1., lost*step(.5,h(vec2(row,5.))));
+    float lost=step(1.-.012*wear, h(vec2(row,floor(fr/10.)+1.)))*step(.5,h(vec2(row,5.))), v=0.;
+    for(int j=0;j<2;j++){ vec2 u2=uv+vec2((float(j)-.5)*.5/res.x, 0.);    // two samples per screen pixel: the dots are finer than a 1440 screen
+      vec2 cell=floor(vec2(u2.x+slip,u2.y)*vr); float L=con(luma(S((cell+.5)/vr)),.9,2.4);
+      v+=.5*(1.-step(bayer8(cell),L+(h(cell+fr)-.5)*.15*wear)); }
+    v=mix(v, 1., lost);
     o=vec4(mix(vec3(.96,.95,.86), vec3(.1,.1,.12), v),1.); return; }
   // OSCILLOSCOPE: the picture as horizontal traces pushed up by brightness (Rutt/Etra), green P31 glow
   float sp=mix(6.,28.,size), amp=mix(.5,4.,amt)*sp, w=mix(.7,2.4,wear), H=1440./ar, n0=floor(px.y/sp), g=0.;
@@ -1206,7 +1169,12 @@ void main(){ vec2 uv=gl_FragCoord.xy/res, px=gl_FragCoord.xy*(1440./res.x); floa
     float slope=-(L1-L0)*amp/(4.*1440./res.x), d=abs(px.y-(base-L*amp))/sqrt(1.+slope*slope);
     g+=(exp(-d*d/(2.*w*w))+.18*exp(-d/(5.*w)))*(.3+.7*L); }
   o=vec4(vec3(.25,1.,.45)*g + vec3(.6,1.,.7)*max(g-1.,0.)*.4,1.); }`;
-const P = {copy:prog(COPY), slit:prog(SLIT), mat:prog(MAT), core:prog(CORE), blur:prog(BLUR), comp:prog(COMP), sig:prog(SIGNAL), tube:prog(TUBE), blur2:prog(BLUR2), comp2:prog(COMP2), cam:prog(CAMERA), burn:prog(BURN), trec:prog(TAPEREC), tmech:prog(TAPEMECH), digi:prog(DIGI), pre:prog(PRE), blit:prog(BLIT)};
+// DOWN: the picture's luma box-filtered down to a small machine screen (4×4 samples per target pixel), for the CPU dither
+const DOWN = `#version 300 es
+precision highp float; out vec4 o; uniform sampler2D src; uniform vec2 res;
+void main(){ float L=0.; for(int j=0;j<4;j++) for(int i=0;i<4;i++){ vec2 q=(gl_FragCoord.xy-.5+(vec2(float(i),float(j))+.5)/4.)/res;
+    L+=dot(texture(src, clamp(q,0.,1.)).rgb, vec3(.299,.587,.114)); } o=vec4(vec3(L/16.),1.); }`;
+const P = {copy:prog(COPY), slit:prog(SLIT), mat:prog(MAT), down:prog(DOWN), sig:prog(SIGNAL), tube:prog(TUBE), blur2:prog(BLUR2), comp2:prog(COMP2), cam:prog(CAMERA), burn:prog(BURN), trec:prog(TAPEREC), tmech:prog(TAPEMECH), digi:prog(DIGI), pre:prog(PRE), blit:prog(BLIT)};
 const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
 gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
 function tex(w,h){ const t=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t);
@@ -1219,19 +1187,15 @@ let hasPrev=0, hasCam=0, hasDig=0;   // persistence / camera lag / digital conce
 let RW=1440; let RH=1080; let T=null; let SCALE=1;
 function buildTargets(){ hasPrev=0; hasCam=0; hasDig=0; if(T) Object.values(T).forEach(x=>{ gl.deleteTexture(x.t); gl.deleteFramebuffer(x.fb); });
   const CW=Math.round(RW*2/3), CH=Math.round(RH*2/3);
-  T = {base:tex(RW,RH), base2:tex(RW,RH), cam1:tex(CW,CH), cam2:tex(CW,CH), burn1:tex(CW,CH), burn2:tex(CW,CH), tp1:tex(910,486), tp2:tex(910,486), tpo:tex(910,486), dg1:tex(720,480), dg2:tex(720,480), g1:tex(RW/4,RH/4), g2:tex(RW/4,RH/4), h1:tex(RW/8,RH/8), h2:tex(RW/8,RH/8)}; }
+  T = {base:tex(RW,RH), base2:tex(RW,RH), cam1:tex(CW,CH), cam2:tex(CW,CH), burn1:tex(CW,CH), burn2:tex(CW,CH), tp1:tex(910,486), tp2:tex(910,486), tpo:tex(910,486), dg1:tex(720,480), dg2:tex(720,480), h1:tex(RW/8,RH/8), h2:tex(RW/8,RH/8)}; }
 buildTargets();
 let SIG=null, sigKey='';
 function sigTarget(lines){ const key=RW+'x'+lines; if(key===sigKey) return SIG;
   if(SIG){ gl.deleteTexture(SIG.t); gl.deleteFramebuffer(SIG.fb); } SIG=tex(RW, lines); sigKey=key; return SIG; }
-// light spreads further when it is blurred as light, so the same slider values glow harder; these bring the
-// physical tube's glow and halation back to the strength the sliders had in classic
-let GLOWK=+(new URLSearchParams(location.search).get('gk')||.3), HALOK=+(new URLSearchParams(location.search).get('hk')||.15);
-let model='physical'; try{ model=localStorage.getItem('amfm-crt-model')||'physical'; }catch(e){}
-function setModel(m){ model=m; $('mPhys').classList.toggle('on',m==='physical'); $('mClassic').classList.toggle('on',m==='classic');
-  chainDirty(); try{ applyDeck(); }catch(e){}   // before the deck exists (startup) there is nothing to apply
-  try{ localStorage.setItem('amfm-crt-model',m); }catch(e){} }
-$('mPhys').onclick=()=>setModel('physical'); $('mClassic').onclick=()=>setModel('classic'); setModel(model);
+// halation: the scatter's reach (in 1/8-size texels) and how much of the light comes back out; the slider scales it
+const HALO_R=2.2, HALOK=.15;
+// ONE TUBE (11-18): the classic tube is retired. An old saved choice of it is dropped; everything draws on the physical tube.
+try{ localStorage.removeItem('amfm-crt-model'); }catch(e){}
 const srcTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, srcTex);
 [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER].forEach(f=>gl.texParameteri(gl.TEXTURE_2D,f,gl.LINEAR));
 [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(f=>gl.texParameteri(gl.TEXTURE_2D,f,gl.CLAMP_TO_EDGE));
@@ -1278,7 +1242,7 @@ function buildAscii(){ asciiDirty=false; const set=Math.round(S.asciiSet);
   const glyphs = nBits ? Array.from({length:nBits},(_,i)=>i) : [...chars, ...EDGES]; atlasN = nBits || [...chars].length; atlasT=glyphs.length; atlasGlyphs=glyphs;
   const c=document.createElement('canvas'), x=c.getContext('2d'); const font='500 52px "IBM Plex Mono", Menlo, monospace';
   x.font=font; const adv=Math.max(8, x.measureText('M').width);
-  cellA = set===3 ? .5 : set===4 ? .6 : set===5 ? 1 : adv/GH;          // braille / teletext / PETSCII cells keep their own shape
+  cellA = set===3 ? .5 : set===4 || set===5 ? .833 : adv/GH;          // braille keeps its own shape; teletext / PETSCII cells are set per picture in asciiTick
   const w=Math.ceil(set>2 ? GH*cellA : adv); atlasC=Math.min(64,atlasT); atlasR=Math.ceil(atlasT/atlasC);
   c.width=w*atlasC; c.height=GH*atlasR; x.font=font; x.fillStyle='#000'; x.fillRect(0,0,c.width,c.height);
   x.fillStyle='#fff'; x.textBaseline='middle'; x.textAlign='center';
@@ -1304,14 +1268,15 @@ function preTarget(){ const [w,h]=fitT(), key=w+'x'+h;
 function lyricAt(now){ if(!lyrics) return null; if(now<lyricT0) lyricT0=now;
   const t = isVideo && srcEl ? srcEl.currentTime : now-lyricT0; const c=lyrics.find(c=>t>=c.s && t<c.e); return c ? c.t : null; }
 function preU(U, now){ const r=+U.asciiRate;
-  return {mirror:camMirror?1:0, ascii:U.asciiOn>0?1:0, cols:Math.round(U.asciiCols), cellA, nG:atlasN, aC:atlasC, aR:atlasR, set:Math.round(U.asciiSet),
+  return {mirror:camMirror?1:0, ascii:U.asciiOn>0?1:0, cols:asciiColsFor(U), cellA, nG:atlasN, aC:atlasC, aR:atlasR, set:Math.round(U.asciiSet),
     colMode:Math.round(U.asciiCol), inv:Math.round(U.asciiInv), bg:U.asciiBg, gain:U.asciiGain, txtLen, edge:U.asciiEdge,
     anim:Math.round(U.asciiAnim), animT:Math.max(0,now-animStart), rate:20*Math.pow(300,r), sdur:.3+3*(1-r), idx:0, pres:[1,1]}; }   // idx always sent: uniforms stick to the program
 // the ASCII bookkeeping that follows time: lyric cues, and what (re)starts the typing / scramble
 function asciiTick(U, now){ const ct=lyricAt(now); if(ct!==cueText){ cueText=ct; asciiDirty=true; animStart=now; }
   const set=Math.round(U.asciiSet), ak=set+'|'+(set===2?asciiTextNow():'');
   if(ak!==animKey){ animKey=ak; animStart=now; } if(now<animStart) animStart=now;   // an export runs on its own clock: start from its first frame
-  if(asciiDirty || atlasKey.split('|')[0]!==String(set)) buildAscii(); }
+  if(asciiDirty || atlasKey.split('|')[0]!==String(set)) buildAscii();
+  if(GRID40(set)){ const [w,h]=fitT(); cellA=25*(w/h)/40; } }   // 40 across × 25 down: the cell takes the picture's shape
 // runs the PRE pass when it changes anything; returns the texture the chain should read
 function preStage(U, now, inTex){ const asc=U.asciiOn>0; if(!asc){ animKey=''; if(!camMirror) return inTex; }
   if(asc) asciiTick(U, now);
@@ -1342,18 +1307,41 @@ function slitStage(U, now){
   return slit.out.t; }
 // MATERIAL target: the PRE size, so stills at 2x / 3x get real detail
 let MATt=null, matKey='', matHintK=-1;
-const MATHINT=['Photocopy: contrast crushed to toner, speckle, drum streaks. Wear adds streaks, skew and dark edges.',
-  'Classic Mac: black and white dither. Dot size sets how many pixels across.', 'Game Boy: four greens, dithered. Wear shows the LCD grid.',
+const MATHINT=['',   // 0 was xerox (retired 11-18)
+  'Classic Mac: the 512 × 342 screen in black and white, Atkinson dithered (as MacPaint did). Contrast sets the threshold spread.', 'Game Boy: the 160 × 144 screen, four greens, dithered. Wear shows the LCD grid.',
   'Newspaper: one black ink in round dots on a 45° screen. Wear roughens the dots.', 'Risograph: two inks (pick below) with grain; Wear knocks the second drum off register.',
   'Thermal receipt: heat-printed dots, uneven bands. Wear fades the roll and kills a heating element or two.',
-  'Fax: half the lines, dithered. Wear slips rows and loses lines.', 'Oscilloscope: scan lines pushed up by brightness, drawn as green glow. Contrast is the height, Dot size the line spacing, Wear the beam width.'];
+  'Fax: 1728 dots across the page, standard resolution (half as many lines), dithered. Wear slips rows and loses lines.', 'Oscilloscope: scan lines pushed up by brightness, drawn as green glow. Contrast is the height, Dot size the line spacing, Wear the beam width.'];
 function matStage(U, inTex, field){ const k=Math.round(U.matKind);
   if(k!==matHintK && $('matHint')){ matHintK=k; $('matHint').textContent=MATHINT[k]||''; }
   if(!(U.matOn>0)) return inTex;
   const [w,h]=fitT(), key=w+'x'+h;
   if(key!==matKey){ if(MATt){ gl.deleteTexture(MATt.t); gl.deleteFramebuffer(MATt.fb); } MATt=tex(w,h); matKey=key; }
-  run(P.mat, MATt, {res:[w,h], kind:k, amt:U.matAmt, size:U.matSize, wear:U.matWear, ink:Math.round(U.matInk), frame:field%36000}, {src:inTex});
+  // fixed machine screens: the picture fitted inside them with square pixels
+  const fitIn=(W,H)=>{ const ar=w/h; return ar>=W/H ? [W, Math.max(1,Math.round(W/ar))] : [Math.max(1,Math.round(H*ar)), H]; };
+  if(k===1) macDither(inTex, U.matAmt, fitIn(512,342));
+  run(P.mat, MATt, {res:[w,h], fitR:fitIn(160,144), kind:k, amt:U.matAmt, size:U.matSize, wear:U.matWear, ink:Math.round(U.matInk), frame:field%36000}, {src:inTex, dith:dithTex});
   return MATt.t; }
+// 1-BIT MAC: Atkinson dithering (Bill Atkinson, MacPaint 1984). Error diffusion runs pixel after pixel, so it is done here:
+// the GPU box-filters the luma down to the Mac's size, the CPU walks it top to bottom passing 6/8 of each pixel's error on
+// (right 1 and 2, below-left, below, below-right, two below), and the 1-bit result goes back up as a texture.
+const dithTex=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, dithTex);
+[gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER].forEach(f=>gl.texParameteri(gl.TEXTURE_2D,f,gl.NEAREST));
+[gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(f=>gl.texParameteri(gl.TEXTURE_2D,f,gl.CLAMP_TO_EDGE));
+gl.texImage2D(gl.TEXTURE_2D,0,gl.R8,1,1,0,gl.RED,gl.UNSIGNED_BYTE,new Uint8Array([0]));
+let DNt=null;
+function macDither(inTex, amt, [mw,mh]){
+  if(!DNt || DNt.w!==mw || DNt.h!==mh){ if(DNt){ gl.deleteTexture(DNt.t); gl.deleteFramebuffer(DNt.fb); } DNt=tex(mw,mh); }
+  run(P.down, DNt, {res:[mw,mh]}, {src:inTex});
+  const px=new Uint8Array(mw*mh*4); gl.bindFramebuffer(gl.FRAMEBUFFER, DNt.fb); gl.readPixels(0,0,mw,mh,gl.RGBA,gl.UNSIGNED_BYTE,px);
+  const n=mw*mh, L=new Float32Array(n+2*mw+2), out=new Uint8Array(n), g=.8+(2.4-.8)*amt;
+  for(let i=0;i<n;i++) L[i]=Math.min(1,Math.max(0,(px[i*4]/255-.5)*g+.5));
+  for(let y=0;y<mh;y++) for(let x=0;x<mw;x++){ const i=y*mw+x, v=L[i], b=v>=.5?1:0, e=(v-b)/8; out[i]=b*255;
+    if(x+1<mw) L[i+1]+=e; if(x+2<mw) L[i+2]+=e;
+    if(y+1<mh){ if(x>0) L[i+mw-1]+=e; L[i+mw]+=e; if(x+1<mw) L[i+mw+1]+=e; }
+    if(y+2<mh) L[i+2*mw]+=e; }
+  gl.bindTexture(gl.TEXTURE_2D, dithTex); gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.R8,mw,mh,0,gl.RED,gl.UNSIGNED_BYTE,out); gl.pixelStorei(gl.UNPACK_ALIGNMENT,4); }
 let loadSeq=0;
 function fitImg(im){ const w=im.naturalWidth||im.width, h=im.naturalHeight||im.height, M=gl.getParameter(gl.MAX_TEXTURE_SIZE);
   if(w<=M && h<=M) return im; const k=M/Math.max(w,h), c=document.createElement('canvas'); c.width=Math.max(1,Math.floor(w*k)); c.height=Math.max(1,Math.floor(h*k));
@@ -1380,12 +1368,12 @@ function loadFile(f){ if(busyNow()){ status('Wait for the export, batch or recor
 let vidAudio=null, vidG=null;
 function hookVideoAudio(){ if(!AC||!isVideo||vidAudio) return;
   try{ vidAudio=AC.createMediaElementSource(srcEl); vidG=AC.createGain(); vidG.gain.value=$('vSound').classList.contains('on')?1:0;
-       vidAudio.connect(vidG); if(sndNode) vidG.connect(sndNode); else { vidG.connect(AC.destination); vidG.connect(dest); } }catch(e){ status('Could not route the video sound: '+e.message); } }
+       vidAudio.connect(vidG); vidG.connect(tvG); }catch(e){ status('Could not route the video sound: '+e.message); } }
 const tfmt=x=>{ x=Math.max(0,x||0); return Math.floor(x/60)+':'+String(Math.floor(x%60)).padStart(2,'0'); };
 function vidUI(){ if(!isVideo) return; const v=srcEl; $('vPlay').textContent=v.paused?'Play':'Pause';
   $('vTime').textContent=tfmt(v.currentTime)+' / '+tfmt(v.duration); if(!scrubbing) $('vScrub').value=v.duration?v.currentTime/v.duration:0; }
 let scrubbing=false;
-$('vPlay').onclick=()=>{ if(!isVideo||busyNow()) return; startAudio(); hookVideoAudio(); AC.resume(); srcEl.paused?srcEl.play():srcEl.pause(); vidUI(); };
+$('vPlay').onclick=()=>vidToggle();
 $('vRestart').onclick=()=>{ if(!isVideo||busyNow()) return; srcEl.currentTime=0; srcEl.play(); vidUI(); };
 $('vLoop').onclick=e=>{ if(offline) return; const on=!e.target.classList.contains('on'); e.target.classList.toggle('on',on); e.target.textContent='Loop: '+(on?'on':'off'); if(isVideo) srcEl.loop=on; };
 $('vSound').onclick=e=>{ const on=!e.target.classList.contains('on'); e.target.classList.toggle('on',on); e.target.textContent='Sound: '+(on?'on':'off'); if(vidG) vidG.gain.value=on?1:0; };
@@ -1438,63 +1426,42 @@ function run(p, target, u, texs){
 let identStart=null, loop=false, identDur=7.5;
 const sm=(x,a,b)=>{ const t=Math.min(Math.max((x-a)/(b-a),0),1); return t*t*(3-2*t); };
 const ON=.9, TUNE=2.1, OFF=.9;
-function seqPlan(){ return {on:$('optOn').checked, tune:$('optTune').checked, off:$('optOff').checked, tone:$('optTone').checked, hold:+$('holdSecs').value}; }
+function seqPlan(){ return {on:$('optOn').checked, tune:$('optTune').checked, off:$('optOff').checked, hold:+$('holdSecs').value}; }
 let plan=seqPlan();
 function seqLen(p){ return (p.on?ON:0)+(p.tune?TUNE:0)+p.hold+(p.off?OFF:0); }
 function identMods(t){
-  const p=plan, T=seqLen(p); const m={snow:0, sig:1, roll:0, jit:0, power:1, tone:0, warm:1, off:1};
-  if(p.on) m.power = Math.min(1, t/ON) ;            // classic: dot → line → full picture
-  if(p.on && t<ON) m.power = sm(t,0,ON);
-  if(p.on) m.warm = t<ON ? sm(t,0,ON) : 1;            // physical: the cathode warms, the picture fades up and grows
+  const p=plan, T=seqLen(p); const m={snow:0, sig:1, roll:0, jit:0, power:1, warm:1, off:1};
+  if(p.on && t<ON) m.power = sm(t,0,ON);             // dot → line → full picture
+  if(p.on) m.warm = t<ON ? sm(t,0,ON) : 1;            // the cathode warms, the picture fades up and grows
   const t0 = p.on?ON:0;
   if(p.tune){ const tt=t-t0; m.snow=tt<0?0:1-sm(tt,.2,1.5); m.sig=tt<0?1:sm(tt,0,1.0); m.roll=(tt>0)?1-sm(tt,.2,1.5):0; m.jit=tt>0?3*(1-sm(tt,.2,1.8)):0; }
-  const holdStart=t0+(p.tune?TUNE:0), holdEnd=holdStart+p.hold;
-  if(p.tone && t>holdStart && t<holdEnd) m.tone=1;
-  if(p.off){ m.off = 1-sm(t, T-OFF, T); m.power *= m.off; }   // switch-off: collapse to a line, then a dot (both models)
+  if(p.off){ m.off = 1-sm(t, T-OFF, T); m.power *= m.off; }   // switch-off: collapse to a line, then a dot
   return m;
 }
 $('holdSecs').oninput=e=>{ $('holdOut').textContent=(+e.target.value).toFixed(1)+'s'; };
 function playIdent(p){ startAudio(); plan=p||seqPlan(); identDur=seqLen(plan); identStart=performance.now()/1000; }
 $('previewSeq').onclick=()=>playIdent();
 $('loopIdent').onclick=e=>{ loop=!loop; e.target.textContent='Loop: '+(loop?'on':'off'); e.target.classList.toggle('on',loop); };
-document.addEventListener('keydown',e=>{ if(e.code!=='Space' || !perfCfg.keys) return; const t=e.target, g=t&&t.tagName;
-  if(typing(t) || /^(INPUT|SELECT|TEXTAREA)$/.test(g||'') || ((g==='BUTTON'||g==='A'||(t.getAttribute&&t.getAttribute('role')==='button')) && t.matches(':focus-visible'))) return;   // Space types, or presses the focused button
-  e.preventDefault(); if(e.repeat || offline || wholeRec || recSeqRun) return; playIdent(); });
 
-// ---------------- sound (11-05): crt_sound.js, the picture chain's twin ----------------
-// Live: video sound → sndNode → speakers + recorder, params sent every frame. Export: the same processor in an
-// OfflineAudioContext with the switch-on / tune-in / switch-off timeline as a per-field schedule (renderSound).
-let AC=null, dest=null, sndNode=null, spk=null, sndReady=null, micG=null;   // spk: speakers (muted while live so the mic can't feed back)
-const SND_LAT=.008;          // crt_sound.js LAT: the offline render is trimmed by this so sound and picture line up
-function soundParams(U, now){ return {amt:S.sndAmt, speaker:S.speaker, whine:S.whine, buzz:S.buzz, crush:S.crush, vol:S.vol,
-  snow:U.snow, signal:U.signal, ghost:U.ghost, jitter:U.jitter, hum:U.hum, roll:U.roll, interf:U.interf, power:S.power, warm:U.warm, off:U.off, tone:U.tone,
-  tapeFmt: model==='physical'?U.tapeFmt:0, tapeGen:U.tapeGen, tapeWave:U.tapeWave, tracking:U.tracking, dropout:U.dropout, lines:U.lines, t:now, ...soundDamage(tapeClock(now),U)}; }
-// what the sound hears of the tape damage: bursts mute and crackle, bad stretches throw more dropouts, search / pause go quiet
-function soundDamage(t,U){ if(model!=='physical'||Math.round(U.tapeFmt)<1) return {burst:0, dropMul:1, deckMute:0, crease:0};
-  const st=tapeState(t,U), d=Math.round(U.deck)||0; return {burst:st.burst, dropMul:st.dropMul, deckMute:d===0?0:1, crease:st.crease[2]}; }
+// ---------------- sound (11-18): a plain path ----------------
+// The CRT has no TV sound of its own (11-17, Eric: "remove the sound from crt - not needed"). The video's sound and the mic
+// go through one plain GainNode (tvG) to the speakers and the recorder. It only does what a set and a deck do to sound:
+// silent while the TV is off or warming up, and muted while the deck pauses or searches. Signal, snow etc. never touch it.
+let AC=null, dest=null, spk=null, tvG=null, micG=null, tvGLast=-1;   // spk: speakers (muted while live so the mic can't feed back)
+function tvGain(U){ if(Math.round(U.tapeFmt)>0 && (Math.round(U.deck)||0)!==0) return 0;   // a VCR mutes in pause and search
+  return Math.max(0, Math.min(1, S.power * U.warm * sm(U.off,.45,.95))); }
 function startAudio(){ if(AC) return; AC=new AudioContext(); dest=AC.createMediaStreamDestination(); spk=AC.createGain(); spk.connect(AC.destination);
-  sndReady=AC.audioWorklet.addModule('/crt/crt_sound.js').then(()=>{
-    sndNode=new AudioWorkletNode(AC,'crt-sound',{numberOfInputs:1, numberOfOutputs:1, outputChannelCount:[2], processorOptions:{p:soundParams(uAt(null), performance.now()/1000)}});
-    sndNode.connect(spk); sndNode.connect(dest);
-    if(vidG){ try{ vidG.disconnect(); }catch(e){} vidG.connect(sndNode); }
-    if(micG){ try{ micG.disconnect(); }catch(e){} micG.connect(sndNode); }
-  }).catch(e=>{ status('Sound engine did not load ('+e.message+'): playing the plain sound.'); });
+  tvG=AC.createGain(); tvG.connect(spk); tvG.connect(dest); tvGLast=-1;
   hookVideoAudio(); }
-// the switch-on / tune-in / switch-off timeline sampled once per field, for the offline render
-function soundSched(p, seconds){ const n=Math.ceil(seconds*59.94)+2, keys=['snow','signal','roll','jitter','warm','off','tone','burst','dropMul','deckMute','crease'], o={};
-  keys.forEach(k=>o[k]=new Float32Array(n)); const keep=plan; plan=p;
-  const dur=isVideo&&srcEl?srcEl.duration:0;
-  for(let i=0;i<n;i++){ const U=uAt(i/59.94); Object.assign(U, soundDamage(dur? videoTimeAt(i/59.94,dur) : i/59.94, U)); keys.forEach(k=>o[k][i]=U[k]); }
-  plan=keep; return o; }
+// export: the source sound through the same gain, with the switch-on / tune-in / switch-off timeline sampled once per field
 async function renderSound(input, seconds, p){
-  const SR=48000, oac=new OfflineAudioContext(2, Math.ceil((seconds+SND_LAT)*SR), SR);
-  await oac.audioWorklet.addModule('/crt/crt_sound.js');
-  const node=new AudioWorkletNode(oac,'crt-sound',{numberOfInputs:1, numberOfOutputs:1, outputChannelCount:[2],
-    processorOptions:{p:soundParams(uAt(null),0), sched:soundSched(p, seconds+SND_LAT)}});
-  if(input){ const b=await oac.decodeAudioData(input); const src=oac.createBufferSource(); src.buffer=b; src.connect(node); src.start(0); }
-  node.connect(oac.destination);
+  const SR=48000, len=Math.max(1,Math.ceil(seconds*SR)), oac=new OfflineAudioContext(2, len, SR), g=oac.createGain();
+  const n=Math.max(2, Math.ceil(seconds*59.94)+1), curve=new Float32Array(n), keep=plan; plan=p;
+  try{ for(let i=0;i<n;i++) curve[i]=tvGain(uAt(i/59.94)); } finally{ plan=keep; }
+  g.gain.setValueCurveAtTime(curve, 0, (n-1)/59.94); g.connect(oac.destination);
+  if(input){ const b=await oac.decodeAudioData(input); const src=oac.createBufferSource(); src.buffer=b; src.connect(g); src.start(0); }
   const out=await oac.startRendering();
-  return wav16(out, Math.round(SND_LAT*SR), Math.ceil(seconds*SR)); }
+  return wav16(out, 0, len); }
 function wav16(ab, from, len){ len=Math.min(len, ab.length-from); const ch=ab.numberOfChannels, sr=ab.sampleRate, dv=new DataView(new ArrayBuffer(44+len*ch*2));
   const w=(o,str)=>{ for(let i=0;i<str.length;i++) dv.setUint8(o+i,str.charCodeAt(i)); };
   w(0,'RIFF'); dv.setUint32(4,36+len*ch*2,true); w(8,'WAVE'); w(12,'fmt '); dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,ch,true);
@@ -1547,7 +1514,7 @@ $('recVideoLive').onclick=async ()=>{
 $('recFree').onclick=e=>{ if(rec){ rec.stop(); } else { startRec(0,false); if(rec){ e.target.textContent='Stop recording'; e.target.classList.add('on'); } } };
 // ---------------- LIVE CAMERA (11-16) ----------------
 // A camera is a source like a playing video, minus the parts that need a length (scrubber, deck, export whole video).
-// Its frames go up every draw; mirror happens in the PRE pass. The mic goes through the TV sound into the recording;
+// Its frames go up every draw; mirror happens in the PRE pass. The mic goes into the recording;
 // the speakers stay muted while live unless Hear is on (otherwise the mic feeds back).
 let camStream=null, micStream=null, micSrc=null, hearOn=false, camGen=0, camPending=false, micPending=false, wholeRec=false, wantMirror=false;
 let camVidA=null, camVidB=null, camStreamB=null, camOnB=false, cutFlip=false, camBPending=false, camBGen=0;   // two-camera switcher
@@ -1602,11 +1569,11 @@ async function startMic(){ if(micPending || micStream || !isLive) return; startA
   catch(e){ micPending=false; status('Microphone access was refused ('+(e.name||'')+').'); camUI(); return; }
   const stale=()=>gen!==camGen || !isLive;
   if(stale()){ ms.getTracks().forEach(t=>t.stop()); micPending=false; camUI(); return; }   // the camera stopped while asking: never leave a mic on the speakers
-  try{ await AC.resume(); if(sndReady) await sndReady.catch(()=>{}); }catch(e){}
+  try{ await AC.resume(); }catch(e){}
   if(stale()){ ms.getTracks().forEach(t=>t.stop()); micPending=false; camUI(); return; }
   micStream=ms; micSrc=AC.createMediaStreamSource(ms); micG=AC.createGain(); micSrc.connect(micG); micPending=false;
-  if(sndNode) micG.connect(sndNode); else micG.connect(dest);
-  camUI(); status('Mic on: it goes through the TV sound into the recording. Hear stays off unless you wear headphones.'); }
+  micG.connect(tvG);
+  camUI(); status('Mic on: it goes into the recording. Hear stays off unless you wear headphones.'); }
 $('camGo').onclick=()=>startCam($('camDev').value||undefined);
 $('camStop').onclick=stopCam;
 $('camDev').onchange=()=>{ $('camDev').blur(); if(isLive) startCam($('camDev').value); };
@@ -1663,7 +1630,7 @@ $('lyrFile').onchange=async e=>{ const f=e.target.files[0]; e.target.value=''; i
 $('lyrClear').onclick=()=>{ lyrics=null; cueText=null; asciiDirty=true; $('lyrName').hidden=true; $('lyrClear').disabled=true; };
 // EXPORT: the PRE shader writes one pixel per character (colour + glyph number), so the files match the screen exactly
 function asciiGrid(){ if(!(S.asciiOn>0) || offline) return null;
-  const now=performance.now()/1000, U=uAt(null); asciiTick(U, now); const t=preTarget(), cols=Math.round(U.asciiCols), rows=Math.ceil(t.h/(t.w/cols/cellA));
+  const now=performance.now()/1000, U=uAt(null); asciiTick(U, now); const t=preTarget(), cols=asciiColsFor(U), rows=Math.ceil(t.h/(t.w/cols/cellA)-1e-6);
   const g=tex(cols,rows); run(P.pre, g, {...preU(U, now), idx:1, pres:[t.w,t.h], res:[cols,rows]}, {src:curIn||srcTex, atlas:atlasTex, txt:txtTex});
   const px=new Uint8Array(cols*rows*4); gl.readPixels(0,0,cols,rows,gl.RGBA,gl.UNSIGNED_BYTE,px); gl.deleteTexture(g.t); gl.deleteFramebuffer(g.fb);
   return {cols, rows, px, set:Math.round(U.asciiSet), nG:atlasN, glyphs:atlasGlyphs, cellA, bg: Math.round(U.asciiCol)===6 ? '#40318d' : '#000000'}; }
@@ -1728,11 +1695,11 @@ function perfMods(U, now, dt){
   HIT.glitch += ((HIT.glitchHeld?1:0)-HIT.glitch)*Math.min(1, dt/(HIT.glitchHeld?.05:.35));
   HIT.pw     += ((HIT.pwOn?1:0)-HIT.pw)*Math.min(1, dt/(HIT.pwOn?.6:.2)); if(HIT.pwOn && HIT.pw>.998) HIT.pw=1;
   reactStep(now, dt);
-  const amt=reactMode?perfCfg.amt:0, tape=model==='physical' && Math.round(U.tapeFmt)>0;
+  const amt=reactMode?perfCfg.amt:0, tape=Math.round(U.tapeFmt)>0;
   const fl=Math.max(0, 1-(now-HIT.flip)/.45), tr=Math.max(HIT.track, HIT.react*amt), gl=Math.max(HIT.glitch, HIT.react*amt*.8);
   if(fl>0){ U.snow=Math.max(U.snow,fl); U.signal*=1-.85*fl; U.roll=Math.max(U.roll,.7*fl); U.jitter+=3*fl; }
   if(tr>.001){ U.jitter+=2.2*tr; U.hum=Math.max(U.hum,.3*tr);
-    if(tape){ U.tracking=Math.max(U.tracking,75*tr); U.mistrack=Math.max(U.mistrack,tr); U.skew=Math.max(U.skew,.8*tr); }
+    if(tape){ U.tracking=Math.max(U.tracking,75*tr); U.skew=Math.max(U.skew,.8*tr); }
     else { U.ghost=Math.max(U.ghost,.3*tr); U.interf=Math.max(U.interf,.4*tr); } }
   if(gl>.001){ U.interf=Math.max(U.interf,.8*gl); U.snow=Math.max(U.snow,.3*gl); U.signal*=1-.35*gl;
     if(tape){ U.cond=Math.max(U.cond,gl); U.clog=Math.max(U.clog,.8*gl); U.ckill=Math.max(U.ckill,gl); U.dropout=Math.max(U.dropout,40*gl); } }
@@ -1762,7 +1729,7 @@ async function setReact(m){
     if(gen!==reactGen){ ms.getTracks().forEach(t=>t.stop()); return; }   // turned off while asking
     roomPending=false; roomStream=ms; roomSrc=AC.createMediaStreamSource(ms); roomSrc.connect(anl); }   // analyser only: never the speakers or the recording
   reactMode=m; reactFeed=0;
-  $('reactState').textContent= m===1 ? (vidG||micG ? 'Listening to the picture sound.' : 'Nothing goes into the TV sound yet: play a video with sound, or turn on Mic.')
+  $('reactState').textContent= m===1 ? (vidG||micG ? 'Listening to the picture sound.' : 'No sound yet: play a video with sound, or turn on Mic.')
     : m===2 ? 'Listening to the room. It only listens: nothing plays out or records.' : 'Sound: the video or your mic. Room: listens only. Loud stretches lose tracking and damage the tape.';
   reactUI(); }
 function reactUI(){ document.querySelectorAll('#reactSeg button').forEach(b=>b.classList.toggle('on', +b.dataset.r===(roomPending?2:reactMode)));
@@ -1779,13 +1746,49 @@ document.querySelectorAll('[data-hit]').forEach(b=>{ const h=b.dataset.hit;
   b.addEventListener('pointerdown',e=>{ if(e.button!==0) return; b.setPointerCapture&&b.setPointerCapture(e.pointerId); hitDown(h); });
   b.addEventListener('pointerup',()=>hitUp(h)); b.addEventListener('pointercancel',()=>hitUp(h));
   b.addEventListener('click',e=>{ if(e.detail===0){ hitDown(h); hitUp(h); } }); });   // keyboard Enter / Space on the button
-// HOTKEYS
+// KEYS (11-18). Always on: Space play / pause the video, ← → one frame (Shift: one second), Home back to the start,
+// Esc closes what is open, ? lists every key. With Hotkeys on: the hits below, A M R O, and I plays the switch-on sequence.
+// A key is left alone where the focused control uses it itself: text fields take every key, a slider its arrows and
+// Home/End, a menu its arrows and letters, a keyboard-focused button its Space and Enter.
 const KEYHIT={KeyF:'flip', KeyT:'track', KeyG:'glitch', KeyP:'power', Digit1:'camA', Digit2:'camB', KeyY:'type'};
-function typing(t){ const g=t&&t.tagName; return !!t&&(t.isContentEditable || g==='TEXTAREA' || (g==='INPUT' && /^(text|search|number|email|url|password|tel)$/.test(t.type))); }
+function typing(t){ const g=t&&t.tagName; return !!t&&(t.isContentEditable || g==='TEXTAREA' || (g==='INPUT' && !/^(range|checkbox|radio|button|submit|reset|color|file)$/.test(t.type))); }
+function ownsKey(t, e){ if(!t || !t.tagName) return false; if(typing(t)) return true; const g=t.tagName, k=e.key;
+  if(g==='INPUT' && t.type==='range') return /^(Arrow|Home$|End$|Page)/.test(k);
+  if(g==='SELECT') return /^(Arrow|Home$|End$|Page|Enter$| $)/.test(k) || (k.length===1 && !perfCfg.keys);
+  if((g==='BUTTON'||g==='A'||(t.getAttribute&&t.getAttribute('role')==='button')) && t.matches(':focus-visible')) return k===' '||k==='Enter';
+  if(g==='INPUT' && /^(checkbox|radio)$/.test(t.type)) return k===' ';
+  return false; }
+const FRAME=1001/30000;
+function vidToggle(){ if(!isVideo||busyNow()) return; startAudio(); hookVideoAudio(); AC.resume(); srcEl.paused?srcEl.play().catch(()=>{}):srcEl.pause(); vidUI(); }
+function vidSeek(d){ if(!isVideo||busyNow()||!isFinite(srcEl.duration)) return; if(Math.abs(d)<.5) srcEl.pause();   // a single frame step holds the picture there
+  srcEl.currentTime=Math.min(Math.max(0, srcEl.currentTime+d), Math.max(0, srcEl.duration-FRAME/2)); vidUI(); }
+const KEYLIST=[['Space','Play / pause the video'],['← →','One frame back / on (Shift: one second)'],['Home','Back to the start of the video'],['Esc','Close this, fullscreen, open menus'],['?','This list'],
+  ['','With Hotkeys on (Perform)'],['I','Play the switch-on sequence'],['F','Channel flip'],['T (hold)','Tracking loss'],['G (hold)','Tape damage'],['P','TV off / on'],['A','ASCII on / off'],
+  ['Y','Replay the text typing'],['M','Mirror (camera)'],['1 / 2','Cut to camera A / B'],['R','Record'],['O','Output window']];
+function keyHelp(on){ let box=$('keyHelp'); if(on===undefined) on=!box;
+  if(!on){ if(box) box.remove(); return; } if(box) return;
+  box=el2('div'); box.id='keyHelp'; box.setAttribute('role','dialog'); box.setAttribute('aria-label','Keyboard shortcuts');
+  const card=el2('div'), dl=el2('dl'); card.append(el2('h2','','Keys'), dl);
+  KEYLIST.forEach(([k,d])=>{ if(!k){ const h=el2('dt','',''), dd=el2('dd','',d); dd.style.cssText='color:var(--ink);padding-top:6px'; dl.append(h,dd); return; } const dt=el2('dt'); dt.append(el2('kbd','',k)); dl.append(dt, el2('dd','',d)); });
+  card.append(el2('p','','Keys are ignored while you type in a text box; a focused slider keeps its arrows. Hotkeys are '+(perfCfg.keys?'on':'off')+'. Esc or ? closes this.'));
+  box.append(card); box.onclick=e=>{ if(e.target===box) keyHelp(false); }; document.body.append(box); }
+function closeMenus(){ let any=false;
+  document.querySelectorAll('.mbody.on').forEach(m=>{ const b=m.previousElementSibling; if(b&&b.classList.contains('more')) b.click(); else m.classList.remove('on'); any=true; });
+  [['mineWrap','mineBtn'],['posWrap','posBtn']].forEach(([w,b])=>{ if(!$(w).hidden){ $(b).click(); any=true; } });
+  return any; }
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape' && document.body.classList.contains('present')){ present(false); return; }
-  if(!perfCfg.keys || e.metaKey || e.ctrlKey || e.altKey || typing(e.target)) return;
-  const h=KEYHIT[e.code], other=['KeyA','KeyM','KeyR','KeyO'].includes(e.code);
+  const t=e.target;
+  if(e.key==='Escape'){ if($('keyHelp')){ keyHelp(false); e.preventDefault(); return; }
+    if(document.body.classList.contains('present')){ present(false); return; }
+    if(!typing(t) && closeMenus()) e.preventDefault(); return; }
+  if(e.metaKey || e.ctrlKey || e.altKey || ownsKey(t, e)) return;
+  if(e.key==='?'){ e.preventDefault(); keyHelp(); return; }
+  // transport: always on, whatever Hotkeys says
+  if(e.code==='Space'){ e.preventDefault(); if(!e.repeat) vidToggle(); return; }
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){ if(!isVideo) return; e.preventDefault(); vidSeek((e.key==='ArrowLeft'?-1:1)*(e.shiftKey?1:FRAME)); return; }
+  if(e.key==='Home'){ if(!isVideo) return; e.preventDefault(); if(!busyNow()){ srcEl.currentTime=0; vidUI(); } return; }
+  if(!perfCfg.keys) return;
+  const h=KEYHIT[e.code], other=['KeyA','KeyM','KeyR','KeyO','KeyI'].includes(e.code);
   if(h||other) e.preventDefault();          // also stops a focused menu's type-ahead
   if(offline) return;                        // an export or still is drawing: nothing live may change it
   if(h){ if(!e.repeat) hitDown(h); return; }
@@ -1793,7 +1796,8 @@ document.addEventListener('keydown',e=>{
   if(e.code==='KeyA'){ setStage(STAGES.find(x=>x.id==='ascii'), !(S.asciiOn>0)); status('ASCII '+(S.asciiOn>0?'on':'off')+'.'); }
   else if(e.code==='KeyM'){ if(isLive) $('camMirror').click(); }
   else if(e.code==='KeyR'){ if(isLive) $('camRec').click(); else $('recFree').click(); }
-  else if(e.code==='KeyO'){ openOut(); } });
+  else if(e.code==='KeyO'){ openOut(); }
+  else if(e.code==='KeyI'){ if(!(wholeRec || recSeqRun)) playIdent(); } });
 document.addEventListener('keyup',e=>{ const h=KEYHIT[e.code]; if(h) hitUp(h); });
 window.addEventListener('blur',()=>{ hitUp('track'); hitUp('glitch'); });   // a key held while switching windows never sticks
 // MIDI: Learn, touch a control (any slider, or a hit button), move a knob or hit a pad
@@ -1892,14 +1896,17 @@ async function renderStill0(scale, frames){ if(offline) return null;   // an exp
     if(isVideo||isLive) upload();
     for(let i=3;i>0;i--) draw(t0-i/59.94, 1/59.94, null);   // a few warm-up fields so lag, comet and persistence look as they do on screen
     if(frames<=1){ draw(t0, 1/59.94, null); return await new Promise(r=>cv.toBlob(r,'image/png')); }
-    const px=new Uint8Array(W*H*4), acc=new Uint16Array(W*H*4);
+    // a camera on a real screen adds up LIGHT, so the fields are decoded to linear (the tube's 2.2), summed, averaged,
+    // and encoded again (11-18). Averaging the encoded values instead would darken anything that flickers.
+    const LIN=new Float32Array(256); for(let v=0;v<256;v++) LIN[v]=Math.pow(v/255, 2.2);
+    const px=new Uint8Array(W*H*4), acc=new Float32Array(W*H*3);
     for(let i=0;i<frames;i++){ draw(t0+i/59.94, 1/59.94, null); gl.readPixels(0,0,W,H,gl.RGBA,gl.UNSIGNED_BYTE,px);
-      for(let k=0;k<px.length;k++) acc[k]+=px[k];
+      for(let k=0,j=0;k<px.length;k+=4,j+=3){ acc[j]+=LIN[px[k]]; acc[j+1]+=LIN[px[k+1]]; acc[j+2]+=LIN[px[k+2]]; }
       status('Exposing '+(i+1)+' / '+frames+'…'); await new Promise(r=>setTimeout(r,0)); }
     const c2=document.createElement('canvas'); c2.width=W; c2.height=H; const x=c2.getContext('2d'); const img=x.createImageData(W,H);
-    const d=img.data, row=W*4;
-    for(let y=0;y<H;y++){ const src=(H-1-y)*row, dst=y*row;            // GL rows run bottom-up
-      for(let k=0;k<row;k++) d[dst+k]=k%4===3 ? 255 : Math.round(acc[src+k]/frames); }
+    const d=img.data, enc=v=>Math.round(255*Math.pow(Math.min(1,v/frames), 1/2.2));
+    for(let y=0;y<H;y++){ const src=(H-1-y)*W*3, dst=y*W*4;            // GL rows run bottom-up
+      for(let i=0;i<W;i++){ const a=src+i*3, b=dst+i*4; d[b]=enc(acc[a]); d[b+1]=enc(acc[a+1]); d[b+2]=enc(acc[a+2]); d[b+3]=255; } }
     x.putImageData(img,0,0);
     return await new Promise(r=>c2.toBlob(r,'image/png'));
   } finally {
@@ -1952,7 +1959,7 @@ async function exportFile(blob, kind, fmt){
   }catch(e){ // engine not reachable: fall back to a browser download of the raw file (not inside the app window, which can't download)
     const ext = kind==='video' ? (/mp4/.test(blob.type)?'mp4':'webm') : kind==='text' ? fmt : 'png';
     if(window.pywebview){ status('Engine not reachable ('+e.message+'): nothing saved. Restart the app and try again.'); return; }
-    const u=URL.createObjectURL(blob), a=document.createElement('a'); a.href=u; a.download='amfm-crt-'+stamp()+'.'+ext; document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u), 60000);
+    const u=URL.createObjectURL(blob), a=document.createElement('a'); a.href=u; a.download=(OWNER?'amfm-crt-':'crt-')+stamp()+'.'+ext; document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u), 60000);
     status('Engine not reachable ('+e.message+'): saved a raw .'+ext+' to Downloads instead.');
   }
 }
@@ -2019,9 +2026,9 @@ async function exportFast(){
         $('status').textContent='Reading the video\'s sound…';
         const r=await fetch('/api/crt_audio?job='+job,{method:'POST'});
         if(r.status===200) input=await r.arrayBuffer();
-        else if(r.status===204) status('This video has no sound track: the export gets the TV sound only.');
+        else if(r.status===204) status('This video has no sound track: the export is silent.');
         else { let j={}; try{ j=await r.json(); }catch(e){} throw new Error(j.error||('reading the sound failed ('+r.status+')')); } }
-      $('status').textContent='Running the sound through the set…';
+      $('status').textContent='Preparing the sound…';
       await post('/api/crt_part?job='+job+'&name=sound', await renderSound(input, total, p));
     }
     $('status').textContent='Stitching it with its sound'+(fmt==='mp4'?'':' and converting to '+fmt.toUpperCase())+'…';
@@ -2035,7 +2042,7 @@ async function exportFast(){
   }
 }
 var statusHold=0;   // a real message stays up 4 s before the recording timer takes the line back
-function status(msg){ $('status').textContent = msg || 'Ready. Drag sliders, or press Space to preview the sequence.'; if(msg) statusHold=performance.now()/1000+4; }
+function status(msg){ $('status').textContent = msg || 'Ready. Drag sliders · Space plays a video · ? lists the keys.'; if(msg) statusHold=performance.now()/1000+4; }
 
 // ---------------- loop ----------------
 let frame=0, rollpos=0, last=performance.now()/1000;
@@ -2070,28 +2077,36 @@ function tapeState(t, U){
   st.wow=(U.tapeWave*.12 + U.cond*.6)*Math.sin(t*.31+1.7);
   // skew: the hook wobbles in size field to field
   if(U.skew>0) st.skewNow=U.skew*(.55+.3*Math.sin(t*1.3)+.15*(hj(Math.floor(t*59.94),501)-.5));
-  // mistracking: 1–3 bands drifting slowly through the frame
-  if(U.mistrack>0){ st.bandN=1+Math.floor(U.mistrack*2.6); st.bandH=.03+.09*U.mistrack; st.bandY=[0,1,2].map(i=>((hj(i,601)+t*(.012+.01*i)*(i%2?-1:1))%1+1)%1); }
+  // tracking error (11-18, mistracking folded in): once the head runs far enough off its track (past ~20) it straddles the
+  // guard band and 1–3 noise bands drift slowly through the frame, more and wider as the error grows
+  const mis=Math.max(0, Math.min(1, (U.tracking-20)/60));
+  if(mis>0){ st.bandN=1+Math.floor(mis*2.6); st.bandH=.03+.09*mis; st.bandY=[0,1,2].map(i=>((hj(i,601)+t*(.012+.01*i)*(i%2?-1:1))%1+1)%1); }
   // colour loss: the colour killer flickers off in weak stretches, always when a clog or burst hits
   if(U.ckill>0){ const f=Math.floor(t*59.94); for(const e of events(t, 1.5, 701, U.ckill*.6, 2)){ if(t>=e.st && t<e.st+.4+1.6*e.h(0)) st.ckill=Math.max(st.ckill, hj(f,702)<.3+.6*U.ckill?1:0); } }
   st.ckill=Math.max(st.ckill, Math.min(1,(st.clogA+st.clogB)*.6), st.burst>0?1:0);
   // copy protection: the recorder's level control hunts — slow pumping and a soft dark bar rolling through
   if(U.copyprot>0){ st.cpGain=1-U.copyprot*.38*(.5+.5*Math.sin(t*2*Math.PI/3.4)); st.cpBar=U.copyprot*.55; st.cpBarY=(t*.07)%1; }
-  // taped over: the old recording ghosts under; where the new one ends it takes over (a roll + rainbow at the edit),
-  // and the odd insert edit flashes rainbow for a few fields
-  st.underOn=underEl?1:0; st.ghostU=0; st.past=0; st.edit=0;
-  if(underEl){ st.ghostU=U.underAmt*.35; const dur=(isVideo&&srcEl&&srcEl.duration)||0, endT=U.underEnd<1&&dur? U.underEnd*dur : Infinity;
+  // taped over: a worn erase head lets the old recording ghost under; where the new one ends it takes over (a roll +
+  // rainbow at the edit), and the odd insert edit (where the new recording was paused) flashes rainbow for a few fields.
+  // A Video CD is a disc: nothing to tape over.
+  const under=underEl && Math.round(U.tapeFmt)!==6;
+  st.underOn=under?1:0; st.ghostU=0; st.past=0; st.edit=0;
+  if(under){ st.ghostU=U.underAmt*.35; const dur=(isVideo&&srcEl&&srcEl.duration)||0, endT=U.underEnd<1&&dur? U.underEnd*dur : Infinity;
     if(t>=endT) st.past=1;
     const dt=t-endT; if(dt>-.05 && dt<.45){ const k=Math.max(0,dt)/.45; st.edit=1-k; st.jump=(1-k)*(1-k)*243*(Math.floor(t*59.94)%2?1:-1); }
-    for(const e of events(t, 4, 801, U.underAmt*.12, 1)){ if(t>=e.st && t<e.st+.12) st.edit=Math.max(st.edit,.8); } }
+    for(const e of events(t, 4, 801, .06, 1)){ if(t>=e.st && t<e.st+.12) st.edit=Math.max(st.edit,.8); } }
   // deck: pause / search bars (their count and speed set by the mode)
   const dk=DECK[Math.round(U.deck)||0]; if(dk.n){ st.deckN=dk.n; st.deckPos=(t*dk.v)%1; st.deckJit=dk.jit||0; }
   return st; }
 // the sliders with the switch-on / tune-in / switch-off timeline applied at `it` (null = no sequence running)
 function uAt(it){
-  const U={...S, warm:1, off:1, tone:0, powerP:S.power};
+  const U={...S, warm:1, off:1, powerP:S.power};
   if(it!==null){ const m=identMods(it); U.warm=m.warm; U.off=m.off; U.powerP=S.power*m.off;
-    U.snow=Math.max(S.snow,m.snow); U.signal=S.signal*m.sig; U.roll=Math.max(S.roll,m.roll); U.jitter=S.jitter+m.jit; U.power=S.power*m.power; U.tone=m.tone; }
+    U.snow=Math.max(S.snow,m.snow); U.signal=S.signal*m.sig; U.roll=Math.max(S.roll,m.roll); U.jitter=S.jitter+m.jit; U.power=S.power*m.power; }
+  return tapeU(U); }
+// what a digital format leaves of the tape controls (see notHere): those values never reach the picture
+function tapeU(U){ const F=Math.round(U.tapeFmt); if(F<5) return U;
+  U.tapeWave=0; U.skew=0; U.copyprot=0; if(F===6){ U.tracking=0; U.clog=0; U.mould=0; U.underAmt=0; }
   return U; }
 function draw(now, dt, it){
   const U=uAt(it); if(!offline && !wholeRec) perfMods(U, now, dt);   // live hits, MIDI, sound-reactive: the screen and recordings only, never exports
@@ -2099,7 +2114,7 @@ function draw(now, dt, it){
   else if(rollpos!==0){ // vertical hold catches the frame and locks it back in place
     const target = rollpos>.5 ? 1 : 0; rollpos += (target-rollpos)*Math.min(1, dt*7);
     if(Math.abs(target-rollpos)<.0005) rollpos=0; rollpos%=1; }
-  if(sndNode && !offline) sndNode.port.postMessage({p:soundParams(U, now)});
+  if(tvG && !offline){ const gv=tvGain(U); if(Math.abs(gv-tvGLast)>.002){ tvGLast=gv; tvG.gain.setTargetAtTime(gv, AC.currentTime, .012); } }
   if(isVideo||isLive) upload();
   if(underIsVideo && underEl){
     if(isVideo && !offline && underEl.duration){ const want=srcEl.currentTime % underEl.duration; if(underEl.playbackRate!==srcEl.playbackRate) underEl.playbackRate=srcEl.playbackRate;
@@ -2108,18 +2123,10 @@ function draw(now, dt, it){
   const res=[RW,RH];
   const field = Math.floor(now*59.94);            // noise and jitter advance per NTSC field, not per screen refresh
   const fit = frameMode==='pillar' ? [1440/1920,1] : [1,1];
-  const g=U.glowSize, h=g*2.2;
   curIn=slitStage(U, now);
   const srcIn=matStage(U, preStage(U, now, curIn), field);
   if((U.asciiOn>0 && U.asciiPure>0) || (U.matOn>0 && U.matPure>0)){ run(P.blit, null, {res:[cv.width,cv.height], srcAR}, {src:srcIn}); hasCam=0; hasPrev=0; hasDig=0; return; }   // pure ASCII: the TV is off
-  if(model==='classic'){
-    run(P.core, T.base, {...U, res:[RW/SCALE,RH/SCALE], t:now, frame:field, rollpos, srcAR, rasterAR: RW/RH}, {src:srcIn});
-    run(P.blur, T.g1, {dir:[g*SCALE/(RW/4),0], thresh:U.glowThresh}, {src:T.base.t});
-    run(P.blur, T.g2, {dir:[0,g*SCALE/(RH/4)], thresh:-1}, {src:T.g1.t});
-    run(P.blur, T.h1, {dir:[h*SCALE/(RW/8),0], thresh:U.glowThresh*.6}, {src:T.base.t});
-    run(P.blur, T.h2, {dir:[0,h*SCALE/(RH/8)], thresh:-1}, {src:T.h1.t});
-    run(P.comp, null, {glow:U.glow, halation:U.halation, warm:U.haloWarm, fit}, {base:T.base.t, glowT:T.g2.t, haloT:T.h2.t});
-  } else {
+  {
     const L = Math.max(60, Math.round(U.lines)), st = sigTarget(L);
     const DT = Math.max(dt,1/240);
     // CAMERA: frames the picture onto the raster and does what the tubes did (ping-pong for lag/comet, slow burn accumulator)
@@ -2133,9 +2140,10 @@ function draw(now, dt, it){
     const F=Math.round(U.tapeFmt);
     if(F>=5){
       const st=tapeState(tapeClock(now),U), dk=Math.round(U.deck)||0;
-      const err=Math.min(.9,(U.dropout/40*.004 + U.mould*.01)*st.dropMul + st.burst*.3 + (dk>1?.35:0));
+      // DV mistracking shows up as more damaged blocks; copies are bit-exact, so the generation adds nothing (11-18)
+      const err=Math.min(.9,(U.dropout/40*.004 + U.mould*.01 + (F===5?U.tracking/100*.25:0))*st.dropMul + st.burst*.3 + (dk>1?.35:0));
       run(P.digi, T.dg1, {fmtD:F-5, frame:field, err, stripes:Math.max(st.clogA,st.clogB)*.7, freeze:st.burst>.75?1:0,
-        q:(F===6?.32:.06)+(U.tapeGen-1)*.08, hasPrev:hasDig, hasUnder:underEl?1:0}, {src:T.cam1.t, prev:T.dg2.t, under:underTex});
+        q:F===6?.32:.06, hasPrev:hasDig, hasUnder:st.underOn}, {src:T.cam1.t, prev:T.dg2.t, under:underTex});
       const x=T.dg1; T.dg1=T.dg2; T.dg2=x; hasDig=1; sigSrc=T.dg2.t;
     } else if(F>0){
       const fm=[null, {nC:4.8,dC:0,nL:1.75,comb:0,sh:.3,hs:0}, {nC:14,dC:6,nL:2.4,comb:1,sh:.7,hs:12}, {nC:22,dC:9,nL:3,comb:1,sh:1,hs:21}, {nC:26,dC:14,nL:5,comb:1,sh:1.2,hs:21}][F];
@@ -2146,17 +2154,16 @@ function draw(now, dt, it){
       run(P.tmech, T.tpo, {...tu, wave:U.tapeWave, tracking:U.tracking, dropout:U.dropout, sharpen:fm.sh, hsDelta:fm.hs, ...tapeState(tapeClock(now), U)}, {src:a.t, under:underTex});
       sigSrc=T.tpo.t;
     }
-    run(P.sig, st, {...U, raster:1, sharp:U.sharp, t:now, frame:field, rollpos, srcAR, rasterAR: RW/RH, lines:L, W:RW/SCALE}, {src:sigSrc});
+    // the beat carrier's phase per field, in double precision: 0.6 MHz / 59.94 Hz = 10010.01 cycles a field (see SIGNAL)
+    const iph=((6e5/59.94)*field)%1;
+    run(P.sig, st, {...U, iph, raster:1, sharp:U.sharp, t:now, frame:field, rollpos, srcAR, rasterAR: RW/RH, lines:L, W:RW/SCALE}, {src:sigSrc});
     const prev=T.base; T.base=T.base2; T.base2=prev;          // T.base2 now holds the frame before
-    run(P.tube, T.base, {res:[RW/SCALE,RH/SCALE], lines:L, curve:U.curve, scan:U.scan, beam:U.beam, mask:U.mask, vignette:U.vignette, corner:U.corner, sheen:U.sheen,
+    run(P.tube, T.base, {res:[RW/SCALE,RH/SCALE], lines:L, curve:U.curve, scan:U.scan, beam:U.beam, mask:U.mask, vignette:U.vignette, corner:U.corner, black:U.black,
       power:U.powerP, warm:U.warm, maskKind:Math.round(U.maskKind), pitch:U.pitch, converge:U.converge, persist:U.persist, dt:DT, hasPrev, mono:U.mono}, {sig:st.t, prevT:T.base2.t});
     hasPrev=1;
-    const tg=Math.pow(U.glowThresh,2.2);         // thresholds were tuned on encoded values; same feel in linear
-    run(P.blur2, T.g1, {dir:[g*SCALE/(RW/4),0], thresh:tg}, {src:T.base.t});
-    run(P.blur2, T.g2, {dir:[0,g*SCALE/(RH/4)], thresh:-1}, {src:T.g1.t});
-    run(P.blur2, T.h1, {dir:[h*SCALE/(RW/8),0], thresh:tg*.6}, {src:T.base.t});
-    run(P.blur2, T.h2, {dir:[0,h*SCALE/(RH/8)], thresh:-1}, {src:T.h1.t});
-    run(P.comp2, null, {glow:U.glow*GLOWK, halation:U.halation*HALOK, warm:U.haloWarm, fit}, {base:T.base.t, glowT:T.g2.t, haloT:T.h2.t});
+    run(P.blur2, T.h1, {dir:[HALO_R*SCALE/(RW/8),0]}, {src:T.base.t});
+    run(P.blur2, T.h2, {dir:[0,HALO_R*SCALE/(RH/8)]}, {src:T.h1.t});
+    run(P.comp2, null, {halation:U.halation*HALOK, fit}, {base:T.base.t, haloT:T.h2.t});
   }
 }
 // DECK (11-06): pause holds the frame, search plays it fast, rewind runs it backwards (the bars come from tapeState)
@@ -2194,7 +2201,7 @@ function sums(){
   q('.step[data-step="source"]').classList.toggle('done',true);
   const ap=q('[data-preset].on'); const ar=q('#arSeg button.on');
   q('#sumLook').textContent=(ap?ap.textContent.trim():'Custom')+(ar?' · '+ar.textContent.trim():'');
-  const on=[['optOn','switch-on'],['optTune','tune-in'],['optOff','switch-off'],['optTone','tone']].filter(([id])=>q('#'+id)&&q('#'+id).checked).map(x=>x[1]);
+  const on=[['optOn','switch-on'],['optTune','tune-in'],['optOff','switch-off']].filter(([id])=>q('#'+id)&&q('#'+id).checked).map(x=>x[1]);
   const hold=q('#holdOut')?q('#holdOut').textContent:'';
   const seq=[...on.slice(0,on.indexOf('switch-off')>=0?on.indexOf('switch-off'):on.length),'hold '+hold,...(on.includes('switch-off')?['switch-off']:[])].join(' · ');
   q('#sumSeq').textContent=seq; q('#crtEst').textContent=seq;

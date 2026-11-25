@@ -8,8 +8,8 @@
 	<key>CFBundleExecutable</key><string>launch</string>
 	<key>CFBundleIconFile</key><string>icon</string>
 	<key>CFBundlePackageType</key><string>APPL</string>
-	<key>CFBundleVersion</key><string>2026.11.16</string>
-	<key>CFBundleShortVersionString</key><string>2026.11.16</string>
+	<key>CFBundleVersion</key><string>2026.11.25</string>
+	<key>CFBundleShortVersionString</key><string>2026.11.25</string>
 	<key>LSMinimumSystemVersion</key><string>13.0</string>
 	<key>NSHighResolutionCapable</key><true/>
   <key>NSCameraUsageDescription</key><string>The CRT can use a camera as its live picture.</string>

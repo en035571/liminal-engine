@@ -10,3 +10,7 @@ click
 requests
 certifi
 gdown
+# Granular tab (11-23): optical flow + filters, headless build. Wheels only: the newest release has macOS 15 wheels
+# only, and pip would try (and fail) to compile it from source on macOS 13/14; this picks the newest wheel that fits.
+--only-binary opencv-python-headless
+opencv-python-headless>=4.10,<5.2

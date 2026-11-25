@@ -27,11 +27,15 @@ h2{font-size:10px;letter-spacing:.14em;color:var(--mute);font-weight:400;text-tr
 .dl{height:3px;background:var(--line)}.dl i{display:block;height:100%;background:var(--ink);width:0;transition:width .5s}
 .msg{font-size:10px;color:var(--mute);margin-top:4px;word-break:break-word}.msg.bad{color:var(--bad)}
 .count{color:var(--ink)}
+.rmm{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:4px;border:0;background:rgba(0,0,0,.7);color:var(--mute);font-size:14px;line-height:24px;text-align:center;cursor:pointer;opacity:0}
+.c:hover .rmm,.rmm:focus-visible{opacity:1}.rmm:hover{color:var(--bad)}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:99;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:10px 16px;box-shadow:0 6px 24px rgba(0,0,0,.5);display:flex;gap:12px;align-items:center}
+[hidden]{display:none!important}
 </style></head><body>
-<div class="top"><a class="btn" href="/">← engine</a><h1>MODELS</h1><span class="sp"></span>
+<div class="top"><a class="btn" href="/" title="Esc">← engine</a><h1>MODELS</h1><span class="sp"></span>
   <span id="sum" style="color:var(--mute);font-size:10px;text-transform:uppercase"></span>
   <button class="btn" id="starter">pick starter pack</button><button class="btn" id="clear">clear</button>
-  <button class="btn go" id="dl" disabled>download</button></div>
+  <button class="btn go" id="dl" disabled title="⌘↩">download</button></div>
 <div class="wrap">
   <p class="lead">Every StyleGAN2 model in justinpinkney/awesome-pretrained-stylegan2. Click a card to pick it; picks are saved. Downloads go to <span id="t7dir"></span> and show up as chips in LATENT DREAM. 1024px models render 3–4× slower. Licences marked amber are unknown, non-commercial or research-only: fine to experiment with, check before a release.</p>
   <div id="list"></div>
@@ -61,13 +65,14 @@ function card(m){
   if(d.state==='failed') status=`<div class="msg bad">failed: ${esc(d.msg)}</div>`;
   return `<div class="c${on?' on':''}${have?' have':''}" data-n="${esc(m.name)}">
     ${m.sample?`<img loading="lazy" src="/api/file?p=${encodeURIComponent(m.sample)}">`:'<div style="aspect-ratio:2/1;display:grid;place-items:center;color:var(--dim)">no sample</div>'}
-    <span class="ck">✓</span>${d.state==='downloading'?`<div class="dl"><i style="width:${d.pct||3}%"></i></div>`:''}
+    <span class="ck">✓</span>${have?`<button class="rmm" data-p="${esc(m.installed)}" title="Move this model to the Trash">×</button>`:''}${d.state==='downloading'?`<div class="dl"><i style="width:${d.pct||3}%"></i></div>`:''}
     <div class="t"><b>${esc(m.name)}</b><div class="by">${esc(m.author||'')} · <a href="${esc(safeUrl(m.source_url||m.author_url))}" target="_blank" onclick="event.stopPropagation()">source</a></div>${tags.join('')}${status}</div></div>`;
 }
 function draw(){
   const brief=ST.models.filter(m=>m.brief), rest=ST.models.filter(m=>!m.brief);
   $('#list').innerHTML=`<h2>On brief <span class="count">${brief.length}</span></h2><div class="g">${brief.map(card).join('')}</div>
     <h2>Everything else in the list <span class="count">${rest.length}</span></h2><div class="g">${rest.map(card).join('')}</div>`;
+  document.querySelectorAll('.rmm').forEach(b=>b.onclick=e=>{e.stopPropagation();removeModel(b.dataset.p,b.closest('.c').dataset.n)});
   document.querySelectorAll('.c').forEach(c=>c.onclick=()=>{const n=c.dataset.n;const m=ST.models.find(x=>x.name===n);if(m.installed)return;PICK.has(n)?PICK.delete(n):PICK.add(n);savePicks()});
   const want=[...PICK].filter(n=>{const m=ST.models.find(x=>x.name===n);return m&&!m.installed});
   const busy=ST.models.some(m=>m.dl&&['queued','downloading'].includes(m.dl.state));
@@ -79,6 +84,16 @@ async function refresh(){const s=await api('/api/models/state');if(s.error)retur
 $('#starter').onclick=()=>{ST.models.filter(m=>m.starter&&!m.installed).forEach(m=>PICK.add(m.name));savePicks()};
 $('#clear').onclick=()=>{PICK.clear();savePicks()};
 $('#dl').onclick=async()=>{const want=[...PICK].filter(n=>{const m=ST.models.find(x=>x.name===n);return m&&!m.installed});const r=await post('/api/models/download',{names:want});if(r.error)alert(r.error);refresh()};
+async function removeModel(path,name){const r=await post('/api/models/remove',{path});if(r.error){alert(r.error);return}
+  undoToast(`${name} moved to the Trash`+(r.trashed.length>1?` (${r.trashed.length} copies: this Mac + T7)`:''),r.trashed);refresh.sig=null;refresh()}
+function undoToast(t,items){let e=$('#undoEl');if(!e){e=document.createElement('div');e.id='undoEl';e.className='toast';e.setAttribute('role','status');document.body.appendChild(e)}
+  e.innerHTML='';const sp=document.createElement('span');sp.textContent=t;e.appendChild(sp);
+  if(items&&items.length){const u=document.createElement('button');u.className='btn';u.textContent='undo';u.onclick=async()=>{e.hidden=true;const r=await post('/api/restore',{items});if(r.error)alert('undo: '+r.error);refresh.sig=null;refresh()};e.appendChild(u)}
+  e.hidden=false;clearTimeout(e._t);e._t=setTimeout(()=>e.hidden=true,8000)}
+// keys: Esc back to the engine, ⌘↩ download the picks (never while typing)
+document.addEventListener('keydown',e=>{const t=e.target;if(t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable))return;
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();if(!$('#dl').disabled)$('#dl').click()}
+  else if(e.key==='Escape'&&!e.metaKey&&!e.ctrlKey){location.href='/'}});
 refresh();setInterval(refresh,2000);
 </script><script src="/update.js"></script>
 </body></html>
