@@ -32,7 +32,7 @@ body.running .top .st{color:var(--ink)}
 .steps{overflow:auto;padding:14px 12px 8px 44px;position:relative}
 .steps::before{content:"";position:absolute;left:25px;top:30px;bottom:40px;width:1px;background:var(--line2)}
 .gofoot{border-top:1px solid var(--line);padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--rail)}
-.right{padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0;overflow:auto}.right>*{flex:none}
+.right{padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0;overflow:auto;container-type:inline-size}.right>*{flex:none}
 .warn{border:1px solid var(--bad);color:var(--bad);border-radius:var(--r);padding:8px 10px;font:11.5px/1.4 var(--sans);margin:0 0 10px}
 
 /* ---- steps (ledger) ---- */
@@ -159,7 +159,7 @@ summary::before{content:"advanced · "}details[open] summary::before{content:"ad
 .bar{height:3px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .6s}
 .nums{display:flex;gap:22px;color:var(--mute);font-size:10px;letter-spacing:.12em;text-transform:uppercase}.nums b{font-weight:400;color:var(--ink);font-variant-numeric:tabular-nums}
 body:not(.running):not(.hasjob) .bar,body:not(.running):not(.hasjob) .nums{display:none}
-.view{background:#000;border:1px solid var(--line);border-radius:var(--r);aspect-ratio:16/10;display:grid;place-items:center;overflow:hidden;position:relative;max-height:62vh}
+.view{background:#000;border:1px solid var(--line);border-radius:var(--r);width:100%;height:min(62vh,62.5cqw);min-height:200px;display:grid;place-items:center;overflow:hidden;position:relative}   /* 11-25: always the column's full width (16:10 until 62vh, then wider); pictures fit inside */
 .view img,.view video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}   /* 11-25: fit inside the box (a tall clip used to size the box and get cropped) */
 .view .empty{position:relative;text-align:center;color:var(--mute);font:11.5px/1.45 var(--sans);letter-spacing:0;text-transform:none}
 .view .empty::before{content:"No signal";display:block;font:500 12px var(--mono);letter-spacing:.03em;color:var(--ink);margin-bottom:2px}
@@ -205,7 +205,12 @@ body:not(.running):not(.hasjob) .bar,body:not(.running):not(.hasjob) .nums{displ
 /* ---- Granular look settings, 3 layouts (11-25): a = in the left column, b = across the middle, c = preview + Effect Controls ---- */
 #gSet{display:flex;flex-direction:column;gap:12px}
 .gtop{display:flex;flex-direction:column;gap:10px}
-.glay{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center}.glay .seg button{padding:6px 4px}
+.glay{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center}
+.glayhome{display:flex;justify-content:center;margin:0 0 4px}
+/* 11-25: your own presets per look */
+#gMine .chip .x{margin-left:6px;opacity:.5;cursor:pointer}#gMine .chip .x:hover{opacity:1}#gMine .chip.sure .x{opacity:1;color:#ff8a7a}
+#gMine .msave{display:inline-flex;gap:6px;align-items:center}#gMine .msave input{width:150px;font:inherit;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+#gMine .empty{font:11px/1.4 var(--sans);color:var(--mute)}.glayhome .glay{display:block;position:relative;width:min(100% - 140px,330px)}.glayhome .glay .lbl{position:absolute;right:100%;top:50%;transform:translateY(-50%);margin-right:12px}   /* 11-25: always visible (it used to hide inside the closed Look step) */.glay .seg button{padding:6px 4px}
 #gLook{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line2)}
 #gLook button{border:0;background:var(--bg);padding:9px 6px;overflow:visible;text-overflow:clip;font-size:10.5px;letter-spacing:.1em}
 #gLook button.on{background:var(--panel2);color:var(--ink);box-shadow:inset 0 -2px 0 var(--acc)}
@@ -226,8 +231,7 @@ input.tog:checked{background:var(--acc)}input.tog:checked::after{left:18px;backg
 #gSet .grp.shut>:not(.grph){display:none!important}
 #gSet .grph .gsum{margin-left:auto;color:var(--dim);letter-spacing:.04em;text-transform:none;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;display:none}
 #gSet .grp.shut .gsum{display:block}
-#gSet .sl .ud i:not(.dep){display:none}
-#gSet .sl:focus-within .ud i:not(.dep):not([hidden]){display:block}
+#gSet .sl .ud i[hidden]{display:none}   /* 11-25: ↑/↓ always showing (they used to appear only while you were on the slider) */
 #gSet .sl:focus-within:not(:hover) .hint{display:none}   /* the notes show while you're on it; the longer popup only on pointing */
 #mGranular .step>.hd .sum{white-space:normal;line-height:1.45}   /* the whole summary, on two lines if need be */
 .sl.sel select{grid-column:2/4;grid-row:1;width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:var(--r);padding:6px 8px;color:var(--ink);font-size:11.5px}
@@ -250,7 +254,7 @@ body.gl-b .wrap{grid-template-columns:300px minmax(0,1fr)}
 .gmid{flex:none}
 body.gl-b #gSet .gtop{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 24px;align-items:center}
 body.gl-b #gLook{grid-template-columns:repeat(4,minmax(0,1fr));grid-column:1}
-body.gl-b .glay{grid-column:2;grid-row:1}body.gl-b .glay .seg button{flex:none;padding:6px 12px}
+
 body.gl-b .gstrict{grid-column:1}body.gl-b .gstricth{grid-column:1/-1;margin:-4px 0 0 44px}
 body.gl-b #gSet .gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;align-items:start}
 body.gl-b #gSet .gcards .grp{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:8px 12px 4px}
@@ -319,7 +323,7 @@ body.gl-c #gSide .sl .ud i:not(.dep){display:none!important}
     <div class="drop" id="lDropAud"><div class="ph">♪</div><div class="t"><div class="n" id="lAudN">Drop a song, or click</div><div class="m" id="lAudM">Harmony drifts the picture, drums pulse it.</div></div></div>
     <input type="file" id="lFileAud" accept="audio/*,video/mp4" hidden>
     <div><div class="lbl">Recent <b id="lAudName"></b></div><div class="recent" id="lRecentAud"></div></div>
-    <div class="sl wv lenrow"><div class="slh"><span>Length</span><b id="lLenV">15 s</b></div><input type="range" id="lLenS" min="0" max="9" step="1" value="2" data-whole="whole song"><div class="ud"><i>→ longer: 5 s up to 2 minutes; all the way right = the song</i><i>← shorter, quicker tests</i></div></div>
+    <div class="sl wv lenrow"><div class="slh"><span>Length</span><b id="lLenV">15 s</b></div><input type="range" id="lLenS" min="1" max="120" step="1" value="15" data-whole="whole song"><div class="ud"><i>↑ longer, to the second; all the way right = the whole song (the slider spans your song's own length)</i><i>↓ shorter, quicker tests (1 s at the left)</i></div></div>
     <div class="fieldrow" id="lStartRow"><label class="flab" for="lStart">Start at</label><div class="cell"><input type="number" id="lStart" value="30" min="0" step="1"><span class="flab">sec</span></div></div>
     </div>
   </section>
@@ -335,30 +339,30 @@ body.gl-c #gSide .sl .ud i:not(.dep){display:none!important}
     <div class="grp"><div class="grph">The walk <small>how it moves through the model</small></div>
       <div class="sl" id="row_l_speed_fpm"><div class="slh"><span>New forms</span><b id="l_speed_fpmV">12</b></div>
         <input type="range" id="l_speed_fpm" min="2" max="40" step="1" value="12">
-        <div class="slr"><i>lingers</i><i>restless</i></div><div class="hint">How often it heads for a completely new form. <span id="beatsHint">Lands on beats.</span></div></div>
+        <div class="slr"><i>lingers</i><i>restless</i></div><div class="ud"><i>↑ heads for a completely new form more often: restless</i><i>↓ stays on each form longer: lingers</i></div><div class="hint">How often it heads for a completely new form. <span id="beatsHint">Lands on beats.</span></div></div>
       <div class="sl" id="row_l_motion_react"><div class="slh"><span>Drift</span><b id="l_motion_reactV">0.5</b></div>
         <input type="range" id="l_motion_react" min="0" max="1.5" step="0.05" value="0.5">
-        <div class="slr"><i>still</i><i>wandering</i></div><div class="hint">The harmony pushes the form to slowly shift while it's on screen.</div></div>
+        <div class="slr"><i>still</i><i>wandering</i></div><div class="ud"><i>↑ the harmony shifts the form more while it's on screen: wandering</i><i>↓ the form holds still while it's on screen</i></div><div class="hint">The harmony pushes the form to slowly shift while it's on screen.</div></div>
       <div class="sl" id="row_l_pulse_react"><div class="slh"><span>Drum pulse</span><b id="l_pulse_reactV">0.5</b></div>
         <input type="range" id="l_pulse_react" min="0" max="1.5" step="0.05" value="0.5">
-        <div class="slr"><i>none</i><i>twitchy</i></div><div class="hint">Each drum hit nudges the fine detail, then it settles back.</div></div>
+        <div class="slr"><i>none</i><i>twitchy</i></div><div class="ud"><i>↑ each drum hit jolts the fine detail harder: twitchy</i><i>↓ drums barely touch it (0 = ignores them)</i></div><div class="hint">Each drum hit nudges the fine detail, then it settles back.</div></div>
       <div class="sl" id="row_l_psi"><div class="slh"><span>Variety</span><b id="l_psiV">0.8</b></div>
         <input type="range" id="l_psi" min="0.4" max="1.2" step="0.05" value="0.8">
-        <div class="slr"><i>typical</i><i>strange</i></div><div class="hint">Low = textbook examples of the model. High = weirder, less stable forms.</div></div>
+        <div class="slr"><i>typical</i><i>strange</i></div><div class="ud"><i>↑ weirder, less stable forms</i><i>↓ textbook, typical examples of the model</i></div><div class="hint">Low = textbook examples of the model. High = weirder, less stable forms.</div></div>
     </div>
     <div class="grp"><div class="grph">Effects <small>off at 0</small></div>
       <div class="sl" id="row_lBend"><div class="slh"><span>Bend</span><b id="lBendV">0</b></div>
         <input type="range" id="lBend" min="0" max="1" step="0.05" value="0">
-        <div class="slr"><i>off</i><i>broken</i></div><div class="hint">Drums shred the texture channels; big hits stutter an earlier frame.</div></div>
+        <div class="slr"><i>off</i><i>broken</i></div><div class="ud"><i>↑ drums shred the texture harder; big hits stutter an earlier frame</i><i>↓ cleaner (0 = off)</i></div><div class="hint">Drums shred the texture channels; big hits stutter an earlier frame.</div></div>
       <div class="sl" id="row_lSpin"><div class="slh"><span>Spin</span><b id="lSpinV">0</b></div>
         <input type="range" id="lSpin" min="0" max="1" step="0.05" value="0">
-        <div class="slr"><i>off</i><i>spinning</i></div><div class="hint">The harmony slowly turns the image; drum hits push in. Reads as tilting on map and text models.</div></div>
+        <div class="slr"><i>off</i><i>spinning</i></div><div class="ud"><i>↑ turns faster, with bigger push-ins on drum hits</i><i>↓ steadier (0 = no turning)</i></div><div class="hint">The harmony slowly turns the image; drum hits push in. Reads as tilting on map and text models.</div></div>
       <div class="sl" id="row_lDecay"><div class="slh"><span>Decay</span><b id="lDecayV">0</b></div>
         <input type="range" id="lDecay" min="0" max="1" step="0.05" value="0">
-        <div class="slr"><i>off</i><i>forgets all</i></div><div class="hint">Over the song it forgets: fine detail first, then noise, then it fades to the model's average memory.</div></div>
+        <div class="slr"><i>off</i><i>forgets all</i></div><div class="ud"><i>↑ forgets more by the end, down to the model's average memory</i><i>↓ remembers more (0 = never forgets)</i></div><div class="hint">Over the song it forgets: fine detail first, then noise, then it fades to the model's average memory.</div></div>
       <div class="sl" id="row_l_decay_shape" data-needs="lDecay"><div class="slh"><span>Decay timing</span><b id="l_decay_shapeV">1.6</b></div>
         <input type="range" id="l_decay_shape" min="0.5" max="4" step="0.1" value="1.6">
-        <div class="slr"><i>from the start</i><i>late collapse</i></div><div class="hint"><span id="decayWhen"></span></div></div>
+        <div class="slr"><i>from the start</i><i>late collapse</i></div><div class="ud"><i>↑ holds on, then collapses late in the song</i><i>↓ starts forgetting from the start, evenly</i></div><div class="hint"><span id="decayWhen"></span></div></div>
     </div>
     <div class="note" id="lNotes"></div>
     <p class="help" style="margin:0">Hover a row for what it does. Harmony moves the form, drums hit it, decay forgets it over the song.</p>
@@ -409,13 +413,13 @@ body.gl-c #gSide .sl .ud i:not(.dep){display:none!important}
     <div class="bd">
     <div><div class="lbl">Editing moves <b id="movesCount"></b></div><div class="chips" id="moves" style="margin-top:8px"><button class="chip on" data-m="fast" title="The shot plays 2–4× faster">fast</button><button class="chip on" data-m="slow" title="The shot plays at 1/2 or 1/3 speed">slow</button><button class="chip on" data-m="reverse" title="The shot plays backwards">reverse</button></div></div>
     <div class="grp">
-    <div class="sl" id="row_bMoveChance"><div class="slh"><span>Moved shots</span><b id="bMoveChanceV">30%</b></div><input type="range" id="bMoveChance" min="0" max="1" step="0.05" value="0.3"><div class="slr"><i>none</i><i>every shot</i></div><div class="hint">How many shots get one of the moves above. Picture only: the song is never sped up or reversed.</div></div>
+    <div class="sl" id="row_bMoveChance"><div class="slh"><span>Moved shots</span><b id="bMoveChanceV">30%</b></div><input type="range" id="bMoveChance" min="0" max="1" step="0.05" value="0.3"><div class="slr"><i>none</i><i>every shot</i></div><div class="ud"><i>↑ more shots get a move (all the way = every shot)</i><i>↓ fewer moved shots (0 = none)</i></div><div class="hint">How many shots get one of the moves above. Picture only: the song is never sped up or reversed.</div></div>
     </div>
     <div class="grp"><div class="grph">Tape <small>the finished edit, recorded onto a modelled tape</small></div></div>
     <div class="f wide"><span class="lbl">Format</span><div class="seg" id="bTape"><button data-v="off" class="on">Off</button><button data-v="vhs-sp" title="VHS SP: ~3 MHz luma (≈240 lines), ~0.5 MHz colour-under, ~43 dB">VHS SP</button><button data-v="vhs-ep" title="VHS EP (6 h): ~2.5 MHz luma, ~0.4 MHz colour, ~38 dB">VHS EP</button><button data-v="umatic" title="U-matic (low band): ~3.1 MHz luma, ~0.5 MHz colour, ~46 dB, steadier transport">U-matic</button><button data-v="betacam-sp" title="Betacam SP: component, 4.5 MHz luma, 1.5 MHz colour, 51 dB, played through a TBC">Beta SP</button></div></div>
     <div id="bTapeBox" hidden style="display:contents">
     <div class="f"><span class="lbl">Generation</span><div class="seg" id="bGen"><button data-v="1" class="on" title="The original recording">1st</button><button data-v="2" title="A copy of it">2nd</button><button data-v="3">3rd</button><button data-v="4">4th</button><button data-v="5">5th</button></div></div>
-    <div class="grp"><div class="sl"><div class="slh"><span>Damage</span><b id="bDamageV">0.30</b></div><input type="range" id="bDamage" min="0" max="1" step="0.05" value="0.3"><div class="slr"><i>fresh tape</i><i>wrecked</i></div><div class="hint">How many faults and how big. Each one is a real tape failure, below.</div></div></div>
+    <div class="grp"><div class="sl"><div class="slh"><span>Damage</span><b id="bDamageV">0.30</b></div><input type="range" id="bDamage" min="0" max="1" step="0.05" value="0.3"><div class="slr"><i>fresh tape</i><i>wrecked</i></div><div class="ud"><i>↑ more tape faults, and bigger ones: wrecked</i><i>↓ cleaner tape (0 = fresh)</i></div><div class="hint">How many faults and how big. Each one is a real tape failure, below.</div></div></div>
     <div><div class="lbl">Faults <b id="faultsCount"></b></div><div class="chips" id="faults" style="margin-top:8px">
       <button class="chip on" data-k="dropout" title="Oxide missing for a few µs; the deck's dropout compensator repeats the line above">dropouts</button>
       <button class="chip on" data-k="tracking" title="The heads drift off the track: noise bars, torn lines">tracking</button>
@@ -468,7 +472,7 @@ body.gl-c #gSide .sl .ud i:not(.dep){display:none!important}
       <div><div class="lbl">Recent <b id="gAudName"></b></div><div class="recent" id="gRecentAud"></div></div>
       <div class="fieldrow"><label class="flab" for="gSongStart">Song from</label><div class="cell"><input type="number" id="gSongStart" value="0" min="0" step="1"><span class="flab">sec</span></div></div>
     </div>
-    <div class="sl wv lenrow"><div class="slh"><span>Length</span><b id="gLenV">15 s</b></div><input type="range" id="gLenS" min="0" max="9" step="1" value="2" data-whole="whole clip"><div class="ud"><i>→ longer: 5 s up to 2 minutes; all the way right = the clip</i><i>← shorter, quicker tests</i></div></div>
+    <div class="sl wv lenrow"><div class="slh"><span>Length</span><b id="gLenV">15 s</b></div><input type="range" id="gLenS" min="1" max="120" step="1" value="15" data-whole="whole clip"><div class="ud"><i>↑ longer, to the second; all the way right = the whole clip (the slider spans your clip's own length)</i><i>↓ shorter, quicker tests (1 s at the left)</i></div></div>
     <div class="fieldrow" id="gStartRow"><label class="flab" for="gStart">Start at</label><div class="cell"><input type="number" id="gStart" value="0" min="0" step="0.5"><span class="flab">sec into the clip</span></div></div>
     <div class="hint" style="margin:0">The song (if any) plays from its own start point for the same length, padded with silence if it runs out.</div>
     </div>
@@ -479,11 +483,11 @@ body.gl-c #gSide .sl .ud i:not(.dep){display:none!important}
     <div class="gaway" id="gAway" hidden></div>
     <div id="gHome"><div id="gSet">
     <div class="gtop">
-    <div class="glay"><span class="lbl">Layout</span><div class="seg" id="gLay"><button data-v="a" title="Settings here in the left column">Column</button><button data-v="b" title="Settings spread across the middle">Middle</button><button data-v="c" title="A still of your clip in this look in the middle, settings on the right">Preview</button></div></div>
     <div class="seg" id="gLook"><button data-v="granular" class="on" title="Takagi's Girls method as a granular synth: grains sample colour from a frame buffer">Granular</button><button data-v="paint" title="Girls (2003): vivid painted base, dots where it's dark, brush smudge">Paint</button><button data-v="outline" title="Rama (2002): Find Edges lines over a Colorama hue wheel / Takagi's palettes">Outline</button><button data-v="light" title="NIHITI (2008): people cut out and burning in a dark, smeared landscape, through After Effects' Colorama 'Fire'">Light</button></div>
     <label class="gstrict" title="Match what frame-by-frame measurement of his videos showed, instead of your picks"><input type="checkbox" id="gStrict" class="tog" autocomplete="off" disabled><span>Takagi strict</span></label>
     <div class="hint gstricth" id="gStrictHint"></div>
     </div>
+    <div class="f gpre gmine"><span class="lbl">My presets</span><div class="chips" id="gMine"></div></div>
     <div class="gcards">
     <div id="gBoxGranular" style="display:contents">
     <div class="gera">Girls, 2003, as a granular synth: grains sample colour from a frame buffer.</div>
@@ -519,7 +523,7 @@ body.gl-c #gSide .sl .ud i:not(.dep){display:none!important}
       <div class="sl"><div class="slh"><span>Bed</span><b id="g_dryV">0.80</b></div><input type="range" id="g_dry" data-k="dry" min="0" max="1" step="0.05" value="0.8"><div class="slr"><i>grains on paper</i><i>painted bed</i></div><div class="ud"><i>↑ a vivid painted picture under the grains</i><i>↓ 0 = grains alone on white paper</i></div><div class="hint">The painted picture under the grains (dry), or bare white paper with only grains (wet).</div></div>
     </div>
     <div class="grp"><div class="grph">Time</div>
-      <div class="sl wv"><div class="slh"><span>Frame rate</span><b id="g_stepV">15 fps</b></div><input type="range" id="g_step" data-k="step" min="1" max="3" step="0.5" value="2"><div class="slr"><i>30 fps</i><i>10 fps</i></div><div class="ud"><i>→ fewer new pictures a second: each is held longer, steadier and choppier</i><i>← 1 = a new picture every frame (30 fps)</i></div><div class="hint">Each processed picture is held this many video frames. Girls holds 2,3,2,3: 12 new pictures a second (Takagi strict sets that).</div></div>
+      <div class="sl wv"><div class="slh"><span>Frame rate</span><b id="g_stepV">15 fps</b></div><input type="range" id="g_step" data-k="step" min="1" max="3" step="0.5" value="2"><div class="slr"><i>30 fps</i><i>10 fps</i></div><div class="ud"><i>↑ fewer new pictures a second: each is held longer, steadier and choppier</i><i>↓ 1 = a new picture every frame (30 fps)</i></div><div class="hint">Each processed picture is held this many video frames. Girls holds 2,3,2,3: 12 new pictures a second (Takagi strict sets that).</div></div>
     </div>
     <div class="grp" id="gModGrp"><div class="grph">Audio mod <small>the song's loudness moves these</small></div>
       <div class="sl"><div class="slh"><span>Density</span><b id="g_mod_densityV">0.00</b></div><input type="range" id="g_mod_density" data-k="mod_density" min="0" max="1" step="0.05" value="0"><div class="slr"><i>off</i><i>full</i></div><div class="ud"><i>↑ loud parts get up to 2× the grains, quiet parts down to none</i><i>↓ 0 = the song leaves density alone</i></div><div class="hint">Loud = more grains, quiet = fewer.</div></div>
@@ -545,7 +549,7 @@ body.gl-c #gSide .sl .ud i:not(.dep){display:none!important}
       <div class="sl"><div class="slh"><span>Brush</span><b id="p_brushV">5</b></div><input type="range" id="p_brush" data-k="brush" min="0" max="10" step="1" value="5"><div class="slr"><i>off</i><i>heavy</i></div><div class="ud"><i>↑ heavier smudge streaks along the picture's grain: more painterly</i><i>↓ 0 = crisp, no smudge</i></div><div class="hint">Brush-stroke smudge along the picture's own grain, under the dots.</div></div>
     </div>
     <div class="grp"><div class="grph">Time</div>
-      <div class="sl wv"><div class="slh"><span>Frame rate</span><b id="p_stepV">15 fps</b></div><input type="range" id="p_step" data-k="step" min="1" max="3" step="0.5" value="2"><div class="slr"><i>30 fps</i><i>10 fps</i></div><div class="ud"><i>→ fewer new pictures a second: each is held longer, steadier and choppier</i><i>← 1 = a new picture every frame (30 fps)</i></div><div class="hint">Each picture is held this many video frames. Girls holds 2,3,2,3: 12 new pictures a second (Takagi strict sets that).</div></div>
+      <div class="sl wv"><div class="slh"><span>Frame rate</span><b id="p_stepV">15 fps</b></div><input type="range" id="p_step" data-k="step" min="1" max="3" step="0.5" value="2"><div class="slr"><i>30 fps</i><i>10 fps</i></div><div class="ud"><i>↑ fewer new pictures a second: each is held longer, steadier and choppier</i><i>↓ 1 = a new picture every frame (30 fps)</i></div><div class="hint">Each picture is held this many video frames. Girls holds 2,3,2,3: 12 new pictures a second (Takagi strict sets that).</div></div>
     </div>
     </div>
 
@@ -558,7 +562,7 @@ body.gl-c #gSide .sl .ud i:not(.dep){display:none!important}
     <div class="grp"><div class="grph">People</div>
       <div class="sl"><div class="slh"><span>Figures</span><b id="l_bodyV">0.62</b></div><input type="range" id="l_body" data-k="body" min="0.3" max="1.2" step="0.01" value="0.62"><div class="slr"><i>dim</i><i>burning</i></div><div class="ud"><i>↑ hotter bodies: yellow, then cream</i><i>↓ cooler bodies, toward orange and red</i><i class="dep" hidden></i></div><div class="hint">How much heat each person gives off. 0.62 lands his yellow (fitted to his frames).</div></div>
       <div class="sl"><div class="slh"><span>Shading</span><b id="l_shadeV">0.35</b></div><input type="range" id="l_shade" data-k="shade" min="0" max="1" step="0.05" value="0.35"><div class="slr"><i>even</i><i>shaded</i></div><div class="ud"><i>↑ broad shading inside the bodies: around 0.8 faces start to show</i><i>↓ an even glow, like his flat yellow figures</i><i class="dep" hidden></i></div><div class="hint">How much of each body's own light and shade survives, blurred so no fabric or detail comes through. Relative to that body, so clothing colour doesn't change the heat.</div></div>
-      <div class="sl wv"><div class="slh"><span>Cut-out</span><b id="l_cutoutV">accurate</b></div><input type="range" id="l_cutout" data-k="cutout" min="0" max="2" step="1" value="2"><div class="slr"><i>fast</i><i>accurate</i></div><div class="ud"><i>accurate: cleaner edges around people, about twice the time</i><i>fast: rougher edges, quicker test renders</i></div><div class="hint">How carefully people are cut out (Apple Vision, on this Mac, nothing uploaded). It can grab things people sit in or hold; Takagi fixed his masks by hand.</div></div>
+      <div class="sl wv"><div class="slh"><span>Cut-out</span><b id="l_cutoutV">accurate</b></div><input type="range" id="l_cutout" data-k="cutout" min="0" max="2" step="1" value="2"><div class="slr"><i>fast</i><i>accurate</i></div><div class="ud"><i>↑ accurate: cleaner edges around people, about twice the time</i><i>↓ fast: rougher edges, quicker test renders</i></div><div class="hint">How carefully people are cut out (Apple Vision, on this Mac, nothing uploaded). It can grab things people sit in or hold; Takagi fixed his masks by hand.</div></div>
       <div class="sl"><div class="slh"><span>Steady</span><b id="l_steadyV">0.70</b></div><input type="range" id="l_steady" data-k="steady" min="0" max="0.9" step="0.05" value="0.7"><div class="slr"><i>raw</i><i>calm</i></div><div class="ud"><i>↑ calmer cut-out edges and halo, but a fast-moving person leaves a faint trail</i><i>↓ 0 = the raw cut-out: its edge shimmers every frame</i></div><div class="hint">Apple Vision redraws each person's outline every frame, so the edge and the halo shimmer. This blends each new cut-out with the last one; 0.7 brings the flicker down to the footage's own.</div></div>
     </div>
     <div class="grp"><div class="grph">Ground</div>
@@ -573,29 +577,29 @@ body.gl-c #gSide .sl .ud i:not(.dep){display:none!important}
       <div class="sl"><div class="slh"><span>Sparks</span><b id="l_sparksV">0.15</b></div><input type="range" id="l_sparks" data-k="sparks" min="0" max="1" step="0.05" value="0.15"><div class="slr"><i>none</i><i>many</i></div><div class="ud"><i>↑ more dust specks catching the light</i><i>↓ fewer (0 = none)</i><i class="dep" hidden></i></div><div class="hint">Dust in the air, lit by whatever light reaches it, so specks near the bodies glow brightest. 0.15 matches his count.</div></div>
     </div>
     <div class="grp"><div class="grph">Time</div>
-      <div class="sl wv"><div class="slh"><span>Frame rate</span><b id="l_stepV">15 fps</b></div><input type="range" id="l_step" data-k="step" min="1" max="3" step="0.5" value="2"><div class="slr"><i>30 fps</i><i>10 fps</i></div><div class="ud"><i>→ fewer new pictures a second: each is held longer, steadier and choppier</i><i>← 1 = a new picture every frame (30 fps)</i></div><div class="hint">NIHITI's red section is mostly on twos: each picture held for 2 frames, 15 a second.</div></div>
+      <div class="sl wv"><div class="slh"><span>Frame rate</span><b id="l_stepV">15 fps</b></div><input type="range" id="l_step" data-k="step" min="1" max="3" step="0.5" value="2"><div class="slr"><i>30 fps</i><i>10 fps</i></div><div class="ud"><i>↑ fewer new pictures a second: each is held longer, steadier and choppier</i><i>↓ 1 = a new picture every frame (30 fps)</i></div><div class="hint">NIHITI's red section is mostly on twos: each picture held for 2 frames, 15 a second.</div></div>
     </div>
     </div>
     <div id="gBoxOutline" style="display:contents" hidden>
     <div class="gera">Rama, 2002: Find Edges lines over a Colorama hue wheel or his own palettes.</div>
     <div class="grp"><div class="grph">Lines</div>
       <div class="sl"><div class="slh"><span>Lines</span><b id="o_edge_gainV">3.00</b></div><input type="range" id="o_edge_gain" data-k="edge_gain" min="0" max="8" step="0.25" value="3"><div class="slr"><i>faint</i><i>heavy</i></div><div class="ud"><i>↑ darker, thicker outlines; busy texture (leaves, hair) turns to scribble</i><i>↓ fainter lines, more flat colour (0 = colour only)</i><i class="dep" hidden></i></div><div class="hint">Find Edges strength: how dark and thick the outlines print.</div></div>
-      <div class="sl wv"><div class="slh"><span>AE lines</span><b id="o_ae_linesV">tuned</b></div><input type="range" id="o_ae_lines" data-k="ae_lines" min="0" max="2" step="1" value="0"><div class="slr"><i>tuned</i><i>AE at DV size</i></div><div class="ud"><i>AE: After Effects' Find Edges exactly · DV size: run at 720 wide like his DV masters, thicker softer lines</i><i>tuned (leftmost): the Lines slider sets the strength</i></div><div class="hint">After Effects' Find Edges, matched to AE 2027's renders with zero error. It has no strength setting, so lines are fainter than the tuned default (3×). DV size computes them at 720 px wide, then scales back up.</div></div>
+      <div class="sl wv"><div class="slh"><span>AE lines</span><b id="o_ae_linesV">tuned</b></div><input type="range" id="o_ae_lines" data-k="ae_lines" min="0" max="2" step="1" value="0"><div class="slr"><i>tuned</i><i>AE at DV size</i></div><div class="ud"><i>↑ AE: After Effects' Find Edges exactly · AE at DV size: run at 720 wide like his DV masters, thicker softer lines</i><i>↓ tuned (leftmost): the Lines slider sets the strength</i></div><div class="hint">After Effects' Find Edges, matched to AE 2027's renders with zero error. It has no strength setting, so lines are fainter than the tuned default (3×). DV size computes them at 720 px wide, then scales back up.</div></div>
     </div>
     <div class="grp"><div class="grph">Colour</div>
       <div class="sl"><div class="slh"><span>Wheel</span><b id="o_wheelV">0.60</b></div><input type="range" id="o_wheel" data-k="wheel" min="0" max="1" step="0.05" value="0.6"><div class="slr"><i>Takagi palettes</i><i>hue wheel</i></div><div class="ud"><i>↑ rainbow bands that follow brightness (After Effects' Colorama)</i><i>↓ 0 = only Takagi's sampled palettes: calmer gradients</i><i class="dep" hidden></i></div><div class="hint">Colour: palettes sampled from Takagi's own frames, or After Effects' Colorama hue wheel.</div></div>
-      <div class="sl"><div class="slh"><span>Palette</span><b id="o_paletteV">auto</b></div><input type="range" id="o_palette" data-k="palette" min="-1" max="8" step="1" value="-1" data-pals="8" data-maps="11"><div class="slr"><i>new each shot</i><i>one fixed</i></div><div class="ud"><i>auto (leftmost): a new palette at every cut, like Rama</i><i>a number: that one palette for the whole video (they aren't in any order)</i><i class="dep" hidden></i></div><div class="hint">Leftmost: a new palette at every cut, like Rama. Otherwise one of his 9 palettes for the whole video.</div></div>
+      <div class="sl"><div class="slh"><span>Palette</span><b id="o_paletteV">auto</b></div><input type="range" id="o_palette" data-k="palette" min="-1" max="8" step="1" value="-1" data-pals="8" data-maps="11"><div class="slr"><i>new each shot</i><i>one fixed</i></div><div class="ud"><i>↑ a number: that one palette for the whole video (they aren't in any order)</i><i>↓ auto (leftmost): a new palette at every cut, like Rama</i><i class="dep" hidden></i></div><div class="hint">Leftmost: a new palette at every cut, like Rama. Otherwise one of his 9 palettes for the whole video.</div></div>
       <div class="sl sel"><div class="slh"><span>Colorama</span></div><select id="o_colorama" data-k="colorama" data-def="0" data-zero="Off"></select><div class="ud"><i>a preset: After Effects' own Colorama palette, pixel-exact (Fire = NIHITI's red scenes)</i><i>Off: colour from the Palette / Wheel above</i></div><div class="hint">After Effects' Colorama "Use Preset Palette" menu, matched to AE 2027's renders with zero error: brightness ((R+G+B)/3) picks a colour along the preset. The menu groups his scenes, AE's named looks and its utility ramps.</div></div>
     </div>
     <div class="grp"><div class="grph">Time</div>
-      <div class="sl wv"><div class="slh"><span>Frame rate</span><b id="o_stepV">30 fps</b></div><input type="range" id="o_step" data-k="step" min="1" max="3" step="0.5" value="1"><div class="slr"><i>30 fps</i><i>10 fps</i></div><div class="ud"><i>→ fewer new pictures a second: each is held longer, steadier and choppier</i><i>← 1 = a new picture every frame (30 fps)</i></div><div class="hint">How often the colour redraws. Rama's colour moves 15 times a second, held 2 frames (Takagi strict sets that).</div></div>
+      <div class="sl wv"><div class="slh"><span>Frame rate</span><b id="o_stepV">30 fps</b></div><input type="range" id="o_step" data-k="step" min="1" max="3" step="0.5" value="1"><div class="slr"><i>30 fps</i><i>10 fps</i></div><div class="ud"><i>↑ fewer new pictures a second: each is held longer, steadier and choppier</i><i>↓ 1 = a new picture every frame (30 fps)</i></div><div class="hint">How often the colour redraws. Rama's colour moves 15 times a second, held 2 frames (Takagi strict sets that).</div></div>
     </div>
     </div>
     <div class="grp" id="gFiltGrp"><div class="grph">Photoshop filter <small>New Flat, 2003</small></div>
       <div class="sl sel"><div class="slh"><span>Filter</span></div><select id="g_psf"><option value="0" selected>None</option><option value="1">Glowing Edges</option><option value="2">Poster Edges · through Photoshop</option><option value="3" data-ps="1">Dry Brush · through Photoshop</option><option value="4" data-ps="1">Watercolor · through Photoshop</option></select><div class="ud"><i id="g_psfU">None: the look as it is</i></div><div class="hint">Photoshop's Filter Gallery on the finished picture, after Echo, the way Takagi forced Photoshop effects into After Effects for New Flat (2003). Glowing Edges is measured to match Photoshop 2026 (99.7 % of pixels within 1 level); Poster Edges, Dry Brush and Watercolor are rendered by your Photoshop itself (exact, about half a second a picture, Photoshop opens if it isn't). Settings are Photoshop's own, in pixels at the render size.</div></div>
-      <div class="sl" id="g_psp1Row" hidden><div class="slh"><span id="g_psp1L">Setting</span><b id="g_psp1V">0</b></div><input type="range" id="g_psp1" min="0" max="10" step="1" value="0"><div class="ud"><i id="g_psp1U"></i></div></div>
-      <div class="sl" id="g_psp2Row" hidden><div class="slh"><span id="g_psp2L">Setting</span><b id="g_psp2V">0</b></div><input type="range" id="g_psp2" min="0" max="10" step="1" value="0"><div class="ud"><i id="g_psp2U"></i></div></div>
-      <div class="sl" id="g_psp3Row" hidden><div class="slh"><span id="g_psp3L">Setting</span><b id="g_psp3V">0</b></div><input type="range" id="g_psp3" min="0" max="10" step="1" value="0"><div class="ud"><i id="g_psp3U"></i></div></div>
+      <div class="sl" id="g_psp1Row" hidden><div class="slh"><span id="g_psp1L">Setting</span><b id="g_psp1V">0</b></div><input type="range" id="g_psp1" min="0" max="10" step="1" value="0"><div class="ud"><i id="g_psp1U"></i><i id="g_psp1D"></i></div></div>
+      <div class="sl" id="g_psp2Row" hidden><div class="slh"><span id="g_psp2L">Setting</span><b id="g_psp2V">0</b></div><input type="range" id="g_psp2" min="0" max="10" step="1" value="0"><div class="ud"><i id="g_psp2U"></i><i id="g_psp2D"></i></div></div>
+      <div class="sl" id="g_psp3Row" hidden><div class="slh"><span id="g_psp3L">Setting</span><b id="g_psp3V">0</b></div><input type="range" id="g_psp3" min="0" max="10" step="1" value="0"><div class="ud"><i id="g_psp3U"></i><i id="g_psp3D"></i></div></div>
     </div>
     <div class="grp" id="gEchoGrp"><div class="grph">Echo <small>frame trails</small></div>
       <div class="sl"><div class="slh"><span>Echoes</span><b id="g_echoV">0</b></div><input type="range" id="g_echo" data-k="echo" min="0" max="8" step="1" value="0"><div class="slr"><i>off</i><i>long trail</i></div><div class="ud"><i>↑ more echoed frames: a longer trail behind moving things</i><i>↓ 0 = no echo, the picture stands alone</i></div><div class="hint">How many past pictures are blended in. Each one fades by the Decay amount. The trail is made from the look's own output, not from the footage.</div></div>
@@ -620,6 +624,7 @@ body.gl-c #gSide .sl .ud i:not(.dep){display:none!important}
 <div class="gofoot"><div style="min-width:0"><div class="est" id="est"></div><div class="dest" id="dest"></div></div><button class="go" id="go" disabled title="Render (⌘↩)">Render</button></div>
 </div>
 <div class="right">
+  <div id="gLayHome" class="glayhome" hidden><div class="glay"><span class="lbl">Layout</span><div class="seg" id="gLay"><button data-v="a" title="Settings here in the left column">Column</button><button data-v="b" title="Settings spread across the middle">Middle</button><button data-v="c" title="A still of your clip in this look in the middle, settings on the right">Preview</button></div></div></div>
   <div id="gMid" class="gmid" hidden></div>
   <div id="gStill" class="gstill" hidden>
     <div class="stage"><span class="name" id="gStillT">Still</span><span class="s" id="gStillS"></span></div>
@@ -703,7 +708,7 @@ $('#mode').addEventListener('click',e=>{const b=e.target.closest('button');if(!b
 function modeFromHash(){const h=location.hash.slice(1);const mb=[...$('#mode').children].find(x=>x.dataset.v===h&&h!=='crt');if(mb&&!mb.classList.contains('on'))mb.click()}
 modeFromHash();addEventListener('hashchange',modeFromHash);
 function markChips(sel,p){document.querySelectorAll(sel+' .chip').forEach(c=>c.classList.toggle('on',c.dataset.p===p))}
-function setLAudio(p,n,d){S.lAudio=p;S.lAudioDur=d||0;$('#lAudN').textContent=n;$('#lAudM').textContent=d?fmt(d)+' long':'harmony drifts it · drums pulse it';markChips('#lRecentAud',p);gate();est()}
+function setLAudio(p,n,d){S.lAudio=p;S.lAudioDur=d||0;$('#lStartRow').style.display=lenSpan('l')?'none':'flex';$('#lAudN').textContent=n;$('#lAudM').textContent=d?fmt(d)+' long':'harmony drifts it · drums pulse it';markChips('#lRecentAud',p);gate();est()}
 function mThumb(m){let u=m.sample?fileUrl(m.sample):(m.sample_url||'');if(u&&!/^(\/api\/file|https?:)/.test(u))u='';return u?`background-image:url("${u.replace(/["'()\\]/g,c=>'%'+c.charCodeAt(0).toString(16))}")`:''}
 function setLModel(p,n){S.lModel=p;const m=(S.models||[]).find(x=>x.path===p)||{name:n};$('#lModelName').textContent=m.name||n;
   $('#lCurMeta').textContent=[m.group,m.res,m.where,m.size?Math.round(m.size/1e6)+' MB':''].filter(Boolean).join(' · ');$('#lCurTh').style.cssText=mThumb(m);$('#lCurTh').classList.toggle('none',!mThumb(m));
@@ -717,10 +722,14 @@ function drawModels(){const q=($('#lModelSearch').value||'').toLowerCase(),g=S.m
   $('#lGroups').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{S.mGroup=b.dataset.g;drawModels()});}
 $('#lModelSearch').addEventListener('input',drawModels);
 $('#lPickTog').onclick=()=>{const h=!$('#lPicker').hidden;$('#lPicker').hidden=h;$('#lPickTog').textContent=h?'change':'close';if(!h){drawModels();$('#lModelSearch').focus()}};
-// 11-25: Length is a slider (5 s .. 2 min, rightmost = the whole song / clip) instead of 15-sec test / whole
-const LENS=[5,10,15,20,30,45,60,90,120];
-function lenRead(pre){const el=$('#'+pre+'LenS'),i=+el.value,full=i>=LENS.length;S[pre+'Len']=full?'full':'test';S[pre+'Dur']=full?0:LENS[i];
-  $('#'+pre+'LenV').textContent=full?el.dataset.whole:(LENS[i]<60?LENS[i]+' s':(LENS[i]/60)+' min');return full}
+// 11-25: Length is freeform, 1 s up to the source's own length (the song for Latent, the clip for Granular);
+// all the way right = the whole thing. Before a source is picked it spans 2 minutes.
+function lenTotal(pre){return pre==='l'?(S.lAudioDur||0):(S.gClipDur||0)}
+function lenFmt(t){t=Math.round(t);return t<60?t+' s':Math.floor(t/60)+':'+String(t%60).padStart(2,'0')}
+function lenSpan(pre){const el=$('#'+pre+'LenS'),tot=lenTotal(pre),wasFull=+el.value>=+el.max,mx=tot>0?Math.max(2,Math.ceil(tot)):120;
+  if(+el.max!==mx){el.max=mx;if(wasFull&&tot>0)el.value=mx;else if(+el.value>mx)el.value=mx}return lenRead(pre)}
+function lenRead(pre){const el=$('#'+pre+'LenS'),v=+el.value,tot=lenTotal(pre),full=v>=+el.max;S[pre+'Len']=full?'full':'test';S[pre+'Dur']=full?0:v;
+  $('#'+pre+'LenV').textContent=full?el.dataset.whole+(tot>0?' · '+lenFmt(tot):''):lenFmt(v);return full}
 $('#lLenS').addEventListener('input',()=>{$('#lStartRow').style.display=lenRead('l')?'none':'flex';est()});
 $('#lModelGo').onclick=async()=>{const r=await post('/api/check',{path:$('#lModelPath').value.trim()});if(r.error){alert(r.error);return}if(r.kind!=='model'){alert('that is not a .pkl model');return}S.extraModels=(S.extraModels||[]).concat([{name:r.name.replace(/\.pkl$/,''),path:r.path}]);setLModel(r.path,r.name);$('#lModelPath').value='';S.sig.models=null;refresh()};
 $('#l_fps').addEventListener('input',est);$('#l_draft').addEventListener('change',est);
@@ -806,7 +815,7 @@ function render(st){
     $('#inboxSum').textContent=`inbox · ${all.length} file${all.length===1?'':'s'} · ${mbs(all.reduce((t,f)=>t+f.size,0))}`;
     all.forEach(f=>{const row=document.createElement('div');row.className='row1';row.innerHTML=`<span class="nm" title="${esc(f.path)}">${f.kind==='audio'?'♪ ':f.kind==='video'?'▶ ':''}${esc(f.name)}</span><span class="sz">${mbs(f.size)}</span>`;
       const x=document.createElement('button');x.className='xbtn';x.textContent='×';x.title='Move to the Trash';x.onclick=()=>removeFile('/api/inbox_remove',f.path,f.name);row.appendChild(x);box.appendChild(row)})}
-  if(S.lAudio&&!S.lAudioDur){const a=st.audio.find(x=>x.path===S.lAudio);if(a){S.lAudioDur=a.duration;$('#lAudM').textContent=fmt(a.duration)+' long';est()}}
+  if(S.lAudio&&!S.lAudioDur){const a=st.audio.find(x=>x.path===S.lAudio);if(a){S.lAudioDur=a.duration;$('#lAudM').textContent=fmt(a.duration)+' long';$('#lStartRow').style.display=lenSpan('l')?'none':'flex';est()}}
   // job panel
   const go=$('#go');
   if(j&&j.running){go.textContent='Stop';go.classList.add('stop');go.disabled=false}else{go.textContent='Render';go.classList.remove('stop')}
@@ -892,6 +901,7 @@ function uiSnap(){const roots={latent:['#mLatent'],bank:['#mBank'],granular:['#m
     R.querySelectorAll('.seg[id]').forEach(g=>{const b=g.querySelector('button.on');if(b&&g.id!=='gLay')seg[g.id]=b.dataset.v});
     R.querySelectorAll('.chips[id]').forEach(g=>{const b=g.querySelector('.chip.on');chips[g.id]=b?b.dataset.p:null})});
   const picks={latent:{model:S.lModel,audio:S.lAudio},bank:{audio:S.bAudio,lanes:[...S.lanes],useDropped:S.useDropped},granular:{clip:S.gClip,audio:S.gAudio}}[S.mode]||{};
+  v._lenSec=1;   // 11-25: Length saved in seconds (older snapshots saved a step number 0..9)
   return {mode:S.mode,v,seg,chips,picks}}
 async function uiApply(u){if(!u||!u.mode)return;const mb=document.querySelector('#mode button[data-v="'+u.mode+'"]');if(mb&&!mb.classList.contains('on'))mb.click();
   const P=u.picks||{},nm=p=>p?String(p).split('/').pop():'';
@@ -899,6 +909,7 @@ async function uiApply(u){if(!u||!u.mode)return;const mb=document.querySelector(
   if(u.mode==='latent'){if(P.model)setLModel(P.model,nm(P.model));if(P.audio)setLAudio(P.audio,nm(P.audio),0)}
   if(u.mode==='bank'){if(P.audio)setBAudio(P.audio,nm(P.audio),0);if(P.lanes)S.lanes=new Set(P.lanes);if('useDropped' in P)S.useDropped=P.useDropped;S.sig.dropped=null}
   Object.entries(u.seg||{}).forEach(([id,val])=>{const b=document.querySelector('#'+CSS.escape(id)+' button[data-v="'+CSS.escape(String(val))+'"]');if(b&&!b.classList.contains('on'))b.click()});
+  if(u.v&&!u.v._lenSec)['lLenS','gLenS'].forEach(id=>{if(id in u.v){const i=+u.v[id];u.v[id]=i>=9?'100000':String([5,10,15,20,30,45,60,90,120][Math.max(0,i)]||15)}});
   Object.entries(u.v||{}).forEach(([id,val])=>{const el=document.getElementById(id);if(!el)return;
     if(el.type==='checkbox'){if(id==='gStrict'){el.checked=!!val;return}if(el.checked!==!!val){el.checked=!!val;el.dispatchEvent(new Event('change',{bubbles:true}))}return}
     if(el.value!==String(val)){el.value=val;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}))}});
@@ -1002,7 +1013,7 @@ function gLookDraw(){Object.entries(GBOX).forEach(([k,sel])=>$(sel).hidden=k!==S
   const none=S.gLook==='light',cb=$('#gStrict');if(none&&cb.checked){cb.checked=false;cb.dispatchEvent(new Event('change',{bubbles:true}))}   // Light has no strict table yet
   cb.disabled=none||!LSTRICT;cb.closest('label').title=none?'Light bodies is already built from effects measured off After Effects: there is no strict version yet':'Match what frame-by-frame measurement of his videos showed, instead of your picks';gStrictDraw();est()}
 function gDur(s){return s>0&&s<60?s.toFixed(1)+' s':fmt(s)}   // a short clip reads 0.4 s, not 0:00
-function gClipMeta(){$('#gClipM').textContent=S.gClipDur?gDur(S.gClipDur)+' long'+(S.gLen==='test'&&S.gClipDur<(S.gDur||15)?' · shorter than the length, so all of it':''):'one handheld clip · scaled to 960 wide at most'}
+function gClipMeta(){if($('#gLenS').max!=(S.gClipDur>0?Math.max(2,Math.ceil(S.gClipDur)):120))$('#gStartRow').style.display=lenSpan('g')?'none':'';else lenRead('g');$('#gClipM').textContent=S.gClipDur?gDur(S.gClipDur)+' long'+(S.gLen==='test'&&S.gClipDur<(S.gDur||15)?' · shorter than the length, so all of it':''):'one handheld clip · scaled to 960 wide at most'}
 function gVid(c){return c&&c.width?{width:+c.width,height:+c.height,fps:+c.fps||0}:null}   // the clip's picture size + rate (server: ffprobe_video)
 function gOutSize(){const v=S.gClipV,mw=Math.max(64,Math.trunc(Math.max(160,Math.min(1920,+$('#gW').value||960))));   // output W x H the way the server + granular.py work it out
   const ev=x=>Math.max(2,Math.round(x/2)*2);if(!v||!v.width)return [640,480];return v.width>mw?[ev(mw),ev(v.height*mw/v.width)]:[ev(v.width),ev(v.height)]}
@@ -1062,6 +1073,37 @@ $('#gPresets').addEventListener('click',e=>{const b=e.target.closest('.chip');if
   ['exposure','sat','paper'].forEach(k=>$('#g_'+k).value='');
   $('#gFreeze').checked=!!P.freeze;$('#gFreezeAt').value=P.freeze_at||0.7;
   document.querySelectorAll('#gPresets .chip').forEach(c=>c.classList.toggle('on',c===b&&b.dataset.p!=='reset'));gVals();gFreezeDraw();gModDraw()});
+// ---- 11-25: your own presets, per look: everything in the look's box + Photoshop filter + Echo (kept by the server)
+const MBOX={granular:'#gBoxGranular',paint:'#gBoxPaint',outline:'#gBoxOutline',light:'#gBoxLight'},MEXTRA=['g_psf','g_psp1','g_psp2','g_psp3','g_echo','g_echo_decay','g_echo_op'];
+let MINE={granular:[],paint:[],outline:[],light:[]},mineOn=null,mineSaving=false;
+function mineEls(look){const els=[...document.querySelectorAll(MBOX[look]+' input[id],'+MBOX[look]+' select[id]')].filter(el=>el.type!=='file');return els.concat(MEXTRA.map(id=>$('#'+id)).filter(Boolean))}
+function mineSnap(look){const v={};mineEls(look).forEach(el=>v[el.id]=el.type==='checkbox'?el.checked:el.value);return v}
+function mineDraw(){const box=$('#gMine'),look=S.gLook||'granular',L=MINE[look]||[];box.innerHTML='';
+  L.forEach(p=>{const b=document.createElement('button');b.className='chip'+(mineOn===look+'/'+p.name?' on':'');b.dataset.n=p.name;b.title='Your preset: puts back every setting of this look, the Photoshop filter and Echo';
+    b.innerHTML='<span>'+esc(p.name)+'</span><span class="x" title="Remove (click twice)">×</span>';box.appendChild(b)});
+  if(mineSaving){const w=document.createElement('span');w.className='msave';w.innerHTML='<input id="gMineName" maxlength="40" placeholder="name this preset"><button class="chip" id="gMineOk">save</button><button class="chip" id="gMineNo">cancel</button>';box.appendChild(w);setTimeout(()=>$('#gMineName')&&$('#gMineName').focus(),0)}
+  else{const b=document.createElement('button');b.className='chip';b.id='gMineAdd';b.textContent='+ save current';b.title='Keep the current settings of this look as a preset';box.appendChild(b)}}
+function mineApply(look,p){if($('#gStrict').checked||S.gPre)gStrictOff();$('#gStrict').checked=false;gStrictDraw();
+  const v=p.v||{},els=mineEls(look).filter(el=>el.id in v);
+  const fire=el=>{el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}))};
+  els.filter(el=>el.tagName==='SELECT'||el.type==='checkbox').forEach(el=>{if(el.type==='checkbox')el.checked=!!v[el.id];else el.value=v[el.id];fire(el)});   // menus first (the filter menu resets its sliders)
+  els.filter(el=>el.tagName!=='SELECT'&&el.type!=='checkbox').forEach(el=>{el.value=v[el.id];fire(el)});
+  document.querySelectorAll('#gPresets .chip,#lightPre .chip').forEach(c=>c.classList.remove('on'));
+  mineOn=look+'/'+p.name;gVals();gFreezeDraw();gModDraw();mineDraw();est()}
+async function mineLoad(){try{const r=await api('/api/presets');if(r&&!r.error){MINE=r;mineDraw()}}catch(e){}}
+async function mineSave(){const n=($('#gMineName').value||'').trim();if(!n){$('#gMineName').focus();return}const look=S.gLook||'granular';
+  const r=await post('/api/presets/save',{look,name:n,v:mineSnap(look)});if(!r||r.error){alert("couldn't save the preset: "+((r&&r.error)||'no reply from the app'));return}
+  MINE=r.presets;mineSaving=false;mineOn=look+'/'+n;document.querySelectorAll('#gPresets .chip,#lightPre .chip').forEach(c=>c.classList.remove('on'));mineDraw()}
+$('#gMine').addEventListener('click',async e=>{const look=S.gLook||'granular';
+  if(e.target.id==='gMineAdd'){mineSaving=true;mineDraw();return}if(e.target.id==='gMineNo'){mineSaving=false;mineDraw();return}if(e.target.id==='gMineOk'){mineSave();return}
+  const b=e.target.closest('.chip[data-n]');if(!b)return;
+  if(e.target.classList.contains('x')){if(!b.classList.contains('sure')){b.classList.add('sure');b.title='Click × again to remove';setTimeout(()=>b.classList.remove('sure'),2500);return}
+    const r=await post('/api/presets/remove',{look,name:b.dataset.n});if(r&&r.presets){MINE=r.presets;if(mineOn===look+'/'+b.dataset.n)mineOn=null;mineDraw()}return}
+  const p=(MINE[look]||[]).find(x=>x.name===b.dataset.n);if(p)mineApply(look,p)});
+$('#gMine').addEventListener('keydown',e=>{if(e.target.id!=='gMineName')return;if(e.key==='Enter'){e.preventDefault();mineSave()}if(e.key==='Escape'){mineSaving=false;mineDraw()}});
+$('#gSet').addEventListener('input',e=>{if(mineOn&&!e.isTrusted)return;if(mineOn&&e.target.closest&&!e.target.closest('#gMine')){mineOn=null;mineDraw()}},true);   // you moved a setting: no longer exactly that preset
+$('#gLook').addEventListener('click',()=>setTimeout(mineDraw,0));
+mineLoad();
 // ---- 11-25: Light presets (granular.py LIGHT_PRESETS, over LIGHT's defaults = the sliders' own defaults)
 const LPRE={flat:{},shaded:{shade:0.8},'flat close':{body:0.61,ground:0.055,streaks:0,glow:0.6,reach:0},'shaded close':{body:0.61,ground:0.055,streaks:0,glow:0.6,reach:0,shade:0.8}};
 const LOWN=el=>!['cutout','steady','step'].includes(el.dataset.k);   // what a preset sets (not cut-out quality, steadiness or frame rate)
@@ -1070,13 +1112,13 @@ $('#lightPre').addEventListener('click',e=>{const b=e.target.closest('.chip');if
   document.querySelectorAll('#lightPre .chip').forEach(c=>c.classList.toggle('on',c===b));gVals()});
 document.querySelectorAll('#gBoxLight input[type=range][data-k]').forEach(el=>{if(LOWN(el))el.addEventListener('input',()=>document.querySelectorAll('#lightPre .chip').forEach(c=>c.classList.remove('on')))});
 // Photoshop filter (11-25): one shared group; its three sliders take that filter's own Photoshop settings
-const PSF={1:{n:'Glowing Edges',d:'neon-bright edges on black, Photoshop Stylize',s:[['Edge width',1,14,2,'wider glowing edges'],['Edge brightness',0,20,6,'brighter edges (above ~12 they clip white)'],['Smoothness',1,15,5,'smaller details smoothed away before edges are found']]},
-  2:{n:'Poster Edges',d:'flat posterised colour with dark lines on the darker side of edges, rendered by Photoshop (an approximate version without it)',s:[['Edge thickness',0,10,2,'wider dark lines'],['Edge intensity',0,10,1,'darker lines (0 still draws faint ones)'],['Posterization',0,6,2,'more colour levels (0 = 3 levels, 6 = 128)']]},
-  3:{n:'Dry Brush',d:'simplified paint with brushy edges, rendered by Photoshop',s:[['Brush size',0,10,2,'bigger strokes, less detail'],['Brush detail',0,10,8,'more of the picture\'s detail kept'],['Texture',1,3,1,'more brush texture']]},
-  4:{n:'Watercolor',d:'dark, saturated watercolour wash, rendered by Photoshop',s:[['Brush detail',1,14,14,'more detail kept'],['Shadow intensity',0,10,1,'deeper, darker shadows'],['Texture',1,3,1,'more paper texture']]}};
+const PSF={1:{n:'Glowing Edges',d:'neon-bright edges on black, Photoshop Stylize',s:[['Edge width',1,14,2,'wider glowing edges','thin edges'],['Edge brightness',0,20,6,'brighter edges (above ~12 they clip white)','dimmer edges (0 = black)'],['Smoothness',1,15,5,'smaller details smoothed away before edges are found','fine detail and noise turn into edges too']]},
+  2:{n:'Poster Edges',d:'flat posterised colour with dark lines on the darker side of edges, rendered by Photoshop (an approximate version without it)',s:[['Edge thickness',0,10,2,'thicker lines along big edges; tiny specks get fainter','thin lines that also catch tiny specks'],['Edge intensity',0,10,1,'darker lines (3 and up are near black)','fainter lines (0 still draws faint ones)'],['Posterization',0,6,2,'more colour levels, smoother (6 = 128)','fewer colour levels, flatter (0 = 3)']]},
+  3:{n:'Dry Brush',d:'simplified paint with brushy edges, rendered by Photoshop',s:[['Brush size',0,10,2,'bigger strokes, less detail','smaller strokes, more detail'],['Brush detail',0,10,8,'more of the picture\'s detail kept','coarser, more simplified'],['Texture',1,3,1,'more brush texture','smoother strokes']]},
+  4:{n:'Watercolor',d:'dark, saturated watercolour wash, rendered by Photoshop',s:[['Brush detail',1,14,14,'more detail kept','blotchier, less detail'],['Shadow intensity',0,10,1,'deeper, darker shadows','lighter shadows'],['Texture',1,3,1,'more paper texture','smoother paper']]}};
 function psfDraw(reset){const v=+$('#g_psf').value,F=PSF[v];$('#g_psfU').textContent=F?F.d:'None: the look as it is';
-  [1,2,3].forEach(n=>{const row=$('#g_psp'+n+'Row'),el=$('#g_psp'+n);row.hidden=!F;if(!F)return;const [lab,lo,hi,def,up]=F.s[n-1];
-    $('#g_psp'+n+'L').textContent=lab;el.min=lo;el.max=hi;if(reset)el.value=def;$('#g_psp'+n+'V').textContent=el.value;$('#g_psp'+n+'U').textContent='↑ '+up})}
+  [1,2,3].forEach(n=>{const row=$('#g_psp'+n+'Row'),el=$('#g_psp'+n);row.hidden=!F;if(!F)return;const [lab,lo,hi,def,up,dn]=F.s[n-1];
+    $('#g_psp'+n+'L').textContent=lab;el.min=lo;el.max=hi;if(reset)el.value=def;$('#g_psp'+n+'V').textContent=el.value;$('#g_psp'+n+'U').textContent='↑ '+up;$('#g_psp'+n+'D').textContent='↓ '+dn})}
 $('#g_psf').addEventListener('change',()=>psfDraw(true));
 [1,2,3].forEach(n=>$('#g_psp'+n).addEventListener('input',()=>{$('#g_psp'+n+'V').textContent=$('#g_psp'+n).value}));
 // Echo controls: show values, include in settings
@@ -1124,7 +1166,7 @@ function gHint(sl){const bar=$('#gHintBar');document.querySelectorAll('#gSet .sl
 function gLayout(){const L=S.gLay||'a',on=S.mode==='granular',set=$('#gSet');if(!set)return;
   document.body.classList.toggle('gl-b',on&&L==='b');document.body.classList.toggle('gl-c',on&&L==='c');
   const host=!on||L==='a'?$('#gHome'):L==='b'?$('#gMid'):$('#gSideIn');if(set.parentElement!==host)host.appendChild(set);
-  $('#gMid').hidden=!(on&&L==='b');$('#gSide').hidden=!(on&&L==='c');$('#gStill').hidden=!(on&&L==='c');
+  $('#gLayHome').hidden=!on;$('#gMid').hidden=!(on&&L==='b');$('#gSide').hidden=!(on&&L==='c');$('#gStill').hidden=!(on&&L==='c');
   const aw=$('#gAway');aw.hidden=L==='a';aw.textContent=L==='b'?'The look settings are in the middle →':'The look settings are on the right, with a still of your clip in the middle →';
   [...$('#gLay').children].forEach(b=>b.classList.toggle('on',b.dataset.v===L));
   if(on&&L==='c'){gHint(null);gStillAsk()}}
@@ -1338,7 +1380,7 @@ function sums(){
   set('mGranular','source',S.gClip?T('gClipN')+(S.gClipDur?' · '+gDur(S.gClipDur):''):'Drop a clip',!!S.gClip);
   set('mGranular','sound',(S.gSnd==='song'?(S.gAudio?T('gAudN')+' from '+(V('gSongStart')||0)+' s':'pick a song'):"clip's own sound")+' · '+(S.gLen==='full'?'whole clip':T('gLenV')+' from '+(V('gStart')||0)+' s'),S.gSnd!=='song'||!!S.gAudio);
   const gp=document.querySelector('#gPresets .chip.on'), gmod=S.gSnd==='song'&&S.gAudio&&['g_mod_density','g_mod_size','g_mod_spray'].some(id=>+V(id)>0);
-  set('mGranular','look',(q('#gStrict').checked?'Takagi strict · ':'')+(S.gLook==='paint'?'Paint · ink '+T('p_ink_amountV')+' · brush '+T('p_brushV')+' · '+T('p_stepV'):S.gLook==='light'?'Light · '+((q('#lightPre .chip.on')||{}).textContent||'custom')+' · '+gColName('l_colorama')+' · '+T('l_stepV'):S.gLook==='outline'?'Outline · lines '+(+$('#o_ae_lines').value?T('o_ae_linesV'):gDead('o_edge_gain')?'strict':T('o_edge_gainV'))+' · '+(+$('#o_colorama').value?'Colorama '+gColName('o_colorama'):T('o_paletteV')==='auto'?'new palette each shot':'palette '+T('o_paletteV')):
+  set('mGranular','look',(q('#gStrict').checked?'Takagi strict · ':'')+(S.gLook==='paint'?'Paint · ink '+T('p_ink_amountV')+' · brush '+T('p_brushV')+' · '+T('p_stepV'):S.gLook==='light'?'Light · '+((q('#lightPre .chip.on')||q('#gMine .chip.on span')||{}).textContent||'custom')+' · '+gColName('l_colorama')+' · '+T('l_stepV'):S.gLook==='outline'?'Outline · lines '+(+$('#o_ae_lines').value?T('o_ae_linesV'):gDead('o_edge_gain')?'strict':T('o_edge_gainV'))+' · '+(+$('#o_colorama').value?'Colorama '+gColName('o_colorama'):T('o_paletteV')==='auto'?'new palette each shot':'palette '+T('o_paletteV')):
     'Granular'+(gp?' · '+gp.textContent:'')+' · density '+T('g_densityV')+' · tail '+T('g_decayV')+(q('#gFreeze').checked?' · freeze at '+(V('gFreezeAt')||0.7)+' s':'')+(gmod?' · audio mod':'')),true);
   set('mGranular','output',(V('gW')||'960')+' px max · seed '+(V('gSeed')||'3')+(V('gName')?' · '+V('gName'):''),true);
   // first open: the first step not done, per arm, only if none is open yet

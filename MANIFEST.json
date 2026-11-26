@@ -1,8 +1,8 @@
 {
- "version": "2026.11.25.2",
+ "version": "2026.11.25.3",
  "files": {
   "Liminal Engine.app/Contents/Info.plist": {
-   "sha": "5f77880abf1f0cc9b1618d26027a8e4f28ae0bb409746c45f55ea0ee2a3a24a7",
+   "sha": "58964b303a4a1850d3039959f2ac8f6af702fe3b43e4528e23523a73186b8e0f",
    "mode": 420
   },
   "Liminal Engine.app/Contents/MacOS/launch": {
@@ -14,7 +14,7 @@
    "mode": 420
   },
   "READ ME FIRST.html": {
-   "sha": "26ead7e99f816b0efba8b66e3661eb50a1f9ae296bdde9b5a2581b4d46abb297",
+   "sha": "5eec11d46c5b26ebfe786d341ce483a306466a85a37141415f682e114112e271",
    "mode": 420
   },
   "Set Up.command": {
@@ -34,7 +34,7 @@
    "mode": 420
   },
   "app/crt.html": {
-   "sha": "cb299a1133ac9b2b6c61edeb4a182b43918910bc47702ce7b39cf8ad2eb23b16",
+   "sha": "eee723e4a4e63ada6033ebb34e636a14bb1a6c6f7db3bb1822e025057f758132",
    "mode": 420
   },
   "app/crt_logos/test-card.png": {
@@ -50,7 +50,7 @@
    "mode": 420
   },
   "app/index.html": {
-   "sha": "72a2e34a9eb8a48d4a128f90ac68f6abfb4f910ddf025d14cefd1b43cdb796ab",
+   "sha": "ed988d7dfc901e50dda84cdecbab43740916b494cea086dcbbaf292c59b51fa0",
    "mode": 420
   },
   "app/models.html": {
@@ -74,7 +74,7 @@
    "mode": 420
   },
   "app/server.py": {
-   "sha": "ce74855f0dd417ceb195bba02822e4a1e72e49abf8c7f4710914079d9aec9873",
+   "sha": "6c2de991e74dc7f1246517b3a567c13824f8b76807b206583bb5584687bbde50",
    "mode": 420
   },
   "app/update.js": {

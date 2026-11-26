@@ -62,6 +62,7 @@ body.running .top .st{color:var(--ink)}
 input[type=text],input[type=number],textarea{background:var(--bg);border:1px solid var(--line2);border-radius:var(--r);padding:7px 9px;outline:none;width:100%;font-variant-numeric:tabular-nums}
 input[type=text]:focus,input[type=number]:focus,textarea:focus{border-color:var(--acc)}
 label.s output{white-space:nowrap}
+p.hint.ud{margin:-4px 0 8px}   /* 11-25: what raising / lowering the slider above does */
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 /* THE CHAIN (11-06): one row per stage, on/off, two or three controls, the rest under MORE */
 #chain{display:grid;gap:6px}
@@ -303,7 +304,9 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
         <div class="pair"><button class="rec" id="camRec">Record</button><button id="camStill" title="Saves a still at the size under Output">Still</button></div>
         <div class="f"><span class="lbl">Motion</span><div class="seg"><button id="motGo" title="Records only while something moves, then saves each clip">Record on motion: off</button></div></div>
         <label class="s"><span>Sensitivity</span><input type="range" id="motSens" min="0" max="1" step=".01" value=".6"><output id="motSensO">0.60</output></label>
+      <p class="hint ud">↑ smaller movements start a recording<br>↓ needs bigger movement to start</p>
         <label class="s"><span>Keep going</span><input type="range" id="motKeep" min="1" max="20" step="1" value="4" title="Seconds to keep recording after the movement stops"><output id="motKeepO">4 s</output></label>
+      <p class="hint ud">↑ keeps recording longer after the movement stops<br>↓ stops sooner after the movement stops</p>
         <p class="hint" id="motState" hidden></p>
       </div>
       <div id="camBlocked" hidden><p class="note" id="camWhy"></p><div class="pair"><button id="camBrowser">Open CRT in browser</button></div></div>
@@ -345,6 +348,7 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
         <label class="tog"><input type="checkbox" id="optOff" checked><span>End with switch-off</span></label>
       </div>
       <label class="s"><span>Hold</span><input type="range" id="holdSecs" min="1" max="30" step=".5" value="5"><output id="holdOut">5.0s</output></label>
+      <p class="hint ud">↑ longer picture between switch-on and switch-off<br>↓ shorter picture between switch-on and switch-off</p>
       <div id="powerWrap"></div>
       <div class="f"><span class="lbl">Preview</span><div class="seg"><button id="previewSeq" title="I also previews (with Hotkeys on)">Play</button><button id="loopIdent">Loop: off</button></div></div>
       <div class="row"><button id="recFree">Start free recording</button></div>
@@ -381,7 +385,9 @@ canvas{width:min(100%,calc((100vh - 110px - var(--tlh,0px))*var(--ar)));max-heig
       <div id="midiMap" class="hint"></div>
       <div class="f"><span class="lbl">React</span><div class="seg" id="reactSeg"><button data-r="0">Off</button><button data-r="1" title="The video's sound, or your mic">Sound</button><button data-r="2" title="Listens to the room (music, voice). Never plays out or records">Room</button></div></div>
       <label class="s"><span>Amount</span><input type="range" id="reactAmt" min="0" max="1" step=".01" value=".6"><output id="reactAmtO">0.60</output></label>
+      <p class="hint ud">↑ the picture reacts harder to the sound<br>↓ gentler reactions (0 = none)</p>
       <label class="s"><span>Sensitivity</span><input type="range" id="reactSens" min="0" max="1" step=".01" value=".5"><output id="reactSensO">0.50</output></label>
+      <p class="hint ud">↑ quieter sounds set it off<br>↓ only loud sounds set it off</p>
       <div class="f"><span class="lbl">Beats</span><div class="seg"><button id="reactBeat" aria-pressed="false" title="A sharp hit in the sound flips the channel">Beats flip: off</button></div></div>
       <div class="meter" aria-hidden="true"><i id="reactLvl"></i></div>
       <p class="hint" id="reactState">Sound: the video or your mic. Room: listens only. Loud stretches lose tracking and damage the tape.</p>

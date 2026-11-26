@@ -259,6 +259,22 @@ def meta_load():
     return m if isinstance(m, dict) else {}
 
 
+# 11-25: your own Granular presets, per look, kept beside the renders (survives app updates). Removed ones are kept
+# under "_removed" (nothing is thrown away).
+PRESETS = DELIV / ".liminal-presets.json"
+_pre_lock = threading.Lock()
+PRE_LOOKS = ("granular", "paint", "outline", "light")
+def presets_load():
+    try: m = json.loads(PRESETS.read_text())
+    except (OSError, ValueError): m = {}
+    return m if isinstance(m, dict) else {}
+def presets_edit(fn):
+    with _pre_lock:
+        m = presets_load(); fn(m)
+        DELIV.mkdir(parents=True, exist_ok=True)
+        tmp = PRESETS.with_name(PRESETS.name + ".tmp"); tmp.write_text(json.dumps(m, indent=1)); os.replace(tmp, PRESETS)
+        return {k: m.get(k, []) for k in PRE_LOOKS}
+
 def meta_update(rel, **kw):
     with _meta_lock:
         m = meta_load(); e = dict(m.get(rel) or {}); e.update({k: v for k, v in kw.items() if v is not None})
@@ -939,7 +955,7 @@ def start_granular(req):
                 return x if math.isfinite(x) else d
             except Exception: return d
         full = req.get("length") == "full"
-        start, duration = (0.0, 0.0) if full else (max(0.0, f("start", 0)), max(1.0, min(600.0, f("duration", 15))))   # 11-25: the Length slider (5 s .. 2 min)
+        start, duration = (0.0, 0.0) if full else (max(0.0, f("start", 0)), max(1.0, min(3600.0, f("duration", 15))))   # 11-25: the Length slider is freeform (1 s .. the clip)
         if start >= clip - 0.2:   # the engine needs a few frames past the start (it says the same)
             return {"error": f"the clip is only {short_time(clip)} long — start earlier than that"}
         song = ffprobe_duration(audio) if audio else 0.0
@@ -1101,6 +1117,7 @@ class H(BaseHTTPRequestHandler):
             self.send_header("Cache-Control", "no-store"); self.end_headers(); self.wfile.write(b); return
         if u.path.startswith("/crt/logos/"):
             return self.send_file(APP / "crt_logos" / Path(urllib.parse.unquote(u.path)).name)
+        if u.path == "/api/presets": m = presets_load(); return self.send_json({k: m.get(k, []) for k in PRE_LOOKS})
         if u.path == "/api/models/state": return self.send_json(models_lib.state())
         if u.path == "/update.js": return self.send_file(APP / "update.js", "text/javascript; charset=utf-8")
         if u.path == "/api/update": return self.send_json(updater.state())
@@ -1284,6 +1301,23 @@ class H(BaseHTTPRequestHandler):
             except Exception: return self.send_json({"error": "bad request"}, 400)
             if not isinstance(req, dict): return self.send_json({"error": "bad request"}, 400)
             return self.send_json(start_granular(req))
+        if u.path in ("/api/presets/save", "/api/presets/remove"):
+            try: req = json.loads(body or b"{}")
+            except Exception: return self.send_json({"error": "bad request"}, 400)
+            look, name = req.get("look"), " ".join(str(req.get("name") or "").split())[:40]
+            if look not in PRE_LOOKS or not name: return self.send_json({"error": "a preset needs a look and a name"}, 400)
+            if u.path == "/api/presets/save":
+                v = req.get("v")
+                if not isinstance(v, dict) or len(json.dumps(v)) > 20000: return self.send_json({"error": "bad settings"}, 400)
+                v = {str(k)[:40]: (x if isinstance(x, (bool, int, float)) else str(x)[:40]) for k, x in v.items()}
+                def save(m):
+                    lst = [x for x in m.get(look, []) if x.get("name") != name]; lst.append({"name": name, "v": v, "made": time.time()}); m[look] = lst
+                return self.send_json({"ok": True, "presets": presets_edit(save)})
+            def remove(m):
+                keep, gone = [], []
+                for x in m.get(look, []): (gone if x.get("name") == name else keep).append(x)
+                m[look] = keep; m.setdefault("_removed", []).extend(dict(x, look=look, removed=time.time()) for x in gone)
+            return self.send_json({"ok": True, "presets": presets_edit(remove)})
         if u.path == "/api/granular/still":
             try: req = json.loads(body or b"{}")
             except Exception: return self.send_json({"error": "bad request"}, 400)
