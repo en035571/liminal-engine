@@ -160,7 +160,7 @@ summary::before{content:"advanced · "}details[open] summary::before{content:"ad
 .nums{display:flex;gap:22px;color:var(--mute);font-size:10px;letter-spacing:.12em;text-transform:uppercase}.nums b{font-weight:400;color:var(--ink);font-variant-numeric:tabular-nums}
 body:not(.running):not(.hasjob) .bar,body:not(.running):not(.hasjob) .nums{display:none}
 .view{background:#000;border:1px solid var(--line);border-radius:var(--r);aspect-ratio:16/10;display:grid;place-items:center;overflow:hidden;position:relative;max-height:62vh}
-.view img,.view video{width:100%;height:100%;object-fit:contain;display:block;position:relative}
+.view img,.view video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}   /* 11-25: fit inside the box (a tall clip used to size the box and get cropped) */
 .view .empty{position:relative;text-align:center;color:var(--mute);font:11.5px/1.45 var(--sans);letter-spacing:0;text-transform:none}
 .view .empty::before{content:"No signal";display:block;font:500 12px var(--mono);letter-spacing:.03em;color:var(--ink);margin-bottom:2px}
 .view .glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 55%,rgba(95,141,255,.14),transparent 70%),radial-gradient(ellipse 40% 30% at 60% 40%,rgba(127,209,138,.08),transparent 70%);filter:blur(18px);pointer-events:none}
@@ -591,6 +591,17 @@ body.gl-c #gSide .sl .ud i:not(.dep){display:none!important}
       <div class="sl wv"><div class="slh"><span>Frame rate</span><b id="o_stepV">30 fps</b></div><input type="range" id="o_step" data-k="step" min="1" max="3" step="0.5" value="1"><div class="slr"><i>30 fps</i><i>10 fps</i></div><div class="ud"><i>→ fewer new pictures a second: each is held longer, steadier and choppier</i><i>← 1 = a new picture every frame (30 fps)</i></div><div class="hint">How often the colour redraws. Rama's colour moves 15 times a second, held 2 frames (Takagi strict sets that).</div></div>
     </div>
     </div>
+    <div class="grp" id="gFiltGrp"><div class="grph">Photoshop filter <small>New Flat, 2003</small></div>
+      <div class="sl sel"><div class="slh"><span>Filter</span></div><select id="g_psf"><option value="0" selected>None</option><option value="1">Glowing Edges</option><option value="2">Poster Edges · through Photoshop</option><option value="3" data-ps="1">Dry Brush · through Photoshop</option><option value="4" data-ps="1">Watercolor · through Photoshop</option></select><div class="ud"><i id="g_psfU">None: the look as it is</i></div><div class="hint">Photoshop's Filter Gallery on the finished picture, after Echo, the way Takagi forced Photoshop effects into After Effects for New Flat (2003). Glowing Edges is measured to match Photoshop 2026 (99.7 % of pixels within 1 level); Poster Edges, Dry Brush and Watercolor are rendered by your Photoshop itself (exact, about half a second a picture, Photoshop opens if it isn't). Settings are Photoshop's own, in pixels at the render size.</div></div>
+      <div class="sl" id="g_psp1Row" hidden><div class="slh"><span id="g_psp1L">Setting</span><b id="g_psp1V">0</b></div><input type="range" id="g_psp1" min="0" max="10" step="1" value="0"><div class="ud"><i id="g_psp1U"></i></div></div>
+      <div class="sl" id="g_psp2Row" hidden><div class="slh"><span id="g_psp2L">Setting</span><b id="g_psp2V">0</b></div><input type="range" id="g_psp2" min="0" max="10" step="1" value="0"><div class="ud"><i id="g_psp2U"></i></div></div>
+      <div class="sl" id="g_psp3Row" hidden><div class="slh"><span id="g_psp3L">Setting</span><b id="g_psp3V">0</b></div><input type="range" id="g_psp3" min="0" max="10" step="1" value="0"><div class="ud"><i id="g_psp3U"></i></div></div>
+    </div>
+    <div class="grp" id="gEchoGrp"><div class="grph">Echo <small>frame trails</small></div>
+      <div class="sl"><div class="slh"><span>Echoes</span><b id="g_echoV">0</b></div><input type="range" id="g_echo" data-k="echo" min="0" max="8" step="1" value="0"><div class="slr"><i>off</i><i>long trail</i></div><div class="ud"><i>↑ more echoed frames: a longer trail behind moving things</i><i>↓ 0 = no echo, the picture stands alone</i></div><div class="hint">How many past pictures are blended in. Each one fades by the Decay amount. The trail is made from the look's own output, not from the footage.</div></div>
+      <div class="sl"><div class="slh"><span>Decay</span><b id="g_echo_decayV">0.50</b></div><input type="range" id="g_echo_decay" data-k="echo_decay" min="0" max="1" step="0.05" value="0.5"><div class="slr"><i>fast fade</i><i>long memory</i></div><div class="ud"><i>↑ each echo stays brighter: a heavier, longer trail</i><i>↓ echoes fade fast: a brief ghost</i></div><div class="hint">Each echo is this fraction of the one before it. 0.5 = each half as bright; 0.9 = a long, persistent trail.</div></div>
+      <div class="sl sel"><div class="slh"><span>Blend</span></div><select id="g_echo_op" data-k="echo_op"><option value="0" selected>Add (bright trails)</option><option value="1">Maximum (keep brightest)</option><option value="2">Minimum (accumulate darkness)</option><option value="3">Screen (soft glow)</option><option value="4">Composite in back (fading trails)</option></select><div class="ud"><i>Add: each echo adds its light (Girls' bright motion persistence)</i><i>Maximum: only the brightest value at each pixel stays</i><i>Minimum: the darkest value wins (accumulating darkness, like ink)</i></div><div class="hint">How the echoed frames combine, measured against After Effects' own Echo (within 1 level). Add gives glowing trails; Maximum keeps the peak; Minimum lets darkness build up; Screen is a softer Add; Composite in back lets older pictures show through, fading, without brightening. (AE's "Blend" looks the same as Add on footage, so it isn't listed.)</div></div>
+    </div>
     </div>
     </div></div>
     </div>
@@ -837,6 +848,7 @@ function render(st){
   // library — rebuilt only when the set of outputs (or select mode / picks / current view) changes
   // 11-25 render files: projects (the picker), renders grouped into stacks per clip, newest stack first; star keeps, Remake
   if(st.projects&&!same('projects',[st.projects,S.proj,S.dest]))drawProjects(st.projects);
+  if(!same('photoshop',st.photoshop)){document.querySelectorAll('#g_psf option[data-ps]').forEach(o=>o.hidden=!st.photoshop);$('#g_psf option[value="2"]').textContent=st.photoshop?'Poster Edges · through Photoshop':'Poster Edges · approximate';if(!st.photoshop&&+$('#g_psf').value>2){$('#g_psf').value=0;psfDraw(true)}}
   const shown=st.outputs.filter(o=>(!S.libFilter||String(o.arm||'').toLowerCase().startsWith(S.libFilter))&&(!S.proj||o.project===S.proj));S.outputs=st.outputs;
   $('#libCount').textContent=shown.length?(shown.length>S.libShow?`${S.libShow} of ${shown.length}`:shown.length):'';
   $('#libMore').hidden=shown.length<=S.libShow;$('#libMore').textContent=`show ${Math.min(60,shown.length-S.libShow)} more`;
@@ -1002,6 +1014,9 @@ function gSettings(){const o={},strict=$('#gStrict').checked,song=S.gSnd==='song
     if(!song&&i.dataset.k.startsWith('mod_'))return;   // audio mod only acts with a song
     o[i.dataset.k]=i.value});
   if(S.gLook==='granular')o.freeze_sec=$('#gFreeze').checked?($('#gFreezeAt').value||'0.7'):-1;
+  // Echo (shared across all looks)
+  const ec=+$('#g_echo').value;if(ec>0){o.echo=ec;o.echo_decay=$('#g_echo_decay').value;o.echo_op=$('#g_echo_op').value}
+  const pf=+$('#g_psf').value;if(pf>0){o.ps_filter=pf;[1,2,3].forEach(n=>o['ps_p'+n]=$('#g_psp'+n).value)}
   if($('#gStrict').checked)o.strict=1;return o}
 function gRender(st){
   if(S.granOk!==st.granular){S.granOk=st.granular;gate()}$('#nogran').hidden=!(S.mode==='granular'&&st.granular===false);
@@ -1054,6 +1069,19 @@ $('#lightPre').addEventListener('click',e=>{const b=e.target.closest('.chip');if
   document.querySelectorAll('#gBoxLight input[type=range][data-k]').forEach(el=>{if(LOWN(el))el.value=el.dataset.k in P?P[el.dataset.k]:el.defaultValue});
   document.querySelectorAll('#lightPre .chip').forEach(c=>c.classList.toggle('on',c===b));gVals()});
 document.querySelectorAll('#gBoxLight input[type=range][data-k]').forEach(el=>{if(LOWN(el))el.addEventListener('input',()=>document.querySelectorAll('#lightPre .chip').forEach(c=>c.classList.remove('on')))});
+// Photoshop filter (11-25): one shared group; its three sliders take that filter's own Photoshop settings
+const PSF={1:{n:'Glowing Edges',d:'neon-bright edges on black, Photoshop Stylize',s:[['Edge width',1,14,2,'wider glowing edges'],['Edge brightness',0,20,6,'brighter edges (above ~12 they clip white)'],['Smoothness',1,15,5,'smaller details smoothed away before edges are found']]},
+  2:{n:'Poster Edges',d:'flat posterised colour with dark lines on the darker side of edges, rendered by Photoshop (an approximate version without it)',s:[['Edge thickness',0,10,2,'wider dark lines'],['Edge intensity',0,10,1,'darker lines (0 still draws faint ones)'],['Posterization',0,6,2,'more colour levels (0 = 3 levels, 6 = 128)']]},
+  3:{n:'Dry Brush',d:'simplified paint with brushy edges, rendered by Photoshop',s:[['Brush size',0,10,2,'bigger strokes, less detail'],['Brush detail',0,10,8,'more of the picture\'s detail kept'],['Texture',1,3,1,'more brush texture']]},
+  4:{n:'Watercolor',d:'dark, saturated watercolour wash, rendered by Photoshop',s:[['Brush detail',1,14,14,'more detail kept'],['Shadow intensity',0,10,1,'deeper, darker shadows'],['Texture',1,3,1,'more paper texture']]}};
+function psfDraw(reset){const v=+$('#g_psf').value,F=PSF[v];$('#g_psfU').textContent=F?F.d:'None: the look as it is';
+  [1,2,3].forEach(n=>{const row=$('#g_psp'+n+'Row'),el=$('#g_psp'+n);row.hidden=!F;if(!F)return;const [lab,lo,hi,def,up]=F.s[n-1];
+    $('#g_psp'+n+'L').textContent=lab;el.min=lo;el.max=hi;if(reset)el.value=def;$('#g_psp'+n+'V').textContent=el.value;$('#g_psp'+n+'U').textContent='↑ '+up})}
+$('#g_psf').addEventListener('change',()=>psfDraw(true));
+[1,2,3].forEach(n=>$('#g_psp'+n).addEventListener('input',()=>{$('#g_psp'+n+'V').textContent=$('#g_psp'+n).value}));
+// Echo controls: show values, include in settings
+document.querySelectorAll('#gEchoGrp input[type=range]').forEach(el=>el.addEventListener('input',()=>{const b=$('#'+el.id+'V');if(b)b.textContent=gShow(el)}));
+$('#g_echo_op').addEventListener('change',gVals);
 // ---- 11-25 (friends beta): each look shows its presets and four main settings; the rest sits under Fine-tune (closed)
 const GMAIN={gBoxGranular:['g_density','g_size_dark','g_decay','g_step'],gBoxPaint:['p_ink_amount','p_brush','p_exposure','p_step'],
   gBoxOutline:['o_edge_gain','o_colorama','o_palette','o_step'],gBoxLight:['l_colorama','l_body','l_glow','l_step']};

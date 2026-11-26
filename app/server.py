@@ -777,14 +777,14 @@ GRAN_SET = {
     "granular": {"l_bands": (1, 12), "s_bands": (1, 10), "rebuild": (0, 1), "paper": (0.05, 1), "density": (0, 20000), "size_dark": (0.5, 16),
                  "size_light": (0.3, 10), "envelope": (0, 1), "ink": (0, 1), "sat": (0, 4), "spray": (0, 20), "time_spray": (0, 23),
                  "decay": (1, 30), "follow": (0, 2), "freeze_sec": (-1, 36000), "freeze_len": (1, 24), "dry": (0, 1), "step": (1, 6), "strict": (0, 1),
-                 "exposure": (0, 0.9), "mod_density": (0, 1), "mod_size": (0, 2), "mod_spray": (0, 2)},
-    "paint": {"exposure": (0, 0.9), "ink_amount": (0, 2), "ink_start": (0, 0.9), "brush": (0, 12), "strict": (0, 1), "step": (1, 6)},
+                 "exposure": (0, 0.9), "mod_density": (0, 1), "mod_size": (0, 2), "mod_spray": (0, 2), "echo": (0, 8), "echo_decay": (0, 1), "echo_op": (0, 4), "ps_filter": (0, 4), "ps_p1": (0, 20), "ps_p2": (0, 20), "ps_p3": (0, 20)},
+    "paint": {"exposure": (0, 0.9), "ink_amount": (0, 2), "ink_start": (0, 0.9), "brush": (0, 12), "strict": (0, 1), "step": (1, 6), "echo": (0, 8), "echo_decay": (0, 1), "echo_op": (0, 4), "ps_filter": (0, 4), "ps_p1": (0, 20), "ps_p2": (0, 20), "ps_p3": (0, 20)},
     "outline": {"edge_gain": (0, 10), "wheel": (0, 1), "palette": (-1, 11), "strict": (0, 1),   # palette 9-11: strict's measured maps only (the engine clamps)
-                "colorama": (0, 32), "ae_lines": (0, 2), "step": (1, 6)},   # 11-24: AE Colorama preset (0 off) and AE-exact Find Edges
+                "colorama": (0, 32), "ae_lines": (0, 2), "step": (1, 6), "echo": (0, 8), "echo_decay": (0, 1), "echo_op": (0, 4), "ps_filter": (0, 4), "ps_p1": (0, 20), "ps_p2": (0, 20), "ps_p3": (0, 20)},   # 11-24: AE Colorama preset (0 off) and AE-exact Find Edges
     "light": {"colorama": (0, 33), "body": (0.1, 1.5), "shade": (0, 1), "ground": (0.01, 0.4), "contrast": (0.5, 3), "streaks": (0, 1),
-              "smear_len": (0, 200), "glow": (0, 0.9), "reach": (0, 0.8), "sparks": (0, 2), "cutout": (0, 2), "steady": (0, 0.9), "step": (1, 3)},   # 11-25: formed Light (no strict)
+              "smear_len": (0, 200), "glow": (0, 0.9), "reach": (0, 0.8), "sparks": (0, 2), "cutout": (0, 2), "steady": (0, 0.9), "step": (1, 3), "echo": (0, 8), "echo_decay": (0, 1), "echo_op": (0, 4), "ps_filter": (0, 4), "ps_p1": (0, 20), "ps_p2": (0, 20), "ps_p3": (0, 20)},   # 11-25: formed Light (no strict)
 }
-GRAN_INT = {"l_bands", "s_bands", "density", "decay", "freeze_len", "brush", "palette", "strict", "colorama", "ae_lines", "cutout"}   # step can be 2.5 (held 2,3,2,3)
+GRAN_INT = {"l_bands", "s_bands", "density", "decay", "freeze_len", "brush", "palette", "strict", "colorama", "ae_lines", "cutout", "echo", "echo_op", "ps_filter", "ps_p1", "ps_p2", "ps_p3"}   # step can be 2.5 (held 2,3,2,3)
 
 
 def short_time(s):
@@ -1117,7 +1117,7 @@ class H(BaseHTTPRequestHandler):
             dropped = [{"name": f.name, "path": str(f), "kind": "video" if f.suffix.lower() in VID_EXT else "image", "size": f.stat().st_size,
                         **({"duration": ffprobe_duration(f), **ffprobe_video(f)} if f.suffix.lower() in VID_EXT else {})}
                        for f in sorted(DROPPED.iterdir(), key=lambda f: f.stat().st_mtime, reverse=True) if f.is_file() and not f.name.startswith(".")]
-            return self.send_json({"job": public(job), "ai": ai_ready(), "audio": auds, "inbox": list_inbox(), "lanes": lanes, "models": list_models(), "models_dir": str(MODELS), "dropped": dropped, "dropped_dir": str(DROPPED), "outputs": list_outputs(), "projects": list_projects(), "granular": granular_ready(),
+            return self.send_json({"job": public(job), "ai": ai_ready(), "audio": auds, "inbox": list_inbox(), "lanes": lanes, "models": list_models(), "models_dir": str(MODELS), "dropped": dropped, "dropped_dir": str(DROPPED), "outputs": list_outputs(), "projects": list_projects(), "photoshop": Path("/Applications/Adobe Photoshop 2026/Adobe Photoshop 2026.app").exists(), "granular": granular_ready(),
                                    "strict": granular_strict(), "root": str(ROOT), "engine_ok": LATENT.exists() and PY.exists()})
         if u.path == "/api/file":
             p = self.safe_path(q.get("p", [""])[0])

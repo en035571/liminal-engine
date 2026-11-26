@@ -336,17 +336,24 @@ class Paint:
         mask = (np.clip((n - thr + p["ink_soft"]) / (2 * max(p["ink_soft"], 1e-6)), 0, 1)[..., None]) * (cov[..., None] > 0.01)
         if p["dots"]:   # round dots + the merged dark mass in place of the noise-cut dots
             mask = np.maximum(self._dark_mass(n, cov, p), self._round_dots(L, d, p, h, w))[..., None]
-        ink = cv2.cvtColor(np.dstack([bh[..., 0], np.clip(bh[..., 1] * 1.1, 0, 1), np.clip(bh[..., 2] * p["ink_dark"], 0, 1)]).astype(np.float32), cv2.COLOR_HSV2BGR)
-        # smear the painted colour UNDER the dots; dots stay crisp (only a light brush on their edges)
+        # 11-25: one field, not a mask overlay. The dot coverage drives how dark each pixel is in a single image:
+        # where there's no dot the paint is bright (the base), where there is a dot the paint is dark (ink_dark of
+        # the base's own colour). The image is base * (1 - mask * (1 - ink_dark)), so it goes from base at mask=0
+        # to base*ink_dark at mask=1, keeping the base's hue. No separate ink layer is composed on top.
         base = brush_smudge(base.astype(np.float32), L, int(p["brush"]), p["brush_len"])
         if p["motion_streak"] > 0:
             rel = flow - np.median(flow.reshape(-1, 2), axis=0)
             base = streak(base, rel, int(p["motion_streak"]))
         if p["soft"] > 0:
             base = cv2.GaussianBlur(base, (0, 0), p["soft"])
-        if p["brush"] > 0 and p["mask_brush"]:   # (this smudge is what lines the dots up along edges)
+        if p["brush"] > 0 and p["mask_brush"]:
             mask = brush_smudge(np.ascontiguousarray(mask[..., 0], np.float32), L, max(1, int(p["brush"]) // 3), p["brush_len"])[..., None]
-        img = base * (1 - mask) + ink * mask
+        # the dot darkens the base's own colour at each pixel, and saturates it slightly (ink on wet paint)
+        dark = mask * (1 - p["ink_dark"])   # 0 where no dot, up to (1-ink_dark) where full dot
+        sat_boost = 1 + 0.1 * mask[..., 0] if mask.ndim == 3 else 1 + 0.1 * mask   # slight saturation lift where dots print
+        bh2 = cv2.cvtColor(np.clip(base, 0, 1), cv2.COLOR_BGR2HSV)
+        bh2[..., 1] = np.clip(bh2[..., 1] * sat_boost, 0, 1)
+        img = cv2.cvtColor(bh2, cv2.COLOR_HSV2BGR) * (1 - dark)
 
         if self.fb is not None and p["smear"] > 0:
             mem = warp_by_flow(self.fb, flow, p["advect"]) if p["advect"] else self.fb
@@ -667,6 +674,7 @@ LIGHT = dict(
     feather=1.5,         # px at 640: softens the occupancy edge (a body's own edge, before the lens)
     steady=0.7,          # 0..0.9: how much of the last frame's cut-out each new one keeps (Vision redraws the edge)
     step=2.0,            # frame hold: 2 = on twos (15 new pictures a second), NIHITI's red section is mostly on twos
+    hold_jitter=1,       # 1 = vary each hold by -1/0/0/+1 frame (his 120-200 s mixes 1s, 2s and 3s); 0 = strict twos
     dv=0,                # DV 4:1:1 chroma (the recording medium)
 )
 LIGHT_FIXED = dict(psf1=3.25, psf2=31.0, psf_mix=0.45, psf3=60.0, sensor=1.6, dust_gain=6.0, dust_base=0.1)
@@ -797,7 +805,12 @@ class LightBodies:
             y = cv2.cvtColor(out, cv2.COLOR_BGR2YCrCb); hh, ww = y.shape[:2]
             cc = cv2.resize(y[..., 1:], (max(1, ww // 4), hh), interpolation=cv2.INTER_AREA)
             y[..., 1:] = cv2.resize(cc, (ww, hh), interpolation=cv2.INTER_NEAREST); out = cv2.cvtColor(y, cv2.COLOR_YCrCb2BGR)
-        self.held, self.hold = out, self.cad.next_hold()
+        h0 = self.cad.next_hold()
+        # 11-25: his hold pattern mixes 1s, 2s and 3s (not pure twos). At step 2, the distribution is
+        # P(1)≈0.28, P(2)≈0.50, P(3)≈0.22, well modelled by step + choice([-1,0,0,1]) (measured from NIHITI 120-200 s).
+        if p.get("hold_jitter", 1) and p["step"] >= 1.5:
+            h0 = max(0, h0 + self.rng.choice([-1, 0, 0, 1]))
+        self.held, self.hold = out, h0
         return out
 
 
@@ -1134,6 +1147,183 @@ def audio_envelope(path, fps, n_frames, start=0.0):
     return np.clip((env - lo) / max(hi - lo, 1e-6), 0, 1)
 
 
+
+
+# ================================================================ PHOTOSHOP FILTER GALLERY (11-25)
+# New Flat (2003): "Photoshop effects forced into After Effects". Which filters he used is unknown, so four Filter
+# Gallery effects are offered, each with its own three Photoshop settings in Photoshop's units (pixels at render size).
+# Measured against Photoshop 2026's own renders (~/Projects/takagi-fx/verify/ps): Glowing Edges and Poster Edges are
+# maths; Dry Brush and Watercolor are rendered by Photoshop itself when it's installed (exact by definition).
+# All run on the look's finished picture, after Echo.
+from scipy.ndimage import rank_filter as _rank_filter
+
+
+def ps_glowing_edges(bgr8, W=2, B=6, S=5):
+    """Stylize > Glowing Edges (Edge Width, Edge Brightness, Smoothness). Fitted 11-25 on 70 renders: 0.04 levels mean,
+    99.7 % of pixels within 1 level (the rest in the outer border strip when Smoothness > 1). Per channel: S x S median
+    (the lower middle value for even S) -> brightest minus darkest in a (W+1) square reaching ceil(W/2) back and
+    floor(W/2) forward -> x B/2, rounded."""
+    W, B, S = max(1, int(W)), max(0, int(B)), max(1, int(S))
+    f = bgr8.astype(np.float32)
+    if S > 1: f = _rank_filter(f, (S * S - 1) // 2, size=(S, S, 1), mode="nearest")
+    k, a = W + 1, (W + 1) // 2; ker = np.ones((k, k), np.uint8)
+    g = cv2.dilate(f, ker, anchor=(a, a), borderType=cv2.BORDER_REPLICATE) - cv2.erode(f, ker, anchor=(a, a), borderType=cv2.BORDER_REPLICATE)
+    return np.clip(np.floor(g * B / 2 + 0.5), 0, 255).astype(np.uint8)
+
+
+_PE = dict(thr=0.600, g0=2.484, g1=67.34)   # line constants (see ps_poster_edges: partly fitted)
+
+
+def _box_mean(a, k, anc):
+    p = cv2.copyMakeBorder(a, anc, k - 1 - anc, anc, k - 1 - anc, cv2.BORDER_REPLICATE)
+    c = cv2.integral(p); h, w = a.shape
+    return (c[k:k + h, k:k + w] - c[0:h, k:k + w] - c[k:k + h, 0:w] + c[0:h, 0:w]) / (k * k)
+
+
+def ps_poster_edges(bgr8, T=2, I=1, P=2):
+    """Artistic > Poster Edges (Edge Thickness, Edge Intensity, Posterization). PARTLY fitted (11-25): the softening
+    (3x3 average, rounded down) and posterising (on V, the brightest channel, step 256 >> (P+1), halves up; colour kept
+    by scaling all channels with V'/V) are exact on every grey test; the dark lines are fitted to step edges but not yet
+    to real texture (real frames ~7 levels mean)."""
+    T, I, P = max(0, int(T)), max(0, int(I)), min(6, max(0, int(P)))
+    f = np.floor(cv2.blur(bgr8.astype(np.float64), (3, 3), borderType=cv2.BORDER_REPLICATE) + 1e-9)
+    V = f.max(2); st = 256 >> (P + 1); Vq = np.clip(np.floor(V / st + 0.5) * st, 0, 255)
+    k = T + 5; line = np.maximum(_box_mean(V, k, k // 2) - V - _PE["thr"], 0) * (_PE["g0"] + _PE["g1"] * I / (T + 1))
+    Vo = np.clip(Vq - line, 0, 255)
+    return np.clip(np.floor(f * (Vo / np.maximum(V, 1e-9))[..., None] + 0.5), 0, 255).astype(np.uint8)
+
+
+PS_APP = "Adobe Photoshop 2026"
+PS_APP_PATH = Path("/Applications/Adobe Photoshop 2026/Adobe Photoshop 2026.app")
+
+
+class PhotoshopFilter:
+    """A Filter Gallery effect rendered by Photoshop itself (exact): each new picture goes out as a PNG, Photoshop runs the
+    filter without its dialog (executeAction "GEfc" with the effect's 4-letter ID) and the result comes back. ~0.55 s a
+    picture at 960 wide. A held frame (the same picture again) reuses the last result. Needs Photoshop 2026."""
+    KINDS = {"poster_edges": ("PstE", ("EdgT", "EdgI", "Pstr"), "Poster Edges"), "dry_brush": ("DryB", ("BrsS", "BrsD", "Txtr"), "Dry Brush"), "watercolor": ("Wtrc", ("BrsD", "ShdI", "Txtr"), "Watercolor")}
+    JSX = r"""#target photoshop
+app.displayDialogs = DialogModes.NO;
+var d = "%DIR%/", st = new File(d + "status.txt"), msg = "ok", doc = null;
+try {
+    doc = app.open(new File(d + "in.png"));
+    if (doc.mode != DocumentMode.RGB) doc.changeMode(ChangeMode.RGB);
+    doc.bitsPerChannel = BitsPerChannelType.EIGHT;
+    var a = new ActionDescriptor();
+    a.putEnumerated(charIDToTypeID("GEfk"), charIDToTypeID("GEft"), charIDToTypeID("%KIND%"));
+    %PARAMS%
+    executeAction(charIDToTypeID("GEfc"), a, DialogModes.NO);
+    var o = new PNGSaveOptions(); o.compression = 1;
+    doc.saveAs(new File(d + "out.png"), o, true, Extension.LOWERCASE);
+} catch (e) { msg = "error " + e; }
+if (doc) doc.close(SaveOptions.DONOTSAVECHANGES);
+st.open("w"); st.write(msg); st.close();
+"""
+
+    def __init__(self, name, params):
+        import tempfile
+        kind, keys, self.label = self.KINDS[name]
+        if not PS_APP_PATH.exists():
+            sys.exit(f"[error] {self.label} renders through Photoshop 2026, which isn't installed on this Mac")
+        self.dir = Path(tempfile.mkdtemp(prefix="liminal-ps-"))
+        body = "\n    ".join(f'a.putInteger(charIDToTypeID("{k}"), {int(v)});' for k, v in zip(keys, params))
+        (self.dir / "run.jsx").write_text(self.JSX.replace("%DIR%", str(self.dir)).replace("%KIND%", kind).replace("%PARAMS%", body))
+        self.last_in, self.last_out = None, None
+        if subprocess.run(["pgrep", "-f", "Adobe Photoshop 2026.app/Contents/MacOS/Adobe Photoshop 2026"], capture_output=True).returncode != 0:
+            print(f"[filter] opening Photoshop for {self.label}", flush=True)
+            subprocess.run(["open", "-a", PS_APP])
+        for _ in range(60):   # wait until it answers scripts
+            r = subprocess.run(["osascript", "-e", "with timeout of 10 seconds", "-e", f'tell application "{PS_APP}" to do javascript "1"', "-e", "end timeout"],
+                               capture_output=True, text=True)
+            if r.returncode == 0: break
+            time.sleep(2)
+        else:
+            sys.exit(f"[error] Photoshop didn't answer: {self.label} can't render")
+
+    def __call__(self, bgr8):
+        if self.last_in is not None and np.array_equal(bgr8, self.last_in): return self.last_out
+        cv2.imwrite(str(self.dir / "in.png"), bgr8, [cv2.IMWRITE_PNG_COMPRESSION, 1])
+        (self.dir / "status.txt").write_text("")
+        r = subprocess.run(["osascript", "-e", "with timeout of 300 seconds", "-e",
+                            f'tell application "{PS_APP}" to do javascript (read POSIX file "{self.dir / "run.jsx"}")', "-e", "end timeout"],
+                           capture_output=True, text=True)
+        status = (self.dir / "status.txt").read_text().strip() if (self.dir / "status.txt").exists() else ""
+        out = cv2.imread(str(self.dir / "out.png")) if status == "ok" else None
+        if out is None or out.shape != bgr8.shape:
+            hint = " (scratch disk full or missing? check Photoshop > Settings > Scratch Disks)" if "open options" in status or "scratch" in status else ""
+            sys.exit(f"[error] Photoshop couldn't render {self.label}: {status or r.stderr.strip()[:200]}{hint}")
+        self.last_in, self.last_out = bgr8.copy(), out
+        return out
+
+    def __del__(self):
+        try: shutil.rmtree(self.dir, ignore_errors=True)   # its own temp folder
+        except Exception: pass
+
+
+# ps_filter: 0 none, 1 Glowing Edges, 2 Poster Edges, 3 Dry Brush (Photoshop), 4 Watercolor (Photoshop); ps_p1..3 = its settings
+PS_NAMES = {1: "glowing_edges", 2: "poster_edges", 3: "dry_brush", 4: "watercolor"}
+PS_DEFAULTS = {"glowing_edges": (2, 6, 5), "poster_edges": (2, 1, 2), "dry_brush": (2, 8, 1), "watercolor": (14, 1, 1)}
+PS_RANGES = {"glowing_edges": ((1, 14), (0, 20), (1, 15)), "poster_edges": ((0, 10), (0, 10), (0, 6)),
+             "dry_brush": ((0, 10), (0, 10), (1, 3)), "watercolor": ((1, 14), (0, 10), (1, 3))}
+
+
+def ps_filter_from(p):
+    """the Photoshop filter a render asked for (ps_filter = code or name, ps_p1..3), or None."""
+    v = p.get("ps_filter", 0)
+    try: name = PS_NAMES.get(int(float(v)))
+    except (TypeError, ValueError): name = str(v) if str(v) in PS_DEFAULTS else None
+    if not name: return None
+    prm = [int(round(float(p.get(f"ps_p{n + 1}", d)))) for n, d in enumerate(PS_DEFAULTS[name])]
+    prm = [max(lo, min(hi, x)) for x, (lo, hi) in zip(prm, PS_RANGES[name])]
+    print(f"[filter] {name} {prm}", flush=True)
+    if name == "glowing_edges": return lambda im: ps_glowing_edges(im, *prm)
+    if name == "poster_edges" and not PS_APP_PATH.exists():   # no Photoshop: the partly-fitted maths (lines approximate)
+        print("[filter] Poster Edges: Photoshop isn't installed, using the approximate version", flush=True)
+        return lambda im: ps_poster_edges(im, *prm)
+    return PhotoshopFilter(name, prm)
+
+
+# ================================================================ ECHO (11-25)
+# Trails from blending the last N pictures the look made (not the footage, so it stays "made new"). Note: AE's own
+# Echo samples the layer BEFORE its effects; running on the formed output matches a precomposed layer instead.
+# Operator maths MEASURED against AE 2027 (11-25, ~/Projects/takagi-fx/verify/ae/echo_model.py: 12 renders, every operator
+# within 1 level): the current picture is a layer at opacity = Starting Intensity; echo i (newest first) goes on at
+# opacity start*decay^i with Adobe's blend-with-alpha; Add sums brightness and caps at the new opacity each step; AE's
+# "Blend" gives the same as Add on solid footage, so the page offers Composite In Back instead. Below 1, the picture is seen over black (AE leaves it see-through).
+class Echo:
+    def __init__(self, echoes=3, time=0.033, start=1.0, decay=0.5, operator="add"):
+        self.n = max(0, int(echoes))
+        self.dt = time          # not used (we work in frames, and the look's cadence sets the rate)
+        self.start = max(0.0, min(2.0, float(start)))
+        self.decay = max(0.0, min(1.0, float(decay)))
+        self.op = operator.lower()
+        self.buf = []           # the last N+1 formed frames
+
+    def apply(self, img):
+        """img: the look's formed output (float32 0..1 or uint8). Returns the echoed picture, same type."""
+        was_uint8 = img.dtype == np.uint8
+        f = img.astype(np.float32) / 255 if was_uint8 else img.astype(np.float32)
+        self.buf.append(f.copy())
+        if len(self.buf) > self.n + 1: self.buf = self.buf[-(self.n + 1):]
+        if self.n == 0: return img
+        frames = list(reversed(self.buf))   # newest first
+        ab = min(1.0, self.start); cp = frames[0] * ab          # premultiplied result + its opacity
+        for i, e in enumerate(frames[1:], 1):
+            a = min(1.0, self.start * self.decay ** i); an = a + ab - a * ab
+            if self.op in ("add", "blend"):
+                cp = np.minimum(cp + a * e, an)
+            else:
+                Cb = cp / ab if ab > 0 else np.zeros_like(cp)
+                if self.op == "maximum": m = np.maximum(Cb, e)
+                elif self.op == "minimum": m = np.minimum(Cb, e)
+                elif self.op == "screen": m = Cb + e - Cb * e
+                elif self.op == "comp_back": m = e      # Composite In Back: older pictures show through at their opacity
+                else: m = Cb                             # Composite In Front: the current picture covers them
+                cp = e * a * (1 - ab) + cp * (1 - a) + a * ab * m
+            ab = an
+        return np.clip(np.floor(cp * 255 + 0.5), 0, 255).astype(np.uint8) if was_uint8 else np.clip(cp, 0, 1)
+
+
 LOOKS = {"granular": (Granulator, GRAIN), "paint": (Paint, PAINT), "outline": (Rama2, RAMA2), "light": (LightBodies, LIGHT)}
 
 # "Takagi strict" (11-23): what frame-by-frame measurement of his videos showed (~/reports/Takagi method gaps.md).
@@ -1267,10 +1457,15 @@ def still(a, cls, p, seed, src, info, vf, fps_str, fps, W, H, t0):
     k = len(r.stdout) // size
     if k == 0: sys.exit("[error] no frames could be read from the clip there")
     fx = cls(p, np.random.default_rng(seed))
+    echo = Echo(int(p.get("echo", 0)), decay=float(p.get("echo_decay", 0.5)),
+                operator=["add", "maximum", "minimum", "screen", "comp_back"][min(4, max(0, int(p.get("echo_op", 0))))]) if p.get("echo", 0) else None
+    ps_fn = ps_filter_from(p)
     fr = res = None
     for j in range(k):
         fr = np.frombuffer(r.stdout, np.uint8, size, j * size).reshape(H, W, 3).copy()
         res = fx.frame(fr)
+        if echo: res = echo.apply(res)
+        if ps_fn: res = ps_fn(res)
     out = Path(a.out)
     for img, path in ((res, out), (fr, out.with_name(out.stem + "_src.jpg"))):   # written aside and renamed in
         tmp = path.with_name(".next_" + path.name)
@@ -1310,16 +1505,19 @@ def main():
     vals, strict = [], False
     for kv in a.set:
         k, eq, v = kv.partition("=")
+        if k == "ps_filter" and not v.replace(".", "", 1).lstrip("-").isdigit(): p["ps_filter"] = v; continue   # a name (or a code number, below)
         try: x = float(v)
         except ValueError: sys.exit(f"[error] {k} needs a number, got '{v}'")
         if not math.isfinite(x): sys.exit(f"[error] {k} needs a finite number, got '{v}'")
         if k == "strict": strict = x != 0; continue
         if k == "freeze_sec" and a.look == "granular": freeze_sec = x; continue
+        if k.startswith("echo") or k.startswith("ps_"): vals.append((k, x)); continue   # Echo + PS filters: shared
         if not eq or k not in defaults: sys.exit(f"[error] '{k}' is not a setting of the {a.look} look")
         vals.append((k, x))
     if strict:
         p.update(STRICT[a.look])
     for k, x in vals:
+        if k.startswith(("echo", "ps_")): continue   # handled after this loop (not look settings)
         p[k] = int(x) if isinstance(defaults[k], int) else x
     for k in ("l_bands", "s_bands"):
         if k in p: p[k] = max(1, p[k])
@@ -1333,7 +1531,11 @@ def main():
     if a.look == "light":   # 11-25 formed Light: physical bounds (a lens can't scatter more light than it gets)
         p["glow"] = max(0.0, min(0.9, float(p["glow"]))); p["reach"] = max(0.0, min(0.8, float(p["reach"])))
         p["streaks"] = max(0.0, min(1.0, float(p["streaks"]))); p["shade"] = max(0.0, min(1.0, float(p["shade"])))
-    sent = {k for k, _ in vals if p[k] != STRICT[a.look].get(k)} if strict else set()   # a sent value beat the strict one
+    # Echo is shared (not in any look's defaults): set it on p after the strict pass
+    for k, x in vals:
+        if k.startswith("echo"): p[k] = int(x) if k in ("echo", "echo_op") else x
+        elif k.startswith("ps_"): p[k] = int(round(x))
+    sent = {k for k, _ in vals if k in defaults and p[k] != STRICT[a.look].get(k)} if strict else set()   # a sent value beat the strict one
 
     src = str(Path(a.source).expanduser())
     if not Path(src).is_file(): sys.exit(f"[error] the clip isn't there any more: {src}")
@@ -1380,9 +1582,12 @@ def main():
 
     if freeze_sec is not None:   # counted in video frames, from the start of the render
         p["freeze_at"] = int(round(freeze_sec * fps)) if freeze_sec >= 0 else -1
+    ps_fn = ps_filter_from(p)
     if a.still >= 0:
         return still(a, cls, p, seed, src, info, vf, fps_str, fps, W, H, t0)
     fx = cls(p, np.random.default_rng(seed))
+    echo = Echo(int(p.get("echo", 0)), decay=float(p.get("echo_decay", 0.5)),
+                operator=["add", "maximum", "minimum", "screen", "comp_back"][min(4, max(0, int(p.get("echo_op", 0))))]) if p.get("echo", 0) else None
     song = str(Path(a.audio).expanduser()) if a.audio else ""
     if song:
         if not Path(song).is_file(): sys.exit(f"[error] the song isn't there any more: {song}")
@@ -1436,6 +1641,8 @@ def main():
             if len(buf) < size: break
             fr = np.frombuffer(buf, np.uint8).reshape(H, W, 3).copy()
             res = fx.frame(fr)
+            if echo: res = echo.apply(res)
+            if ps_fn: res = ps_fn(res)
             try: enc.stdin.write(res.tobytes())
             except BrokenPipeError: sys.exit("[error] the encoder stopped (see the line above)")
             if a.preview > 0 and res is not prev and i - saved_at >= PREVIEW_GAP:   # a held frame is the same picture: only new ones

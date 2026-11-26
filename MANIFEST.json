@@ -1,8 +1,8 @@
 {
- "version": "2026.11.25",
+ "version": "2026.11.25.2",
  "files": {
   "Liminal Engine.app/Contents/Info.plist": {
-   "sha": "abeba575a935c5c34dad4cbf74a1c4fc41e299127f01c0199414a9395144fefe",
+   "sha": "5f77880abf1f0cc9b1618d26027a8e4f28ae0bb409746c45f55ea0ee2a3a24a7",
    "mode": 420
   },
   "Liminal Engine.app/Contents/MacOS/launch": {
@@ -14,7 +14,7 @@
    "mode": 420
   },
   "READ ME FIRST.html": {
-   "sha": "8af6b29c80dfe4fd9227fd0f9de40ad090977fa5c748cb9f03a3289c16c582bb",
+   "sha": "26ead7e99f816b0efba8b66e3661eb50a1f9ae296bdde9b5a2581b4d46abb297",
    "mode": 420
   },
   "Set Up.command": {
@@ -46,11 +46,11 @@
    "mode": 420
   },
   "app/granular.py": {
-   "sha": "ee9890f0e134dd091ae64e3eea7acb28e3eb1cd6cc3366af0a73e256f90f2822",
+   "sha": "841c58fb2be24370450ee1449037bf2d7d54835611c2ac8e43932cc799e42c11",
    "mode": 420
   },
   "app/index.html": {
-   "sha": "961a5671e8ca6032c081eb03c2cf0a18159825e063f7df90efea07bbbaa02d6d",
+   "sha": "72a2e34a9eb8a48d4a128f90ac68f6abfb4f910ddf025d14cefd1b43cdb796ab",
    "mode": 420
   },
   "app/models.html": {
@@ -74,7 +74,7 @@
    "mode": 420
   },
   "app/server.py": {
-   "sha": "c1643ce69405c3c7eebe2bc6506929a20fc43bd8de6d7d7f0d92ad609788287c",
+   "sha": "ce74855f0dd417ceb195bba02822e4a1e72e49abf8c7f4710914079d9aec9873",
    "mode": 420
   },
   "app/update.js": {
